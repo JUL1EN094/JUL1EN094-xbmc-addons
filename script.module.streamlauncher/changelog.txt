@@ -1,0 +1,3 @@
+﻿Version 0.0.1 (30-04-2013) par JUL1EN094 :
+- Creation du module
+- 3 mode définis : 'stream', 'download' et 'local'
