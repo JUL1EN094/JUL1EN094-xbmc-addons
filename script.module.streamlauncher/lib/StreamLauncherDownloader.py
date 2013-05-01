@@ -1,5 +1,8 @@
+#-*- coding: utf-8 -*-
+# version 0.0.1 par JUL1EN094
+#---------------------------------------------------------------------
 '''
-    StreamLauncherDownloader for StreamLauncher XBMC Module
+    StreamLauncherDownloader XBMC Module
     Copyright (C) 2013 JUL1EN094
 
     This program is free software: you can redistribute it and/or modify
@@ -15,10 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-#-*- coding: utf-8 -*-
-# Version 0.1 par JUL1EN094
-
+#---------------------------------------------------------------------
 """Downloads files from http or ftp locations"""
 import os,stat
 import urllib2

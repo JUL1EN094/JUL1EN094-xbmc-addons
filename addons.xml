@@ -191,9 +191,22 @@
   </extension>
 </addon>
 
+<addon id="repository.JUL1EN094" name="JUL1EN094's XBMC Addons" version="1.0.0" provider-name="JUL1EN094">
+	<extension point="xbmc.addon.repository" name="JUL1EN094's XBMC Addon Repository">
+		<info compressed="false">https://github.com/JUL1EN094/JUL1EN094-xbmc-addons/raw/master/addons.xml</info>
+		<checksum>https://github.com/JUL1EN094/JUL1EN094-xbmc-addons/raw/master/addons.xml.md5</checksum>
+		<datadir zip="true">https://github.com/JUL1EN094/JUL1EN094-xbmc-addons/raw/master/repo/</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Install JUL1EN094's XBMC repository</summary>
+		<description>JUL1EN094's XBMC repository</description>
+		<platform>all</platform>
+	</extension>
+</addon>
+
 <addon id="script.module.streamlauncher"
      name="streamlauncher"
-     version="0.0.1"
+     version="0.0.2"
      provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />

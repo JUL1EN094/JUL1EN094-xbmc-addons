@@ -1,3 +1,6 @@
+#-*- coding: utf-8 -*-
+# version 0.0.2 par JUL1EN094
+#---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
     Copyright (C) 2013 JUL1EN094
@@ -15,9 +18,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-#-*- coding: utf-8 -*-
-# version 0.1 par JUL1EN094
 #---------------------------------------------------------------------
 # IMPORTS
 #xbmc and generals tools
@@ -34,7 +34,7 @@ import unicodedata
 import string
 validFilenameChars = "-_.() %s%s" % (string.ascii_letters, string.digits)
 #---------------------------------------------------------------------
-#Downloader Variables :
+#streamLauncherDownloader Variables :
 DOWNLOADING = 1
 PAUSED = 2
 STOPPED = 3
@@ -45,13 +45,17 @@ FINISHED = 7
 #---------------------------------------------------------------------
 
 class StreamLauncher():
-    def __init__(self, url=False, Infos=False, Type=False, dlfolder=False, precachesize=False, intro = False, introtime = False):
+    def __init__(self, url=False, Infos=False, Type=False, dlfolder=False, precachesize=False, intro = False, introtime = False, needdebrid = False):
         #mode 
         self.mode             = False
         #url d'entrée
         self.linkurl          = False
-        #url de sortie (utilisée pour la lecture)
+        #need debrid
+        self.needdebrid       = False
+        #url débridée
         self.debridurl        = False
+        #url envoyé au lecteur xbmc
+        self.videoPlayerUrl   = False
         #downloader
         self.downloader       = False
         #informations de la video
@@ -123,6 +127,12 @@ class StreamLauncher():
             if not self.precachesize :
                 return None
         #-------------
+        #détermination du besoin de debrider : self.needdebrid
+        if needdebrid :
+            self.needdebrid = True
+        else :
+            self.needdebrid = False
+        #-------------
         ## STREAM 
         if self.mode == 'stream' :
             self.LaunchStream() 
@@ -145,6 +155,8 @@ class StreamLauncher():
         classinfos['videolocalfolder'] = self.videolocalfolder
         classinfos['precachesize']     = self.precachesize
         classinfos['debridurl']        = self.debridurl
+        classinfos['needdebrid']       = self.needdebrid
+        classinfos['videoPlayerUrl']   = self.videoPlayerUrl
         classinfos['videolocalname']   = self.videolocalname
         classinfos['videototaltime']   = self.videototaltime
         classinfos['videotimewatched'] = self.videotimewatched
@@ -205,7 +217,7 @@ class StreamLauncher():
         
     def getMode(self):
         dialog = xbmcgui.Dialog()
-        result = dialog.select('Action', ['Télécharger et Lire', 'Télécharger en arrière plan', 'Lire sur Internet (déconseillé)'])
+        result = dialog.select('Action', ['Télécharger et Lire', 'Télécharger en arrière plan', 'Lire sur Internet'])
         if result == 0 :
             return 'local'
         elif result == 1 :
@@ -238,20 +250,25 @@ class StreamLauncher():
         
     def LaunchDownload(self) :
         try :
-            #débridage
-            self.debridurl = urlresolver.HostedMediaFile(url=self.linkurl).resolve()  
-            if self.debridurl :
+            #si débridage
+            if self.needdebrid :
+                self.debridurl      = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
+                self.videoPlayerUrl = self.debridurl
+            # si non débridage
+            elif not self.needdebrid :
+                self.videoPlayerUrl = self.linkurl 
+            if self.videoPlayerUrl :
                 #Si lien fait appel à un autre plugin
-                if self.debridurl[:6]=='plugin' :
-                    xbmc.executebuiltin('XBMC.RunPlugin('+self.debridurl+')')                   
+                if self.videoPlayerUrl[:6]=='plugin' :
+                    xbmc.executebuiltin('XBMC.RunPlugin('+self.videoPlayerUrl+')')                   
                 #Sinon : répertoire de destination
                 else :
-                    self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(self.debridurl,self.dlfolder)
+                    self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(self.videoPlayerUrl,self.dlfolder)
             if self.videolocalfolder and self.videolocalname :
                 #création de l'instance du downloader (SimpleDownloader)
                 import SimpleDownloader as simpledownloader
                 self.downloader = simpledownloader.SimpleDownloader()
-                params = { "url": self.debridurl, "download_path": self.videolocalfolder, "Title": self.infos['Title'] }
+                params = { "url": self.videoPlayerUrl, "download_path": self.videolocalfolder, "Title": self.infos['Title'] }
             if self.downloader :
                 #download
                 try :
@@ -267,24 +284,30 @@ class StreamLauncher():
                 
     def LaunchLocal(self):
         try :
-            #Débridage
-            self.debridurl = urlresolver.HostedMediaFile(url=self.linkurl).resolve()  
-            if self.debridurl :
+            tempurl = False
+            #si débridage
+            if self.needdebrid :
+                self.debridurl = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
+                tempUrl        = self.debridurl
+            # si non débridage
+            elif not self.needdebrid :
+                tempurl        = self.linkurl 
+            if tempurl :
                 #Si lien fait appel à un autre plugin
-                if self.debridurl[:6]=='plugin' :
-                    xbmc.executebuiltin('XBMC.RunPlugin('+self.debridurl+')')                   
+                if tempurl[:6]=='plugin' :
+                    xbmc.executebuiltin('XBMC.RunPlugin('+tempurl+')')                   
                 #Sinon : répertoire de destination
                 else :
-                    self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(self.debridurl,self.dlfolder)
+                    self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(tempurl,self.dlfolder)
             if self.videolocalfolder and self.videolocalname and self.extension:
                 #création de l'instance du downloader (dpstreamdownloader)
                 import StreamLauncherDownloader as sldownloader
                 if self.extension == 'mp4' or self.extension == 'MP4':
-                    self.downloader = sldownloader.MP4download(self.debridurl,self.videolocalfolder)
+                    self.downloader = sldownloader.MP4download(self.tempurl,self.videolocalfolder)
                 elif self.extension == 'flv' or self.extension == 'FLV':
-                    self.downloader = sldownloader.FLVdownload(self.debridurl,self.videolocalfolder)
+                    self.downloader = sldownloader.FLVdownload(self.tempurl,self.videolocalfolder)
                 else :
-                    self.downloader = sldownloader.DownloadFile(self.debridurl,self.videolocalfolder)
+                    self.downloader = sldownloader.DownloadFile(self.tempurl,self.videolocalfolder)
             if self.downloader :
                 #download
                 try :
@@ -302,9 +325,8 @@ class StreamLauncher():
                         download_info = self.downloader.getInfos()
                         time.sleep(0.5)
                     #Lecture
-                    videourl            = download_info['localfilename']
-                    self.videolocalname = os.path.split(videourl)[-1]
-                    self.PlayVideo(videourl)
+                    self.videolocalname = os.path.split(download_info['localfilename'])[-1]
+                    self.PlayVideo(download_info['localfilename'])
                 except :
                     return False               
             else :
@@ -315,15 +337,20 @@ class StreamLauncher():
     
     def LaunchStream(self) :
         try :
-            #débridage
-            self.debridurl = urlresolver.HostedMediaFile(url=self.linkurl).resolve()  
-            if self.debridurl :
+            #si débridage
+            if self.needdebrid :
+                self.debridurl      = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
+                self.videoPlayerUrl = self.debridurl
+            # si non débridage
+            elif not self.needdebrid :
+                self.videoPlayerUrl = self.linkurl
+            if self.videoPlayerUrl :
                 #Si lien fait appel à un autre plugin :
-                if self.debridurl[:6]=='plugin' :
-                    xbmc.executebuiltin('XBMC.RunPlugin('+self.debridurl+')')                   
+                if self.videoPlayerUrl[:6]=='plugin' :
+                    xbmc.executebuiltin('XBMC.RunPlugin('+self.videoPlayerUrl+')')                   
                 #Sinon on lance la séquence de lecture :
                 else :
-                    self.PlayVideo(self.debridurl)    
+                    self.PlayVideo(self.videoPlayerUrl)    
             else :
                 return False 
         except :
