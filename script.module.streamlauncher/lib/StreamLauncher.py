@@ -178,6 +178,7 @@ class StreamLauncher():
             return False    
     
     def getLinkUrl(self):
+        data   = False
         dialog = xbmcgui.Dialog()
         hosts  = ['Mixture','Purevid','Autres']
         host   = dialog.select('Sélectionner l\'hébergeur', hosts)
