@@ -1,0 +1,11 @@
+﻿1.0.1 (01-02-2013) par JUL1EN094
+- Adapation 0.0.1 pour Frodo
+
+0.0.1 (14-12-2012) par JUL1EN094 
++ Structure de base 
++ Création de l'addon et des fonctions standards
+
+
+
+
+

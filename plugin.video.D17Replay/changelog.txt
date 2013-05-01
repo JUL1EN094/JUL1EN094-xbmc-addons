@@ -1,0 +1,37 @@
+﻿1.0.6 (01-02-2013) par JUL1EN094
++ Adaptation 0.0.6 pour Frodo
+
+0.0.6 (28-01-2013) par JUL1EN094
++ Suite des modifications suite à la migration du site internet D17 vers les serveurs de cplus
+
+0.0.5 (14-01-2013) par JUL1EN094
++ Modification suite à la migration du site internet D17 vers les serveurs de cplus
++ Ajouts des fanart
++ Mode tvshows
+
++++++++++++++++
++++++ RC2 +++++
++++++++++++++++
+
+0.0.4 (09-11-2012) par JUL1EN094
++ Modification de l'icone et du fanart de l'addon
++ Ajout des fonction clean_thumbnail et checkfolder
++ Résolution problèmes d'affichage : certaines vignettes ne sont pas récupérées.. 
+
+0.0.3 (08-11-2012) par JUL1EN094
++ Résolution problèmes d'affichage : les noms des émissions ne sont plus tronquées.
+
++++++++++++++++
++++++ RC1 +++++
++++++++++++++++
+
+
+0.0.2 (07-11-2012) par JUL1EN094
++ Ajout de tous les niveaux de navigation
++ Ajout et test méthode de récupération de la vidéo
++ Modification récupération des vignettes
+
+0.0.1 (02-11-2012) par JUL1EN094
++ Structure de base 
+
+

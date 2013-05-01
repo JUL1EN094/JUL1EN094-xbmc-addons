@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <!-- Les strings de 30000 à 30999 sont réservées aux paramètres plug-in -->
+  <!--GENERAL STRINGS -->
+  <string id="30000">FranceTV Pluzz</string>
+
+
+  <!--SETTINGS STRINGS -->
+  <string id="30010">Avancé</string>
+  <string id="30011">Activer le débogage</string>
+  
+  
+   <!--DIALOG STRINGS -->
+  <string id="30051">Toutes les émissions</string>
+
+
+</strings>

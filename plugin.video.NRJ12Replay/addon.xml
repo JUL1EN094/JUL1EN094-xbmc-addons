@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.NRJ12Replay"
+       name="NRJ12 Replay"
+       version="2.0.3"
+       provider-name="JUL1EN094 , vilain_mamuth">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.pyamf" version="0.6.1"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>NRJ12 Replay</summary>
+    <summary lang="fr">NRJ12 Replay</summary>
+    <description>NRJ12 Catchup TV</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de NRJ12</description>
+  </extension>
+</addon>

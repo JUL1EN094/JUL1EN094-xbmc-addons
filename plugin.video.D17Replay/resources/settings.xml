@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <!-- GENERAL -->
+
+
+    <!-- ADVANCED -->
+  	<category label="30010">
+	    <setting label="30011" type="bool" id="debug" default="false" />
+	</category>
+    
+    <!-- DOWNLOAD -->
+
+    
+</settings>

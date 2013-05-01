@@ -1,0 +1,78 @@
+﻿2.0.3 (13-03-2013) par JUL1EN094
++ Modification de la fonction get_mediaId (thanks to 'framathon')
+
+2.0.2 (18-02-2013) par JUL1EN094
++ Remplacement de 2 caratères résiduels mal encodés : thanks to 'spixun'
++ Suppression des split des soup pour décodage complet.
+
+2.0.1 (01-02-2013) par JUL1EN094
++ Adaptation 1.0.1 pour Frodo
+
+1.0.1 (27-01-2013) par JUL1EN094
++ Modification suite aux changements sur le site web
+
+1.0.0 (07-12-2012) par JUL1EN094
++ Modification du mode d'analyse des pages web : utilisation de ParseDOM (performance OK)
++ Suppression de coquilles dans les strings
++ Résolution pb de navigation : certaines catégories ou émissions apparaissaient vides.
++ Ajout des fonctions Clean_thumbnail() et Checkfolder()
+
++++++++++++++
++++++RC2+++++
++++++++++++++
+
+0.0.9 (20-10-2012) par JUL1EN094
++ Intégration pyamf dans addon.xml
++ Résolution d'une erreur de navigation non bloquante
+
+0.0.8 (19-10-2012) par JUL1EN094
++ Validation de la solution de génération de l'url par videoinfo (Merci à vilain_mamuth)
++ Résolution bug dans la gestion de la navigation (ajout de setresolvedurl)
++ La résolution de l'url a été déplacée au lancement de la vidéo (à la place de au lancement de l'addon) 
+
+0.0.7.pyamf (18-10-2012) par JUL1EN094
++ Tentative Intégration de la méthode de génération de l'url depuis videoInfo (Merci à vilain_mamuth)
+
++++++++++++++
++++++RC1+++++
++++++++++++++
+
+0.0.7 (18-10-2012) par JUL1EN094
++ Modification de l'icone (merci à vilain_mamuth)
++ Nettoyage du code
+
+0.0.6 (18-10-2012) par JUL1EN094
++ Ajout du 4eme niveau de navigation
++ Nettoyage du code
++ Renommage PLAY_VIDEO par addDir
+
+0.0.5 (18-10-2012) par JUL1EN094
++ Suppression de BeautifulSoup pour augmentation performances
++ Ajout de la catégorie "Toutes les émissions"
++ Ajout de la fonction PLAY_VIDEO
+
+0.0.4 (15-10-2012) par JUL1EN094
++ Nettoyage du code
++ Implémentation 3eme niveau de navigation via BeautifulSoup
+
+0.0.4 (13-10-2012) par JUL1EN094
++ Nettoyage du code
++ Implémentation 2eme niveau de navigation via BeautifulSoup
+
+
+0.0.3 (13-10-2012) par JUL1EN094
++ Nettoyage du code 
++ Récuperation 1er niveau de navigation via BeautifulSoup
++ Ajout d'un Agent User pour la récuperation des pages html
++ Définition methode de gestion des pb d encodage (accents,...)
+
+
+0.0.2 (09-10-2012) par JUL1EN094
++ Suppression de la transparence dans Icon.png
++ Implémentation 1er niveau de navigation 
+
+
+0.0.1 (08-10-2012) par JUL1EN094
++ Structure de base 
+
+

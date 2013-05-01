@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon id="plugin.video.Cherie25Replay"
+       name="Chérie 25 Replay"
+       version="1.0.1"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+    <import addon="script.module.pyamf" version="0.6.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Cherie 25 Replay</summary>
+    <summary lang="fr">Chérie 25 Replay</summary>
+    <description>Cherie 25 Catchup TV</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de la chaîne Chérie 25</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.D17Replay"
+       name="D17 Replay"
+       version="1.0.6"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>D17 Replay</summary>
+    <summary lang="fr">D17 Replay</summary>
+    <description>D17 Catchup TV</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de la chaîne D17</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.D8"
+       name="D8"
+       version="1.0.1"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>D8v</summary>
+    <summary lang="fr">D8</summary>
+    <description>D8.tv</description>
+    <description lang="fr">Plugin donnant accès aux vidéos du site web D8.tv</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.FranceTVPluzz"
+       name="FranceTV Pluzz"
+       version="1.0.7"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>FranceTV Pluzz</summary>
+    <summary lang="fr">FranceTV Pluzz</summary>
+    <description>FranceTV Pluzz : Catchup TV and live from mobile catalog</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage et aux directs de l'application mobile FranceTV Pluzz</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.GulliReplay"
+       name="Gulli Replay"
+       version="2.0.0"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Gulli Replay</summary>
+    <summary lang="fr">Gulli Replay</summary>
+    <description>Catchup TV from Gulli.fr</description>
+    <description lang="fr">Gulli Replay : Retrouvez le meilleur des programmes de Gulli</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.HD1"
+       name="HD1"
+       version="1.0.4"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>HD1</summary>
+    <summary lang="fr">HD1</summary>
+    <description>HD1</description>
+    <description lang="fr">Plugin donnant accès aux vidéos du site HD1.tv</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.NRJ12Replay"
+       name="NRJ12 Replay"
+       version="2.0.3"
+       provider-name="JUL1EN094 , vilain_mamuth">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.pyamf" version="0.6.1"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>NRJ12 Replay</summary>
+    <summary lang="fr">NRJ12 Replay</summary>
+    <description>NRJ12 Catchup TV</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de NRJ12</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.NT1Replay"
+       name="NT1 Replay"
+       version="1.0.2"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>NT1 Replay</summary>
+    <summary lang="fr">NT1 Replay</summary>
+    <description>NT1 Catchup TV</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de la chaîne NT1</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.TMCReplay"
+       name="TMC Replay"
+       version="1.0.1"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>TMC Replay</summary>
+    <summary lang="fr">TMC Replay</summary>
+    <description>TMC Catchup TV</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de la chaîne TMC</description>
+  </extension>
+</addon>
+
+<addon id="script.module.streamlauncher"
+     name="streamlauncher"
+     version="0.0.1"
+     provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="script.module.simple.downloader" version="1.9.4" />
+    <import addon="script.module.urlresolver"  version="2.0.7"/>
+    <import addon="script.module.mutagen"  version="1.20.0"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Stream launcher</summary>
+    <description lang="en">Manage stream launching</description>
+  </extension>
+</addon>
+</addons>

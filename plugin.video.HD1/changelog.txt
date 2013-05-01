@@ -1,0 +1,21 @@
+﻿1.0.4 (01-02-2013) par JUL1EN094
++ Adaptation 0.0.4 pour Frodo
+
+0.0.4 (27-12-2012) par JUL1EN04 
++ Modification : suite developpement du site HD1.tv
+
+0.0.3 (14-12-2012) par JUL1EN094
++ Evolution : certaines émissions ne s'affichent pas depuis modification du site
+
+0.0.2 (13-12-2012) par JUL1EN094
++ Codage de la section programmes
++ Ajout des descriptions
+
+0.0.1 (12-12-2012) par JUL1EN094 
++ Structure de base 
++ Création de l'addon et des fonctions standards
+
+
+
+
+

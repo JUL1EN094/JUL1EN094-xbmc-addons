@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.Cherie25Replay"
+       name="Chérie 25 Replay"
+       version="1.0.1"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+    <import addon="script.module.pyamf" version="0.6.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Cherie 25 Replay</summary>
+    <summary lang="fr">Chérie 25 Replay</summary>
+    <description>Cherie 25 Catchup TV</description>
+    <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de la chaîne Chérie 25</description>
+  </extension>
+</addon>

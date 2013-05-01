@@ -1,0 +1,33 @@
+﻿2.0.0 (01-02-2013) par JUL1EN04
++ Adaptation 1.0.0 pour Frodo
+
+1.0.0 (08-12-2012) par JUL1EN04
++ Modification du lecteur de vérification utilisé par librtmp lors du lancement de la vidéo
+
+*************************** 
+*********** RC2 *********** 
+***************************
+
+0.0.5 (11-11-2012) par JUL1EN094
++ Ajout des fonctions clean_thumbnail et checkfolder
++ Modification de icon.png et fanart.jpg
++ Vérification et nettoyage du code
+
+0.0.4 (30-10-2012) par JUL1EN094
++ Ajout d'une catégorie pour tous les épisodes
++ Nettoyage du code
+
+*************************** 
+*********** RC1 *********** 
+*************************** 
+
+0.0.3 (30-10-2012) par JUL1EN094
++ Nettoyage du code
+
+0.0.2 (29-10-2012) par JUL1EN094
++ Ajout de parseDOM dans la section 'required'
+
+0.0.1 (28-10-2012) par JUL1EN094
++ Creation de l'addon
+
+

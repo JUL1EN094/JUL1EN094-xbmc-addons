@@ -1,0 +1,31 @@
+﻿1.0.7.(01-03-2013) par JUL1EN094
++ Récupération du catalog a chaque ouverture du plugin plutiot que une fois par jour
++ Ajout des dates de diffusion dans les titres
+
+1.0.6 (18-02-2013) par JUL1EN094
++ Ajout d'un niveau de navigation
++ Modification des informations des videos.
++ Modification des fonctions AddDir et AddLink
+
+1.0.5 (16-02-2013) par JUL1EN094
++ Ajout des directs
++ Ajout des icones
+
+1.0.4 (13-02-2013) par JUL1EN094
++ Ajout de la chaîne France 1ère
+
+1.0.3 (12-02-2013) par JUL1EN094
++ Ajout des informations des videos
+
+1.0.2 (08-02-2013) par JUL1EN094
++ Changement de numeros de version : 0.x.x pour Eden et 1.x.x pour Frodo
++ Ajout du niveau de navigation par catégories.
+
+0.0.1 (08-02-2013) par JUL1EN094 
++ Structure de base 
++ Création de l'addon et d'un premier niveau de navigation.
+
+
+
+
+
