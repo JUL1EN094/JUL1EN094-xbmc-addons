@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.2 par JUL1EN094
+# version 0.0.3 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -250,112 +250,314 @@ class StreamLauncher():
         
     def LaunchDownload(self) :
         try :
-            #si débridage
-            if self.needdebrid :
-                self.debridurl      = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
-                self.videoPlayerUrl = self.debridurl
-            # si non débridage
-            elif not self.needdebrid :
-                self.videoPlayerUrl = self.linkurl 
-            if self.videoPlayerUrl :
-                #Si lien fait appel à un autre plugin
-                if self.videoPlayerUrl[:6]=='plugin' :
-                    xbmc.executebuiltin('XBMC.RunPlugin('+self.videoPlayerUrl+')')                   
-                #Sinon : répertoire de destination
-                else :
-                    self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(self.videoPlayerUrl,self.dlfolder)
-            if self.videolocalfolder and self.videolocalname :
-                #création de l'instance du downloader (SimpleDownloader)
-                import SimpleDownloader as simpledownloader
-                self.downloader = simpledownloader.SimpleDownloader()
-                params = { "url": self.videoPlayerUrl, "download_path": self.videolocalfolder, "Title": self.infos['Title'] }
-            if self.downloader :
-                #download
-                try :
-                    self.downloader.download(self.videolocalname, params)
-                    xbmcplugin.endOfDirectory(int(sys.argv[1]),succeeded=True)
-                except :
-                    return False
-            else :
-              return False
+            launching       = True
+            step            = 0
+            progress_launch = xbmcgui.DialogProgress()
+            progress_launch.create('Séquence de lancement video')
+            #Boucle lancement d'une video
+            while launching :
+                if progress_launch.iscanceled() :
+                    progress_launch.close()
+                    launching = False
+                    time.sleep(0.1) 
+                #ETAPE 0  : démarrage
+                if step  == 0 :
+                    try :
+                        progress_launch.update( 0, 'Démarrage...')
+                        step = 1
+                        time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000)')
+                        launching = False
+                        time.sleep(0.1)        
+                #ETAPE 1 : définition de videoPlayerUrl --> url qui sera téléchargée
+                if step == 1 :
+                    try :
+                        #si débridage
+                        if self.needdebrid :
+                            progress_launch.update( 10, 'Débridage...')
+                            self.debridurl      = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
+                            progress_launch.update( 30, 'Définition de l\'url de la video lue...')
+                            if self.debridurl :
+                                self.videoPlayerUrl = self.debridurl
+                                step = 2
+                                time.sleep(0.1)
+                            else :
+                                progress_launch.close()
+                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000)')
+                                launching = False
+                                time.sleep(0.1)
+                        # si non débridage
+                        elif not self.needdebrid :
+                            progress_launch.update( 30, 'Définition de l\'url...')
+                            self.videoPlayerUrl = self.linkurl
+                            step = 2
+                            time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000)')
+                        launching = False
+                        time.sleep(0.1)            
+                #ETAPE 2 : Définition et création du répertoire local
+                if step == 2 :
+                    try :
+                        progress_launch.update( 35, 'Répertoire local...')
+                        #Si lien fait appel à un autre plugin :
+                        if self.videoPlayerUrl[:6]=='plugin' :  
+                            progress_launch.update( 90, 'Lancement d\'un autre plugin XBMC...')
+                            progress_launch.close()
+                            launching = False
+                            time.sleep(0.1)
+                            xbmc.executebuiltin('XBMC.RunPlugin('+self.videoPlayerUrl+')')                  
+                        #Sinon répertoire de destination :
+                        else :
+                            self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(self.videoPlayerUrl,self.dlfolder)
+                            progress_launch.update( 50, 'Répertoire local OK...')
+                            step = 3
+                            time.sleep(0.1)   
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000)')
+                        launching = False
+                        time.sleep(0.1)
+                #ETAPE 3 : création de l'instance du downloader
+                if step == 3 :
+                    try :
+                        progress_launch.update( 60, 'Downloader...')
+                        #création de l'instance du downloader (SimpleDownloader)
+                        import SimpleDownloader as simpledownloader
+                        self.downloader = simpledownloader.SimpleDownloader()
+                        params = { "url": self.videoPlayerUrl, "download_path": self.videolocalfolder, "Title": self.infos['Title'] }
+                        progress_launch.update( 80, 'Downloader OK...')
+                        step = 4
+                        time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création de l\'instance du downloader",5000)')
+                        launching = False
+                        time.sleep(0.1)            
+                #ETAPE 4 : Download
+                if step == 4 :            
+                    try :
+                        progress_launch.update( 90, 'Lancement du téléchargement') 
+                        self.downloader.download(self.videolocalname, params) 
+                        xbmcplugin.endOfDirectory(int(sys.argv[1]),succeeded=True)
+                        progress_launch.close()
+                        launching = False
+                        time.sleep(0.1) 
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de lancement du téléchargement",5000)')
+                        launching = False
+                        time.sleep(0.1)
         except :
-            print_exc()
-            return False 
+            print_exc() 
                 
     def LaunchLocal(self):
         try :
-            tempurl = False
-            #si débridage
-            if self.needdebrid :
-                self.debridurl = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
-                tempUrl        = self.debridurl
-            # si non débridage
-            elif not self.needdebrid :
-                tempurl        = self.linkurl 
-            if tempurl :
-                #Si lien fait appel à un autre plugin
-                if tempurl[:6]=='plugin' :
-                    xbmc.executebuiltin('XBMC.RunPlugin('+tempurl+')')                   
-                #Sinon : répertoire de destination
-                else :
-                    self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(tempurl,self.dlfolder)
-            if self.videolocalfolder and self.videolocalname and self.extension:
-                #création de l'instance du downloader (dpstreamdownloader)
-                import StreamLauncherDownloader as sldownloader
-                if self.extension == 'mp4' or self.extension == 'MP4':
-                    self.downloader = sldownloader.MP4download(self.tempurl,self.videolocalfolder)
-                elif self.extension == 'flv' or self.extension == 'FLV':
-                    self.downloader = sldownloader.FLVdownload(self.tempurl,self.videolocalfolder)
-                else :
-                    self.downloader = sldownloader.DownloadFile(self.tempurl,self.videolocalfolder)
-            if self.downloader :
-                #download
-                try :
-                    self.downloader.start()
-                    #connexion au fichier distant
-                    download_info = {}
-                    download_info = self.downloader.getInfos()
-                    while download_info['status'] != DOWNLOADING :
-                        download_info = self.downloader.getInfos()
+            tempurl         = False
+            launching       = True
+            step            = 0
+            progress_launch = xbmcgui.DialogProgress()
+            progress_launch.create('Séquence de lancement video')
+            #Boucle lancement d'une video
+            while launching :
+                if progress_launch.iscanceled() :
+                    progress_launch.close()
+                    launching = False
+                    time.sleep(0.1) 
+                #ETAPE 0  : démarrage
+                if step  == 0 :
+                    try :
+                        progress_launch.update( 0, 'Démarrage...')
+                        step = 1
                         time.sleep(0.1)
-                    #Precache
-                    download_info = self.downloader.getInfos()
-                    PRECACHESIZE  = (int(self.precachesize) * int(download_info['size']))/100
-                    while download_info['downloaded'] < PRECACHESIZE :
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000)')
+                        launching = False
+                        time.sleep(0.1)        
+                #ETAPE 1 : définition de tempurl --> url qui sera téléchargée
+                if step == 1 :
+                    try :
+                        #si débridage
+                        if self.needdebrid :
+                            progress_launch.update( 10, 'Débridage...')
+                            self.debridurl = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
+                            progress_launch.update( 30, 'Url de la video téléchargée...')
+                            if self.debridurl :
+                                tempurl = self.debridurl
+                                step = 2
+                                time.sleep(0.1)
+                            else :
+                                progress_launch.close()
+                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000)')
+                                launching = False
+                                time.sleep(0.1)
+                        # si non débridage
+                        elif not self.needdebrid :
+                            progress_launch.update( 30, 'Url de la video téléchargée...')
+                            tempurl = self.linkurl
+                            step    = 2
+                            time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000)')
+                        launching = False
+                        time.sleep(0.1)            
+                #ETAPE 2 : Définition et création du répertoire local
+                if step == 2 :
+                    try :
+                        progress_launch.update( 35, 'Répertoire local...')
+                        #Si lien fait appel à un autre plugin :
+                        if tempurl[:6]=='plugin' :  
+                            progress_launch.update( 90, 'Lancement d\'un autre plugin XBMC...')
+                            progress_launch.close()
+                            launching = False
+                            time.sleep(0.1)
+                            xbmc.executebuiltin('XBMC.RunPlugin('+tempurl+')')                  
+                        #Sinon répertoire de destination :
+                        else :
+                            self.videolocalfolder, self.videolocalname, self.extension = self.getVideoLocalTree(tempurl,self.dlfolder)
+                            progress_launch.update( 50, 'Répertoire local OK...')
+                            step = 3
+                            time.sleep(0.1)   
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000)')
+                        launching = False
+                        time.sleep(0.1)
+                #ETAPE 3 : création de l'instance du downloader
+                if step == 3 :
+                    try :
+                        progress_launch.update( 60, 'Downloader...')
+                        #création de l'instance du downloader (StreamLauncherDownloader)
+                        import StreamLauncherDownloader as sldownloader
+                        if self.extension == 'mp4' or self.extension == 'MP4':
+                            self.downloader = sldownloader.MP4download(tempurl,self.videolocalfolder)
+                        elif self.extension == 'flv' or self.extension == 'FLV':
+                            self.downloader = sldownloader.FLVdownload(tempurl,self.videolocalfolder)
+                        else :
+                            self.downloader = sldownloader.DownloadFile(tempurl,self.videolocalfolder)                        
+                        progress_launch.update( 80, 'Downloader OK...')
+                        step = 4
+                        time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création de l\'instance du downloader",5000)')
+                        launching = False
+                        time.sleep(0.1)            
+                #ETAPE 4 : Download
+                if step == 4 :            
+                    try :
+                        progress_launch.update( 90, 'Lancement du téléchargement')
+                        self.downloader.start()
+                        step = 5
+                        time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du lancement du téléchargement",5000)')
+                        launching = False
+                        time.sleep(0.1) 
+                #Etape 5 : Lancement de la video
+                if step == 5:
+                    progress_launch.close()
+                    launching   = False
+                    isPrecached = self.preCache()
+                    if isPrecached :
+                        download_info = {}
                         download_info = self.downloader.getInfos()
-                        time.sleep(0.5)
-                    #Lecture
-                    self.videolocalname = os.path.split(download_info['localfilename'])[-1]
-                    self.PlayVideo(download_info['localfilename'])
-                except :
-                    return False               
-            else :
-                return False         
+                        self.PlayVideo(download_info['localfilename'])
         except :
-            print_exc()
-            return False        
+            print_exc()     
+        
     
     def LaunchStream(self) :
         try :
-            #si débridage
-            if self.needdebrid :
-                self.debridurl      = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
-                self.videoPlayerUrl = self.debridurl
-            # si non débridage
-            elif not self.needdebrid :
-                self.videoPlayerUrl = self.linkurl
-            if self.videoPlayerUrl :
-                #Si lien fait appel à un autre plugin :
-                if self.videoPlayerUrl[:6]=='plugin' :
-                    xbmc.executebuiltin('XBMC.RunPlugin('+self.videoPlayerUrl+')')                   
-                #Sinon on lance la séquence de lecture :
-                else :
-                    self.PlayVideo(self.videoPlayerUrl)    
-            else :
-                return False 
+            launching       = True
+            step            = 0
+            progress_launch = xbmcgui.DialogProgress()
+            progress_launch.create('Séquence de lancement video')
+            #Boucle lancement d'une video
+            while launching :
+                if progress_launch.iscanceled() :
+                    progress_launch.close()
+                    launching = False
+                    time.sleep(0.1) 
+                #ETAPE 0  : démarrage
+                if step  == 0 :
+                    try :
+                        progress_launch.update( 0, 'Démarrage...')
+                        step = 1
+                        time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000)')
+                        launching = False
+                        time.sleep(0.1)
+                #ETAPE 1 : définition de videoPlayerUrl
+                if step == 1 :
+                    try :
+                        #si débridage
+                        if self.needdebrid :
+                            progress_launch.update( 25, 'Débridage de la vidéo...')
+                            self.debridurl      = urlresolver.HostedMediaFile(url=self.linkurl).resolve()
+                            progress_launch.update( 50, 'Définition de l\'url de la video lue...')
+                            if self.debridurl :
+                                self.videoPlayerUrl = self.debridurl
+                                step = 2
+                                time.sleep(0.1)
+                            else :
+                                progress_launch.close()
+                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000)')
+                                launching = False
+                                time.sleep(0.1)
+                        # si non débridage
+                        elif not self.needdebrid :
+                            progress_launch.update( 50, 'Définition de l\'url de la video...')
+                            self.videoPlayerUrl = self.linkurl
+                            step = 2
+                            time.sleep(0.1)
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000)')
+                        launching = False
+                        time.sleep(0.1)
+                #ETAPE 2 : Envoie de videoPlayerUrl à XBMC
+                if step == 2 :
+                    try :
+                        progress_launch.update( 80, 'Envoie de l\'url définie à XBMC...')
+                        progress_launch.close()
+                        launching = False
+                        time.sleep(0.1)                        
+                        #Si lien fait appel à un autre plugin :
+                        if self.videoPlayerUrl[:6]=='plugin' :
+                            xbmc.executebuiltin('XBMC.RunPlugin('+self.videoPlayerUrl+')')                   
+                        #Sinon on lance la séquence de lecture :
+                        else :
+                            self.PlayVideo(self.videoPlayerUrl)   
+                    except :
+                        print_exc()
+                        progress_launch.close()
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000)')
+                        launching = False
+                        time.sleep(0.1)
         except :
             print_exc()
-            return False 
+            return False
     
     def PlayVideo(self, url, resume=False):
         print "PLAYVIDEO"
@@ -477,6 +679,103 @@ class StreamLauncher():
                     except :
                         pass
            
+    def preCache(self):
+        #Boucle pré-cache
+        step     = 0
+        caching  = True
+        progress = xbmcgui.DialogProgress()
+        progress.create('Mise en cache')
+        while caching :
+            #ANNULATION : 
+            if progress.iscanceled() :
+                try :
+                    self.downloader.stop()
+                except :
+                    pass
+                if os.path.exists(self.videolocalfolder) :
+                    notremove = True
+                    while notremove:
+                        try :
+                            shutil.rmtree(self.videolocalfolder)
+                            notremove = False
+                        except :
+                            pass 
+                caching = False
+                time.sleep(0.1)
+                return False        
+            #ETAPE 3 : Connexion au fichier distant 
+            elif step == 0 :  
+                progress.update( 10, 'Connexion au fichier distant en cours...')          
+                try : 
+                    download_info = {}
+                    download_info = self.downloader.getInfos()
+                    if download_info['status'] != DOWNLOADING :
+                        time.sleep(0.5)
+                    else :           
+                        step = 1
+                        perc = 10
+                        time.sleep(0.5)
+                except :
+                    print_exc()
+                    xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la connexion au fichier distant",5000)')
+                    progress.close()
+                    try :
+                        self.downloader.stop()
+                    except :
+                        pass
+                    if os.path.exists(self.videolocalfolder) :
+                        notremove = True
+                        while notremove:
+                            try :
+                                shutil.rmtree(self.videolocalfolder)
+                                notremove = False
+                            except :
+                                pass 
+                    caching = False
+                    time.sleep(0.5)
+                    return False
+            #ETAPE 1 : pre-cache
+            elif step == 1 :
+                progress.update( perc, 'Pre-cache...')
+                try :
+                    download_info = {}
+                    download_info = self.downloader.getInfos()
+                    PRECACHESIZE  = (int(self.precachesize) * int(download_info['size']))/100
+                    if download_info['downloaded'] < PRECACHESIZE :
+                        perc = 10 + int((float(download_info['downloaded']) / PRECACHESIZE) * 90)
+                        progress.update( perc, 'Pre-cache...')
+                        time.sleep(0.5)
+                    else :
+                        progress.close()
+                        time.sleep(0.5)                         
+                        step = 2
+                except:
+                    print_exc()            
+                    xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la connexion au fichier distant",5000)')
+                    progress.close()
+                    try :
+                        self.downloader.stop()
+                    except :
+                        pass
+                    if os.path.exists(self.videolocalfolder) :
+                        notremove = True
+                        while notremove:
+                            try :
+                                shutil.rmtree(self.videolocalfolder)
+                                notremove = False
+                            except :
+                                pass 
+                    caching = False
+                    time.sleep(0.5)
+                    return False                
+            #ETAPE 1 : pre-cache
+            elif step == 2 :                
+                #Lecture
+                self.videolocalname = os.path.split(download_info['localfilename'])[-1]
+                caching = False
+                time.sleep(0.1)
+        return True        
+    
     def printClassInfos(self):
         try :
             ls = {}

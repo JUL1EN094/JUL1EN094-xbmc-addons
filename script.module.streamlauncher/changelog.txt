@@ -1,4 +1,7 @@
-﻿Version 0.0.2 (01-05-2013) par JUL1EN094 :
+﻿Version 0.0.3 (01-05-2013) par JUL1EN094 :
+- Ajout des bar de progressions
+
+Version 0.0.2 (01-05-2013) par JUL1EN094 :
 - Ajout d'un argument 'needdebrid'
 - Implémentation de la variable 'videoPlayerUrl'
 
