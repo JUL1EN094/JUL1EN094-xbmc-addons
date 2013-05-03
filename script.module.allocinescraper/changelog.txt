@@ -1,0 +1,6 @@
+﻿Versino 0.0.2 (02-05-2013) par JUL1EN04 :
+- Ajout du décodage (utf-8)
+- Ajout d'un param 'mode' en vue d'utiliser d'autre mode que la recherche
+
+Version 0.0.1 (01-05-2013) par JUL1EN094 :
+- Creation de la lib AlloCineScraper
