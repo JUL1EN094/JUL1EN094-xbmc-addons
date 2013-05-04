@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.3 par JUL1EN094
+# v0.0.4 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -21,10 +21,12 @@
 #---------------------------------------------------------------------
 
 #IMPORTS
-#xbmc
+#xbmc 
 import xbmc
+#regex
+import re
 #time
-import time
+import time, datetime
 #web
 import urllib, urllib2
 #crypto
@@ -42,21 +44,24 @@ class AlloCineScraper():
         self.USERAGENT       = "Dalvik/1.6.0 (Linux; U; Android 4.0.3; SGH-T989 Build/IML74K)"
         self.url             = False
         self.json            = False
-        self.isSearch        = False
-        self.isGet           = False
         
     def get(self,code=False,page=1,count=25):
-        self.isGet = True
         query    = {}
         if code :
+            if page :
+                query["page"]  = str(page)
+            else :
+                query['page']  = '1'
+            if count :
+                query['count'] = str(count)
+            else :
+                query["count"] = '25'
             query['code']      = str(code)
             query['profile']   = 'large'
             query['filter']    = 'movie'
-            query["page"]  = str(page)
-            query['count'] = str(count)
-            query["partner"]   = self.PARTNER_ID
-            query["format"]    = 'json'
-            query["striptags"] = 'synopsis,synopsisshort'
+            query['partner']   = self.PARTNER_ID
+            query['format']    = 'json'
+            query['striptags'] = 'synopsis,synopsisshort'
             self.url   = self.getURL('movie',query)
             self.json  = self.getJson(self.url)
             return self.json            
@@ -64,16 +69,18 @@ class AlloCineScraper():
             return False
     
     def search(self,searchtext=False,page=False,count=False):
-        self.isSearch = True
         query       = {}
         query['q']  = self.getQuery(searchtext)
         if query['q'] :
-            query['filter']  = 'movie'
             if page :
                 query["page"]  = str(page)
+            else :
+                query['page']  = '1'
             if count :
                 query['count'] = str(count)
-            query["count"]   = '25'
+            else :
+                query["count"] = '25'
+            query['filter']  = 'movie'
             query["partner"] = self.PARTNER_ID
             query["format"]  = 'json'
             self.url   = self.getURL('search',query)
@@ -81,15 +88,39 @@ class AlloCineScraper():
             return self.json
         else :
             return False
-        
-    def getWebContent(self,url) :
-        req  = urllib2.Request(url)
-        req.add_header('User-Agent',self.USERAGENT)           
-        soup = urllib2.urlopen(req).read()
-        return soup
+            
+    def searchFirstAndFull(self,searchtext=False):
+        #search first result
+        self.search(searchtext=searchtext,page=1,count=1)
+        #if result
+        if self.json :
+            movie = self.getMoviesList()[0]
+            #get movie code
+            code  = movie['code']
+            #get full infos
+            self.get(code=code)
+            return self.json                
+        else :
+            return False
         
     def getJson(self,url):
         return json.loads(self.getWebContent(url).decode('utf-8')) 
+    
+    def getMoviesList(self):
+        if self.json :
+            try :
+                feed   = self.json['feed']
+                movies = feed['movie']
+            except :
+                movies = self.json['movie'] 
+            # un seul film : on met le dict dans une liste
+            if type(movies) == dict :
+                ls = []
+                ls.append(movies)
+                movies = ls
+            return movies            
+        else :
+            return False
     
     def getQuery(self,query=False):
         if not query : 
@@ -102,6 +133,33 @@ class AlloCineScraper():
         else :
             return False
     
+    def getTrailersUrl(self, code):
+        media_url = "http://www.allocine.fr/skin/video/AcVisionData_xml.asp?media=%s" % str(code)
+        media_data = self.getWebContent(media_url)
+        print str(media_data) 
+        media = {}
+        match = re.search( '<AcVisionVideo(.*?)/>', media_data , re.DOTALL )
+        if match: 
+            media_data = match.group(1)
+        else :
+            print "allocinescrapper : problème de récupération de la bande annonce"
+            return False
+        match = re.search( 'title="(.*?)"', media_data )
+        #Titre : 
+        if match: 
+            media["Title"] = match.group(1)
+        else: 
+            media["Title"] = ""
+        print "allocinescrapper :récupération info média: %s" % media["Title"]
+        #qualité
+        for video_quality in [ "ld" , "md" , "hd"]:
+            match = re.search( '%s_path="(.*?)"' % video_quality , media_data )
+            if match: 
+                media[video_quality] = match.group(1)
+            else: 
+                media[video_quality] = ""
+        return media
+    
     def getURL(self, route, tokens):
         sed               = time.strftime('%Y%m%d', time.localtime());
         sorted_token      = sorted(tokens.iteritems(), key=operator.itemgetter(1))
@@ -113,48 +171,126 @@ class AlloCineScraper():
         sig = urllib.quote(base64.b64encode(hashlib.sha1(self.PARTNER_KEY+tokensUrl+'&sed='+sed).digest()))
         return self.URL_API + route + '?' + tokensUrl + '&sed=' + sed + '&sig='+ sig
         
-    def printResult(self):
-        if self.isSearch or self.isGet :
-            try :
-                feed   = self.json['feed']
-                movies = feed['movie']
-            except :
-                movies = self.json['movie']
-            try :
-                for movie in movies :
-                    print '--------------'
-                    print '--------------'
-                    for info in movie.items():
-                        try :
-                            info0 = info[0].encode('utf-8')
-                        except :
-                            info0 = str(info[0])
-                        try :
-                            info1 = info[1].encode('utf-8')
-                        except :
-                            info1 = str(info[1])
-                        print info0+' :'
-                        print info1
-                        print '-----'
-                    print '--------------'
-                    print '--------------'
-            except:
-                print '--------------'
-                print '--------------'
-                for info in movies.items():
-                    try :
-                        info0 = info[0].encode('utf-8')
-                    except :
-                        info0 = str(info[0])
-                    try :
-                        info1 = info[1].encode('utf-8')
-                    except :
-                        info1 = str(info[1])
-                    print info0+' :'
-                    print info1
-                    print '-----'
-                print '--------------'
-                print '--------------'
-                       
+    def getWebContent(self,url) :
+        req  = urllib2.Request(url)
+        req.add_header('User-Agent',self.USERAGENT)           
+        soup = urllib2.urlopen(req).read()
+        return soup
+        
+    def getXbmcDict(self,movieDict) :
+        xbmcDict = {}
+        # Année
+        if 'productionYear' in movieDict : xbmcDict['Year']          = int(movieDict['productionYear'])
+        # Synopsis court
+        if 'synopsisShort'  in movieDict : xbmcDict['PlotOutline']   = movieDict['synopsisShort'] 
+        # Titre
+        if 'title'          in movieDict : xbmcDict['Title']         = movieDict['title'] 
+        # Titre original
+        if 'originalTitle'  in movieDict : xbmcDict['OriginalTitle'] = movieDict['originalTitle'] 
+        # Synopsis
+        if 'synopsis'       in movieDict : xbmcDict['Plot']          = movieDict['synopsis'] 
+        # Durée
+        if 'runtime'        in movieDict : xbmcDict['Duration']      = movieDict['runtime']/60 
+        # Vote et note
+        if 'statistics' in movieDict : 
+            statdict = movieDict['statistics']
+            if 'userRating'      in statdict : xbmcDict['Rating'] = float(statdict['userRating']*2) 
+            if 'userRatingCount' in statdict : xbmcDict['Vote']   = int(statdict['userRatingCount'])
+        # Genre
+        if 'genre' in movieDict : 
+            genrelist = movieDict['genre']
+            genres    = []
+            for genre in genrelist :
+                genres.append(genre['$'])
+            xbmcDict['Genre'] = genres[0]
+            if len(genres) > 1:
+                n = 1
+                while n < len(genres):
+                    xbmcDict['Genre'] = xbmcDict['Genre']+', '+genres[n]
+                    n+=1
+        # Nationalité
+        if 'nationality' in movieDict : 
+            nationalitylist = movieDict['nationality']
+            nationalities   = []
+            for nationality in nationalitylist :
+                nationalities.append(nationality['$'])
+            xbmcDict['Country'] = nationalities[0]
+            if len(nationalities) > 1:
+                n = 1
+                while n < len(nationalities):
+                    xbmcDict['Country'] = xbmcDict['Country']+', '+nationalities[n]
+                    n+=1
+        # Affiche
+        if 'poster' in movieDict : 
+            posterdict = movieDict['poster']
+            if 'href' in posterdict : xbmcDict['Thumb'] = posterdict['href']
+        # Date de sortie
+        if 'release' in movieDict : 
+            releasedict = movieDict['release']
+            if 'releaseDate' in releasedict : 
+                ymd = re.search('(.*)-(.*)-(.*)',releasedict['releaseDate'])
+                xbmcDict['Date'] = ymd.group(2)+'-'+ymd.group(1)+'-'+ymd.group(0)
+        # Acteurs et réalisateurs
+        if 'castingShort' in movieDict : 
+            castingShortdict = movieDict['castingShort']
+            #realisateurs
+            if 'directors' in castingShortdict :  xbmcDict['Director'] = castingShortdict['directors']
+            #acteurs
+            if 'actors'    in castingShortdict :  xbmcDict['Cast'] = castingShortdict['actors']
+        # Bande Annonce
+        if 'trailer' in movieDict :
+            trailerDict = movieDict['trailer']
+            if 'code' in trailerDict : 
+                trailerCode = trailerDict['code']
+                trailersurl = []
+                trailersurl = self.getTrailersUrl(trailerCode)
+                if (trailersurl['hd']) and (trailersurl['hd'] != ''):
+                    xbmcDict['Trailer'] = trailersurl['hd']
+                elif (trailersurl['hmdd']) and (trailersurl['md'] != ''):
+                    xbmcDict['Trailer'] = trailersurl['md']
+                elif (trailersurl['ld']) and (trailersurl['ld'] != ''):
+                    xbmcDict['Trailer'] = trailersurl['ld']
+        return xbmcDict         
+                   
+    def grab(self,searchtext=False, codeid=False) :
+        if searchtext :
+            self.searchFirstAndFull(searchtext)
+            moviedict = self.getMoviesList()[0]
+            return self.getXbmcDict(moviedict)
+        elif codeid :
+            self.get(codeid)
+            moviedict = self.getMoviesList()[0]
+            return self.getXbmcDict(moviedict)
         else :
             return False
+    
+    def printMovieInfos(self,movie=False):
+        if type(movie) == dict :
+            for info in movie.items():
+                print '-----'
+                try :
+                    info0 = info[0].encode('utf-8')
+                except :
+                    info0 = str(info[0])
+                try :
+                    info1 = info[1].encode('utf-8')
+                except :
+                    info1 = str(info[1])
+                print info0+' :'
+                print info1
+                print '-----'       
+        else :
+            return False
+    
+    def printResult(self):
+        movies = self.getMoviesList()
+        if movies :
+            for movie in movies :
+                print '--------------'
+                print '--------------'
+                self.printMovieInfos(movie)
+                print '--------------'
+                print '--------------'                       
+        else :
+            return False
+            

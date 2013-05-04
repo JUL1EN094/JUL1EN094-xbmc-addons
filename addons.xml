@@ -206,7 +206,7 @@
 
 <addon id="script.module.allocinescraper"
      name="AlloCineScraper"
-     version="0.0.3"
+     version="0.0.4"
      provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.0" />
