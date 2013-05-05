@@ -1,4 +1,11 @@
-﻿Version 0.0.3 (01-05-2013) par JUL1EN094 :
+﻿Version 0.0.5 (05-05-2013) :
+- StreamLauncherDownloader : v0.0.2
+- Résolution de bugs
+
+Version 0.0.4 (01-0-2013) par JUL1EN094 : 
+- Création du répertoire de destination lors de l'utilisation de SimpleDownloader par précaution
+
+Version 0.0.3 (01-05-2013) par JUL1EN094 :
 - Ajout des bar de progressions
 
 Version 0.0.2 (01-05-2013) par JUL1EN094 :

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.1 par JUL1EN094
+# version 0.0.2 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncherDownloader XBMC Module

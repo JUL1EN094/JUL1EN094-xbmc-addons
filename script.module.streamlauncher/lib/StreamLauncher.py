@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.3 par JUL1EN094
+# version 0.0.5 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -239,11 +239,13 @@ class StreamLauncher():
     def getVideoLocalTree(self,url,dlfolder):
         try :
             extension          = url.split('.')[-1]
-            video_name         = self.RemoveDisallowedFilenameChars(unicode(self.infos['Title']))[:256]
+            try :
+                video_name = self.RemoveDisallowedFilenameChars(unicode(self.infos['Title']))[:256].rstrip('.')
+            except :
+                video_name = self.RemoveDisallowedFilenameChars(unicode(url.split('/')[-1]))[:256].rstrip('.')
             localfiledirectory = os.path.join(dlfolder, video_name)
-            if self.mode == 'local' :
-                if not os.path.exists(localfiledirectory):
-                    os.makedirs(localfiledirectory, mode=0777)
+            if not os.path.exists(localfiledirectory):
+                os.makedirs(localfiledirectory, mode=0777)
             return localfiledirectory, video_name+'.'+extension, extension 
         except :
             print_exc()
@@ -792,24 +794,5 @@ class StreamLauncher():
         
     
     def RemoveDisallowedFilenameChars(self, filename):
-        cleanedFilename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore')
+        cleanedFilename = unicodedata.normalize('NFKD', filename).encode('utf-8', 'ignore')
         return ''.join(c for c in cleanedFilename if c in validFilenameChars)
-    
-# def main():
-#     #x = StreamLauncher(sys.argv[1])
-#     x = StreamLauncher('http://www.mixturecloud.com/video=1FFIpm8C', {'Title':'Test Video'})
-#     print str(x.linkurl)
-#     print str(x.infos)
-#     print str(x.mode)
-#     print str(x.dlfolder)
-#     print str(x.videolocalfolder)        
-#     print str(x.precachesize)
-#     print str(x.debridurl)
-#     print str(x.videolocalname)
-#     print str(x.videototaltime)
-#     print str(x.videotimewatched)
-#     print str(x.downloader)
-#     print str(x.extension)
-# 
-# if __name__ == "__main__":
-#     main()
