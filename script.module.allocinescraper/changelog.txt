@@ -1,9 +1,12 @@
-﻿Version 0.0.4 (0-0-2013) par JUL1EN094 : 
+﻿Version 0.0.5 (05-05-2013) par JUL1EN094 :
+- Résolution de bugs
+
+Version 0.0.4 (04-0-2013) par JUL1EN094 :
 - Creation de divers méthodes pour facilité l'utilisation (cf. readmefile)
 - Création d'une méthode pour récupérer l'url du trailer de meilleure qualité disponible
 - ... -> cf ReadMe file
 
-Version 0.0.3 (02-05-2013) par JUL1EN094 :
+Version 0.0.3 (04-05-2013) par JUL1EN094 :
 - Creation d'une methode get
 - Creation d'une methode search
 - Creation d'une methode printResult

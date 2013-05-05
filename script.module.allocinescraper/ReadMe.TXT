@@ -51,7 +51,7 @@ x.searchFirstAndFull("Avatar") -->return json file with full infos of first resu
 ##### getMoviesList(self) #####
 -- can be use after a search, get call
 x.searchFirstAndFull("Avatar")
-ls = 
+ls = []
 ls = x.getMoviesList() --> return a list of movieDict (json format) or return False
 
 
@@ -86,7 +86,7 @@ if ls :
 ##### grab(self,searchtext=False, codeid=False): #####    
 -- must be use either with 'searchtext' param or with 'codeid' param
 dic = {}
-dic = x.grab("Avatar") --> return dict of movie's infos formatted for xbmc, with item name same as xbmc infolabels and with Trailer.
+dic = x.grab(searchtext="Avatar") --> return dict of movie's infos formatted for xbmc, with item name same as xbmc infolabels and with Trailer.
 
 
 

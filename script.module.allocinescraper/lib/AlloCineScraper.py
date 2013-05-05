@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.4 par JUL1EN094
+# v0.0.5 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -94,12 +94,16 @@ class AlloCineScraper():
         self.search(searchtext=searchtext,page=1,count=1)
         #if result
         if self.json :
-            movie = self.getMoviesList()[0]
-            #get movie code
-            code  = movie['code']
-            #get full infos
-            self.get(code=code)
-            return self.json                
+            movie_s = self.getMoviesList()
+            if movie_s :
+                movie = movie_s[0]
+                #get movie code
+                code  = movie['code']
+                #get full infos
+                self.get(code=code)
+                return self.json  
+            else :
+                return False              
         else :
             return False
         
@@ -112,7 +116,10 @@ class AlloCineScraper():
                 feed   = self.json['feed']
                 movies = feed['movie']
             except :
-                movies = self.json['movie'] 
+                try :
+                    movies = self.json['movie'] 
+                except :
+                    return False
             # un seul film : on met le dict dans une liste
             if type(movies) == dict :
                 ls = []
@@ -136,7 +143,6 @@ class AlloCineScraper():
     def getTrailersUrl(self, code):
         media_url = "http://www.allocine.fr/skin/video/AcVisionData_xml.asp?media=%s" % str(code)
         media_data = self.getWebContent(media_url)
-        print str(media_data) 
         media = {}
         match = re.search( '<AcVisionVideo(.*?)/>', media_data , re.DOTALL )
         if match: 
@@ -228,8 +234,9 @@ class AlloCineScraper():
         if 'release' in movieDict : 
             releasedict = movieDict['release']
             if 'releaseDate' in releasedict : 
-                ymd = re.search('(.*)-(.*)-(.*)',releasedict['releaseDate'])
-                xbmcDict['Date'] = ymd.group(2)+'-'+ymd.group(1)+'-'+ymd.group(0)
+                ymd = re.search('([1900-3000])-([0-12])-([0-31])',releasedict['releaseDate'])
+                if ymd :
+                    xbmcDict['Date'] = ymd.group(2)+'-'+ymd.group(1)+'-'+ymd.group(0)
         # Acteurs et réalisateurs
         if 'castingShort' in movieDict : 
             castingShortdict = movieDict['castingShort']
@@ -246,7 +253,7 @@ class AlloCineScraper():
                 trailersurl = self.getTrailersUrl(trailerCode)
                 if (trailersurl['hd']) and (trailersurl['hd'] != ''):
                     xbmcDict['Trailer'] = trailersurl['hd']
-                elif (trailersurl['hmdd']) and (trailersurl['md'] != ''):
+                elif (trailersurl['md']) and (trailersurl['md'] != ''):
                     xbmcDict['Trailer'] = trailersurl['md']
                 elif (trailersurl['ld']) and (trailersurl['ld'] != ''):
                     xbmcDict['Trailer'] = trailersurl['ld']
@@ -255,14 +262,22 @@ class AlloCineScraper():
     def grab(self,searchtext=False, codeid=False) :
         if searchtext :
             self.searchFirstAndFull(searchtext)
-            moviedict = self.getMoviesList()[0]
-            return self.getXbmcDict(moviedict)
+            moviedict_s = self.getMoviesList()
+            if moviedict_s :
+                moviedict = moviedict_s[0]
+                return self.getXbmcDict(moviedict)
+            else :
+                return {}
         elif codeid :
             self.get(codeid)
-            moviedict = self.getMoviesList()[0]
-            return self.getXbmcDict(moviedict)
+            moviedict_s = self.getMoviesList()
+            if moviedict_s :
+                moviedict = moviedict_s[0]
+                return self.getXbmcDict(moviedict)
+            else :
+                return {}
         else :
-            return False
+            return {}
     
     def printMovieInfos(self,movie=False):
         if type(movie) == dict :
