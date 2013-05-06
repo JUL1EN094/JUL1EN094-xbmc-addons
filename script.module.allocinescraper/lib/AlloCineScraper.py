@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.5 par JUL1EN094
+# v0.0.6 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -44,9 +44,11 @@ class AlloCineScraper():
         self.USERAGENT       = "Dalvik/1.6.0 (Linux; U; Android 4.0.3; SGH-T989 Build/IML74K)"
         self.url             = False
         self.json            = False
+        self.filters         = False
         
-    def get(self,code=False,page=1,count=25):
-        query    = {}
+    def get(self,code=False,page=1,count=25,filters='movie'):
+        self.filters = filters
+        query        = {}
         if code :
             if page :
                 query["page"]  = str(page)
@@ -58,19 +60,20 @@ class AlloCineScraper():
                 query["count"] = '25'
             query['code']      = str(code)
             query['profile']   = 'large'
-            query['filter']    = 'movie'
+            query['filter']    = self.filters
             query['partner']   = self.PARTNER_ID
             query['format']    = 'json'
             query['striptags'] = 'synopsis,synopsisshort'
-            self.url   = self.getURL('movie',query)
+            self.url   = self.getURL(self.filters,query)
             self.json  = self.getJson(self.url)
             return self.json            
         else :
             return False
     
-    def search(self,searchtext=False,page=False,count=False):
-        query       = {}
-        query['q']  = self.getQuery(searchtext)
+    def search(self,searchtext=False,page=False,count=False,filters='movie'):
+        self.filters = filters
+        query        = {}
+        query['q']   = self.getQuery(searchtext)
         if query['q'] :
             if page :
                 query["page"]  = str(page)
@@ -80,7 +83,7 @@ class AlloCineScraper():
                 query['count'] = str(count)
             else :
                 query["count"] = '25'
-            query['filter']  = 'movie'
+            query['filter']  = self.filters
             query["partner"] = self.PARTNER_ID
             query["format"]  = 'json'
             self.url   = self.getURL('search',query)
@@ -89,9 +92,9 @@ class AlloCineScraper():
         else :
             return False
             
-    def searchFirstAndFull(self,searchtext=False):
+    def searchFirstAndFull(self,searchtext=False, filters='movie'):
         #search first result
-        self.search(searchtext=searchtext,page=1,count=1)
+        self.search(searchtext=searchtext,page=1,count=1,filters=filters)
         #if result
         if self.json :
             movie_s = self.getMoviesList()
@@ -100,24 +103,24 @@ class AlloCineScraper():
                 #get movie code
                 code  = movie['code']
                 #get full infos
-                self.get(code=code)
+                self.get(code=code,filters=self.filters)
                 return self.json  
             else :
                 return False              
         else :
             return False
         
-    def getJson(self,url):
+    def getJson(self,url):           
         return json.loads(self.getWebContent(url).decode('utf-8')) 
     
     def getMoviesList(self):
         if self.json :
             try :
                 feed   = self.json['feed']
-                movies = feed['movie']
+                movies = feed[self.filters]
             except :
                 try :
-                    movies = self.json['movie'] 
+                    movies = self.json[self.filters] 
                 except :
                     return False
             # un seul film : on met le dict dans une liste
@@ -141,16 +144,16 @@ class AlloCineScraper():
             return False
     
     def getTrailersUrl(self, code):
-        media_url = "http://www.allocine.fr/skin/video/AcVisionData_xml.asp?media=%s" % str(code)
+        media_url  = "http://www.allocine.fr/skin/video/AcVisionData_xml.asp?media=%s" % str(code)
         media_data = self.getWebContent(media_url)
-        media = {}
-        match = re.search( '<AcVisionVideo(.*?)/>', media_data , re.DOTALL )
+        media      = {}
+        match      = re.search( '<AcVisionVideo(.*?)/>', media_data , re.DOTALL )
         if match: 
             media_data = match.group(1)
         else :
             print "allocinescrapper : problème de récupération de la bande annonce"
             return False
-        match = re.search( 'title="(.*?)"', media_data )
+        match      = re.search( 'title="(.*?)"', media_data )
         #Titre : 
         if match: 
             media["Title"] = match.group(1)
@@ -196,7 +199,7 @@ class AlloCineScraper():
         # Synopsis
         if 'synopsis'       in movieDict : xbmcDict['Plot']          = movieDict['synopsis'] 
         # Durée
-        if 'runtime'        in movieDict : xbmcDict['Duration']      = movieDict['runtime']/60 
+        if 'runtime'        in movieDict : xbmcDict['Duration']      = int(movieDict['runtime']/60) 
         # Vote et note
         if 'statistics' in movieDict : 
             statdict = movieDict['statistics']
@@ -259,9 +262,9 @@ class AlloCineScraper():
                     xbmcDict['Trailer'] = trailersurl['ld']
         return xbmcDict         
                    
-    def grab(self,searchtext=False, codeid=False) :
+    def grab(self,searchtext=False, codeid=False, filters='movie') :
         if searchtext :
-            self.searchFirstAndFull(searchtext)
+            self.searchFirstAndFull(searchtext,filters=filters)
             moviedict_s = self.getMoviesList()
             if moviedict_s :
                 moviedict = moviedict_s[0]
@@ -269,7 +272,7 @@ class AlloCineScraper():
             else :
                 return {}
         elif codeid :
-            self.get(codeid)
+            self.get(codeid, filters=filters)
             moviedict_s = self.getMoviesList()
             if moviedict_s :
                 moviedict = moviedict_s[0]

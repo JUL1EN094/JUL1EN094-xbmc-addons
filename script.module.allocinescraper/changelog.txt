@@ -1,4 +1,7 @@
-﻿Version 0.0.5 (05-05-2013) par JUL1EN094 :
+﻿Version 0.0.6 -06-05-2013) par JUL1EN094 :
+- Creation d'une variable 'filters' -> 'movie','theater','person ','news','tvseries'
+
+Version 0.0.5 (05-05-2013) par JUL1EN094 :
 - Résolution de bugs
 
 Version 0.0.4 (04-0-2013) par JUL1EN094 :

@@ -16,12 +16,12 @@ if __name__ == "__main__":
 --
 
 
-##### Get Original json from api (set x.json variable) ##### 
+##### Get Original json from api (set x.json variable - can takes 'filters' arg) ##### 
 --
    Search exemples :
    x.search()
 or  
-   x.search('Avatar')
+   x.search('Avatar',filter='movie')
 -- 
    get exemple :
    x.get(139291)
@@ -37,6 +37,7 @@ or
 ## you can specified for each call (get and search) these param :
     count (as the API's page param - Default 25)
     page  (as the API's page param - Default 1 )
+    filters (as the API's filter param - Default 'movie')
 
 ##########################################################################################
 ##########################################################################################
@@ -50,7 +51,7 @@ x.searchFirstAndFull("Avatar") -->return json file with full infos of first resu
 
 ##### getMoviesList(self) #####
 -- can be use after a search, get call
-x.searchFirstAndFull("Avatar")
+x.searchFirstAndFull("Who's the boss", 'filters'='tvseries')
 ls = []
 ls = x.getMoviesList() --> return a list of movieDict (json format) or return False
 
@@ -83,7 +84,7 @@ if ls :
 ##########################################################################################
 ##########################################################################################
 
-##### grab(self,searchtext=False, codeid=False): #####    
+##### grab(self,searchtext=False, codeid=False,filters='movie'): #####    
 -- must be use either with 'searchtext' param or with 'codeid' param
 dic = {}
 dic = x.grab(searchtext="Avatar") --> return dict of movie's infos formatted for xbmc, with item name same as xbmc infolabels and with Trailer.
