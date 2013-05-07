@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.8 par JUL1EN094
+# v0.0.9 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -161,9 +161,9 @@ class AlloCineScraper():
             media["Title"] = ""
         print "allocinescrapper :récupération info média: %s" % media["Title"]
         #Qualité
-        if maxquality='ld' :
+        if maxquality=='ld' :
             listquality = ['ld']
-        elif maxquality='md' :
+        elif maxquality=='md' :
             listquality = ['ld','md']
         else :
             listquality = ['ld','md','hd']

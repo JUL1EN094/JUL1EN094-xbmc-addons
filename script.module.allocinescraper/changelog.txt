@@ -1,5 +1,8 @@
-﻿Version 0.0.8 (07-05-2013) par JUL1EN094:
-- extension du paramètre sur la qualité des bandes annonces à la fonction grab()
+﻿Version 0.0.9 (07-05-2013) par JUL1EN094 :
+- Résolution de bug - erreur de syntaxe
+
+Version 0.0.8 (07-05-2013) par JUL1EN094:
+- Extension du paramètre sur la qualité des bandes annonces à la fonction grab()
 
 Version 0.0.7 (07-05-2013) par JUL1EN094 :
 - Ajout d'un paramètre pour signifier la qualité maximum des trailers.
