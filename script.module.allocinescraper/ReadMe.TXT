@@ -90,7 +90,7 @@ if ls :
 ##### grab(self,searchtext=False, codeid=False,filters='movie'): #####    
 -- must be use either with 'searchtext' param or with 'codeid' param
 dic = {}
-dic = x.grab(searchtext="Avatar") --> return dict of movie's infos formatted for xbmc, with item name same as xbmc infolabels and with Trailer.
+dic = x.grab(searchtext="Avatar", maxTrailerQuality='hd') --> return dict of movie's infos formatted for xbmc, with item name same as xbmc infolabels and with Trailer.
 
 
 
