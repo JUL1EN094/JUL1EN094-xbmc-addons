@@ -34,10 +34,11 @@ or
 ##### print prettify ##### 
     x.printResult()
 
-## you can specified for each call (get and search) these param :
-    count (as the API's page param - Default 25)
-    page  (as the API's page param - Default 1 )
-    filters (as the API's filter param - Default 'movie')
+
+you can specified for each call (get and search) these param :
+count (as the API's page param - Default 25)
+page  (as the API's page param - Default 1 )
+filters (as the API's filter param - Default 'movie')
 
 ##########################################################################################
 ##########################################################################################
@@ -64,13 +65,15 @@ ls  = x.getMoviesList()
 if ls :
     x.printMovieInfos(ls[0]) --> print a prettify version of the movie's info
 
-##### getTrailersUrl(self, code): #####
+##### getTrailersUrl(self, code, maxquality='hd'): #####
 -- code must be the allocine movie id 
-url = getTrailersUrl(4567) --> return trailer's url (best quality) of the movie
+--maxquality can be either 'ld' , 'md' or 'hd'
+url = getTrailersUrl(4567) --> return trailer's url of the movie
 
 
-##### getXbmcDict(self,movieDict): #####
+##### getXbmcDict(self,movieDictn maxTrailerQuality='hd'): #####
 -- movieDict must be an item of the return of getmovieList() function 
+-- maxTrailerQuality can be either 'ld' , 'md' or 'hd'
 x.searchFirstAndFull("Avatar")
 dic = {}
 ls  = []

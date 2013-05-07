@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.6 par JUL1EN094
+# v0.0.7 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -143,7 +143,7 @@ class AlloCineScraper():
         else :
             return False
     
-    def getTrailersUrl(self, code):
+    def getTrailersUrl(self, code, maxquality='hd'):
         media_url  = "http://www.allocine.fr/skin/video/AcVisionData_xml.asp?media=%s" % str(code)
         media_data = self.getWebContent(media_url)
         media      = {}
@@ -160,8 +160,14 @@ class AlloCineScraper():
         else: 
             media["Title"] = ""
         print "allocinescrapper :récupération info média: %s" % media["Title"]
-        #qualité
-        for video_quality in [ "ld" , "md" , "hd"]:
+        #Qualité
+        if maxquality='ld' :
+            listquality = ['ld']
+        elif maxquality='md' :
+            listquality = ['ld','md']
+        else :
+            listquality = ['ld','md','hd']
+        for video_quality in listquality :
             match = re.search( '%s_path="(.*?)"' % video_quality , media_data )
             if match: 
                 media[video_quality] = match.group(1)
@@ -186,7 +192,7 @@ class AlloCineScraper():
         soup = urllib2.urlopen(req).read()
         return soup
         
-    def getXbmcDict(self,movieDict) :
+    def getXbmcDict(self,movieDict,maxTrailerQuality='hd') :
         xbmcDict = {}
         # Année
         if 'productionYear' in movieDict : xbmcDict['Year']          = int(movieDict['productionYear'])
@@ -253,7 +259,7 @@ class AlloCineScraper():
             if 'code' in trailerDict : 
                 trailerCode = trailerDict['code']
                 trailersurl = []
-                trailersurl = self.getTrailersUrl(trailerCode)
+                trailersurl = self.getTrailersUrl(trailerCode, maxquality=maxTrailerQuality)
                 if (trailersurl['hd']) and (trailersurl['hd'] != ''):
                     xbmcDict['Trailer'] = trailersurl['hd']
                 elif (trailersurl['md']) and (trailersurl['md'] != ''):

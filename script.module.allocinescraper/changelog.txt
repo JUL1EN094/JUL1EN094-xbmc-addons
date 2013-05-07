@@ -1,4 +1,7 @@
-﻿Version 0.0.6 -06-05-2013) par JUL1EN094 :
+﻿version 0.0.7 (07-05-2013) par JUL1EN094 :
+- Ajout d'un paramètre pour signifier la qualité maximum des trailers.
+
+Version 0.0.6 (06-05-2013) par JUL1EN094 :
 - Creation d'une variable 'filters' -> 'movie','theater','person ','news','tvseries'
 
 Version 0.0.5 (05-05-2013) par JUL1EN094 :
