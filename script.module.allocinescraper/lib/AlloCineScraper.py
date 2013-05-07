@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.9 par JUL1EN094
+# v0.1.0 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -260,11 +260,12 @@ class AlloCineScraper():
                 trailerCode = trailerDict['code']
                 trailersurl = []
                 trailersurl = self.getTrailersUrl(trailerCode, maxquality=maxTrailerQuality)
-                if (trailersurl['hd']) and (trailersurl['hd'] != ''):
+                xbmcDict['TrailersUrl'] = trailersurl 
+                if ('hd' in trailersurl) and (trailersurl['hd'] != ''):
                     xbmcDict['Trailer'] = trailersurl['hd']
-                elif (trailersurl['md']) and (trailersurl['md'] != ''):
+                elif ('md' in trailersurl) and (trailersurl['md'] != ''):
                     xbmcDict['Trailer'] = trailersurl['md']
-                elif (trailersurl['ld']) and (trailersurl['ld'] != ''):
+                elif ('ld' in trailersurl) and (trailersurl['ld'] != ''):
                     xbmcDict['Trailer'] = trailersurl['ld']
         return xbmcDict         
                    

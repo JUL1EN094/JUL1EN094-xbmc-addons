@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.module.allocinescraper" 
      name="AlloCineScraper" 
-     version="0.0.9" 
+     version="0.1.0" 
      provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.0" />

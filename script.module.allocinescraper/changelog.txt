@@ -1,4 +1,8 @@
-﻿Version 0.0.9 (07-05-2013) par JUL1EN094 :
+﻿Version 0.1.0 (07-05-2013) par JUL1EN094 :
+- Résolution de bug - erreur de syntaxe
+- Creation du retour 'TrailersUrl' retournant la liste de url des bandes annonces
+
+Version 0.0.9 (07-05-2013) par JUL1EN094 :
 - Résolution de bug - erreur de syntaxe
 
 Version 0.0.8 (07-05-2013) par JUL1EN094:
