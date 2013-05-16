@@ -1,4 +1,7 @@
-﻿Version 0.1.0 (07-05-2013) par JUL1EN094 :
+﻿Version 0.1.1 (17-05-2013) par JUL1EN094 :
+- Modification du User Agent > Dalvik/1.2.0 (Linux; U; Android 2.2.2; Huawei U8800-51 Build/HWU8800B635)
+
+Version 0.1.0 (07-05-2013) par JUL1EN094 :
 - Résolution de bug - erreur de syntaxe
 - Creation du retour 'TrailersUrl' retournant la liste de url des bandes annonces
 
