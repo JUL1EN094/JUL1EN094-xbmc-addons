@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.1.1 par JUL1EN094
+# v0.1.2 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -41,7 +41,7 @@ class AlloCineScraper():
         self.URL_API         = 'http://api.allocine.fr/rest/v3/'
         self.PARTNER_ID      = '100043982026'
         self.PARTNER_KEY     = '29d185d98c984a359e6e6f26a0474269'
-        self.USERAGENT       = "Dalvik/1.2.0 (Linux; U; Android 2.2.2; Huawei U8800-51 Build/HWU8800B635)"
+        self.USERAGENT       = "Mozilla/5.0 (Linux; U; Android 4.0.4; fr-fr; SGH-I337) AppleWebKit/535.19"
         self.url             = False
         self.json            = False
         self.filters         = False
