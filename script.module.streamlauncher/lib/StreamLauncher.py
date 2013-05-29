@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.5 par JUL1EN094
+# version 0.0.6 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -238,7 +238,8 @@ class StreamLauncher():
     
     def getVideoLocalTree(self,url,dlfolder):
         try :
-            extension          = url.split('.')[-1]
+            extension = url.split('.')[-1]
+            extension = extension.split('?token=')[0]
             try :
                 video_name = self.RemoveDisallowedFilenameChars(unicode(self.infos['Title']))[:256].rstrip('.')
             except :

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.2 par JUL1EN094
+# version 0.0.3 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncherDownloader XBMC Module
@@ -20,7 +20,7 @@
 '''
 #---------------------------------------------------------------------
 """Downloads files from http or ftp locations"""
-import os,stat
+import os,stat,re
 import urllib2
 import ftplib
 import urlparse
@@ -75,10 +75,11 @@ class DownloadFile(threading.Thread):
             downloader.resume()
     """        
     
-    def __init__(self, url, localDir, auth=None, timeout=20.0, autoretry=False, retries=20,cache_size = 5 * 1024 * 1024 * 1024):
+    def __init__(self, url, localDir, auth=None, timeout=20.0, autoretry=False, retries=20,cache_size = 5 * 1024 * 1024 * 1024, cookies = False):
         """Note that auth argument expects a tuple, ('username','password')"""
         threading.Thread.__init__(self)
-        self.url = url
+        self.url = url.split('|')[0]
+        self.cookies = self.get_Cookies(url)   
         self.urlFileName = None
         self.progress = 0
         self.fileSize = None
@@ -95,7 +96,6 @@ class DownloadFile(threading.Thread):
         self.cache_size = cache_size
         self.localdir = localDir
         self.localFileName =  os.path.join(localDir,self.RemoveDisallowedFilenameChars(self.getUrlFilename(self.url))[:128])
-    
     
     def run(self, callBack=None):
         """attempts to resume file download"""
@@ -248,9 +248,18 @@ class DownloadFile(threading.Thread):
         downCmd = "RETR "+ fileName
         ftper.retrbinary(downCmd, f.write)
         
+    def get_Cookies(self,url) :
+        Cookie_s = re.findall('Cookie=(.*)',url)
+        if Cookie_s :
+            Cookie = Cookie_s[0]
+            Cookie = urllib.unquote_plus(Cookie)
+            return Cookie.replace('&',';')
+        else : 
+            return False
+    
     def getUrlFilename(self, url):
         """returns filename from url"""
-        return urllib.unquote(os.path.basename(url)).decode('utf-8')
+        return urllib.unquote(os.path.basename(url)).split('?token')[0].decode('utf-8')
         
     def getUrlFileSize(self):
         """gets filesize of remote file from ftp or http server"""
@@ -320,7 +329,11 @@ class DownloadFile(threading.Thread):
                 self.status = CDownload.DOWNLOADING
                 self.__downloadFile__(authObj, f, callBack=callBack)
         else:
-            urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
+            req = urllib2.Request(self.url)
+            if self.cookies :
+                print 'ADD HEADER COOKIE : '+str(self.cookies)
+                req.add_header('Cookie',self.cookies)
+            urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)        
             self.status = CDownload.DOWNLOADING
             self.__downloadFile__(urllib2Obj, f, callBack=callBack)
         return True
@@ -384,6 +397,9 @@ class DownloadFile(threading.Thread):
 class FLVdownload(DownloadFile):    
     def seektoresume(self) :
         req = urllib2.Request(self.url + '?start=' + str(self.cur))
+        if self.cookies :
+            print 'ADD HEADER COOKIE : '+str(self.cookies)
+            req.add_header('Cookie',self.cookies)
         urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
         #exctract header from flv
         urllib2Obj.read(13)
@@ -432,6 +448,9 @@ class MP4download(DownloadFile):
             url = self.url + '?start=' + str(curTime+offset)
             print url
             req = urllib2.Request(url)
+            if self.cookies :
+                print 'ADD HEADER COOKIE : '+str(self.cookies)
+                req.add_header('Cookie',self.cookies)
             urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
             resume_size = urllib2Obj.headers.get('content-length')
             DoubleDownload = int(int(curSize)  + int(resume_size) - int(self.getUrlFileSize()))
