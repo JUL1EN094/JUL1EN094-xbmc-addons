@@ -1,5 +1,8 @@
-﻿Version 0.0.6 (23-05-2013) par JUL1EN094 :
-- Ajout de la gestion des Cookies dans le downloader (pour le resolver purevid)
+﻿Version 0.0.7 (17-06-2013) par JUL1EN094 :
+- Corrections mineures
+
+Version 0.0.6 (23-05-2013) par JUL1EN094 :
+- Ajout des la gestion des Cookies dans le downloader (pour le resolver purevid)
 
 Version 0.0.5 (05-05-2013) :
 - StreamLauncherDownloader : v0.0.2

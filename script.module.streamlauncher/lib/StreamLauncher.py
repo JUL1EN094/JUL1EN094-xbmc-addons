@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.6 par JUL1EN094
+# version 0.0.7 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -477,15 +477,14 @@ class StreamLauncher():
                 #Etape 5 : Lancement de la video
                 if step == 5:
                     progress_launch.close()
-                    launching   = False
+                    launching   = False 
                     isPrecached = self.preCache()
                     if isPrecached :
                         download_info = {}
                         download_info = self.downloader.getInfos()
                         self.PlayVideo(download_info['localfilename'])
         except :
-            print_exc()     
-        
+            print_exc()        
     
     def LaunchStream(self) :
         try :
@@ -584,12 +583,13 @@ class StreamLauncher():
             playlist.add(self.intro)
         playlist.add(url,listitem=listitem)
         #lecture de la video
-        xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(playlist)
+        xbmc.Player().play(playlist)
         #Tant que le film est en lecture
         notplaying = True 
         while notplaying :
             if xbmc.Player().isPlaying() :
                 notplaying = False
+            time.sleep(0.1)
         if isIntro :
             time.sleep(int(self.introtime))
         if resume :          
@@ -777,8 +777,8 @@ class StreamLauncher():
                 #Lecture
                 self.videolocalname = os.path.split(download_info['localfilename'])[-1]
                 caching = False
-                time.sleep(0.1)
-        return True        
+                time.sleep(0.5)
+                return True        
     
     def printClassInfos(self):
         try :
@@ -791,8 +791,7 @@ class StreamLauncher():
                 print str(item[0])+' : '+str(item[1])
             print '-----------------------------'
         except :
-            print_exc()
-        
+            print_exc()        
     
     def RemoveDisallowedFilenameChars(self, filename):
         cleanedFilename = unicodedata.normalize('NFKD', filename).encode('utf-8', 'ignore')
