@@ -1,4 +1,7 @@
-﻿Version 0.0.7 (17-06-2013) par JUL1EN094 :
+﻿Version 0.0.8 (04-07-2013) par JUL1EN094 :
+- Résolution de bug : erreur lors de la creation du downloader dûe à des noms trop longs
+
+Version 0.0.7 (17-06-2013) par JUL1EN094 :
 - Corrections mineures
 
 Version 0.0.6 (23-05-2013) par JUL1EN094 :
