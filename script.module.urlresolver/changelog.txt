@@ -1,25 +1,3 @@
-[B]Version 2.0.10[/B]
-- New unresolvable() class for resolvers to return in case of an error, specify why it failed for addon to handle
-- New redx.png graphic file for reporting issues in resolvers
-- Updated all resolvers to display small box on exceptions
-- Added DoneVideo
-- Added EntroUpload
-- Added LimeVideo
-- Added MuchShare
-- Added PureVid
-- Added VideoZed
-- Added VidTo
-- Added YouWatch
-- Added LemUploads
-- Added MegaRelease
-- Added NosVideo
-- Added Vidto
-- Updated AllDebrid
-- Fixed RealDebrid
-- Fixed BillionUploads
-- Fixed 180Upload
-- Fixed HostingBulk
-
 [B]Version 2.0.9[/B]
 - Fixed VeeHD
 
