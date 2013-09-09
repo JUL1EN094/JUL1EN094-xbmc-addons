@@ -35,7 +35,7 @@ class GorillavidResolver(Plugin, UrlResolver, PluginSettings):
         self.priority = int(p)
         self.net = Net()
         #e.g. http://gorillavid.com/vb80o1esx2eb
-        self.pattern = 'http://((?:www.)?gorillavid.in)/([0-9a-zA-Z]+)'
+        self.pattern = 'http://((?:www.)?gorillavid.(?:in|com))/([0-9a-zA-Z]+)'
 
 
     def get_media_url(self, host, media_id):
@@ -56,18 +56,18 @@ class GorillavidResolver(Plugin, UrlResolver, PluginSettings):
             r = re.search('file: "(.+?)"', html)
             if r:
                 return r.group(1)
-
-            raise Exception ('File Not Found or removed')
+            else:
+                raise Exception ('Unable to resolve Gorillavid link')
         except urllib2.URLError, e:
             common.addon.log_error('gorillavid: got http error %d fetching %s' %
                                   (e.code, web_url))
             common.addon.show_small_popup('Error','Http error: '+str(e), 5000, error_logo)
-            return False
+            return self.unresolvable(code=3, msg=e)
         
         except Exception, e:
             common.addon.log_error('**** Gorillavid Error occured: %s' % e)
             common.addon.show_small_popup(title='[B][COLOR white]GORILLAVID[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
-            return False
+            return self.unresolvable(code=0, msg=e)
         
         
 

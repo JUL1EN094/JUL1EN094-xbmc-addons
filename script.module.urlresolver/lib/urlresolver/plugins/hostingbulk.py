@@ -47,7 +47,7 @@ class hostingbulkResolver(Plugin, UrlResolver, PluginSettings):
                 err_message = 'The requested video was not found.'
                 common.addon.log_error(self.name + ' - fetching %s - %s - %s ' % (web_url,err_title,err_message))
                 xbmc.executebuiltin('XBMC.Notification([B][COLOR white]'+__name__+'[/COLOR][/B] - '+err_title+',[COLOR red]'+err_message+'[/COLOR],8000,'+logo+')')
-                return self.unresolvable()
+                return self.unresolvable(1, err_message)
 
             videoUrl = re.compile("\'file\'\s?:\s?\'([\w\/\.\:\-\=\?]+)\'").findall(link)
 
@@ -69,6 +69,12 @@ class hostingbulkResolver(Plugin, UrlResolver, PluginSettings):
         r = None
         video_id = None
 
+        r = re.search('(http://(?:www.|)(?:.+?)/)([0-9A-Za-z]+)', url)
+        if r:
+            return r.groups()
+        else:
+            r = None
+
         if re.search('embed-', url):
             r = re.compile('embed-(.+?).html').findall(url)
         elif re.search('watch/', url):
@@ -86,7 +92,7 @@ class hostingbulkResolver(Plugin, UrlResolver, PluginSettings):
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
-        return re.match('http://(.+)?hostingbulk.com/[0-9]+', url) or 'hostingbulk' in host
+        return re.match('http://(.+)?hostingbulk.com/[0-9A_Za-z]+', url) or 'hostingbulk' in host
 
     def get_settings_xml(self):
         xml = PluginSettings.get_settings_xml(self)

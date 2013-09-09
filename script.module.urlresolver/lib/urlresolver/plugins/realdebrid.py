@@ -104,6 +104,7 @@ class RealDebridResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
+        if self.get_setting('login') == 'false': return False 
         common.addon.log_debug('in valid_url %s : %s' % (url, host))
         self.get_all_hosters()
         for host in self.hosters :

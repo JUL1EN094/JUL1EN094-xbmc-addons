@@ -16,16 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re, os, urllib2
+import re, os, urllib
 from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import SiteAuth
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
 from urlresolver import common
 from t0mm0.common.net import Net
-
-#SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
-error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
 net = Net()
 
@@ -68,16 +65,10 @@ class veeHDResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
                 else:
                     raise Exception ('File Not Found or removed')
             return stream_url
-        except urllib2.URLError, e:
-            common.addon.log_error(self.name + ': got http error %d fetching %s' %
-                                   (e.code, web_url))
-            common.addon.show_small_popup('Error','Http error: '+str(e), 8000, error_logo)
-            return False
         except Exception, e:
             common.addon.log('**** VeeHD Error occured: %s' % e)
-            common.addon.show_small_popup(title='[B][COLOR white]VEEHD[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
-            return False
-        
+            common.addon.show_small_popup('Error', str(e), 5000, '')
+            return self.unresolvable(code=0, msg='Exception: %s' % e)    
     
         
     def get_url(self, host, media_id):
@@ -100,9 +91,9 @@ class veeHDResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
     def login(self):
         loginurl = 'http://veehd.com/login'
         ref = 'http://veehd.com/'
-        submit = 'login'
-        login = self.get_setting('veeHDResolver_username')
-        pword = self.get_setting('veeHDResolver_password')
+        submit = 'Login'
+        login = self.get_setting('username')
+        pword = self.get_setting('password')
         terms = 'on'
         remember = 'on'
         data = {'ref': ref, 'uname': login, 'pword': pword, 'submit': submit, 'terms': terms, 'remember_me': remember}

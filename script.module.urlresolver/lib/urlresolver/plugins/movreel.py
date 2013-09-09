@@ -1,23 +1,22 @@
-""" 
-    urlresolver XBMC Addon
-    Copyright (C) 2013 Vinnydude
+"""
+urlresolver XBMC Addon
+Copyright (C) 2013 Vinnydude
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-    Special thanks for help with this resolver go out to t0mm0, jas0npc,
-    mash2k3, Mikey1234,voinage and of course Eldorado. Cheers guys :)
-    
+Special thanks for help with this resolver go out to t0mm0, jas0npc,
+mash2k3, Mikey1234,voinage and of course Eldorado. Cheers guys :)
 """
 
 import re, os, xbmcgui, xbmcaddon, cookielib
@@ -30,15 +29,15 @@ from urlresolver import common
 
 net = Net()
 
-class MovreelResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
+class movreelResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
     implements = [UrlResolver, SiteAuth, PluginSettings]
     name = "movreel"
-    profile_path = common.profile_path    
+    profile_path = common.profile_path
     cookie_file = os.path.join(profile_path, '%s.cookies' % name)
     
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
+        p = self.get_setting('priority') or 1
         self.priority = int(p)
         self.net = Net()
         try:
@@ -48,21 +47,21 @@ class MovreelResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
         
 
     def login(self):
-        if self.get_setting('login') == 'true': 
+        if self.get_setting('login') == 'true':
             loginurl = 'http://movreel.com/login.html'
-            login = self.get_setting('movreelResolver_username')
-            password = self.get_setting('movreelResolver_password')
+            login = self.get_setting('username')
+            password = self.get_setting('password')
             data = {'op': 'login', 'login': login, 'password': password}
             html = net.http_POST(loginurl, data).content
             if re.search('op=logout', html):
                 self.net.save_cookies(self.cookie_file)
-                common.addon.log('LOGIN SUCCESSFUL') 
+                common.addon.log('LOGIN SUCCESSFUL')
                 return True
             else:
-                common.addon.log('LOGIN FAILED') 
+                common.addon.log('LOGIN FAILED')
                 return False
         else:
-            common.addon.log('No account info entered') 
+            common.addon.log('No account info entered')
             return False
         
 
@@ -72,7 +71,7 @@ class MovreelResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
             url = self.get_url(host, media_id)
             html = self.net.http_GET(url).content
             dialog = xbmcgui.DialogProgress()
-            dialog.create('Resolving', 'Resolving Movreel Link...')       
+            dialog.create('Resolving', 'Resolving Movreel Link...')
             dialog.update(0)
         
             html = net.http_GET(url).content
@@ -94,7 +93,7 @@ class MovreelResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
             else:
                 for name, value in r:
                     data[name] = value
-                    data.update({'method_premium':method_premium})                   
+                    data.update({'method_premium':method_premium})
         
             html = net.http_POST(url, data).content
 
@@ -107,7 +106,7 @@ class MovreelResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
                 r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">', html)
                 for name, value in r:
                     data[name] = value
-                    data.update({'down_direct':1})    
+                    data.update({'down_direct':1})
     
                 html = net.http_POST(url, data).content
 
@@ -122,7 +121,7 @@ class MovreelResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
         except Exception, e:
             common.addon.log('**** Movreel Error occured: %s' % e)
             common.addon.show_small_popup('Error', str(e), 5000, '')
-            return False
+            return self.unresolvable(code=0, msg='Exception: %s' % e)
         
 
     def get_url(self, host, media_id):

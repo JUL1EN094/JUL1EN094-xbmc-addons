@@ -20,11 +20,8 @@ from t0mm0.common.net import Net
 from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
-import re, time, urllib2, os
+import re, time
 from urlresolver import common
-
-#SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
-error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
 net = Net()
 
@@ -72,33 +69,29 @@ class VidhogResolver(Plugin, UrlResolver, PluginSettings):
                         if userInput != '':
                                 capcode = kb.getText()
                         elif userInput == '':
-                                Notify('big', 'No text entered', 'You must enter text in the image to access video', '')
+                                raise Exception ('You must enter text in the image to access video')
                     wdlg.close()
                     common.addon.show_countdown(10, title='Vidhog', text='Loading Video...')
                     
                     data.update({'code':capcode})
     
                 else:
-                    common.addon.show_countdown(15, title='Vidhog', text='Loading Video...')
+                    common.addon.show_countdown(20, title='Vidhog', text='Loading Video...')
                     
             html = net.http_POST(url, data).content
+            if re.findall('err', html):
+                raise Exception('Wrong Captcha')
     
             match = re.search("product_download_url=(.+?)'", html)
     
             if not match:
-                raise Exception ('File Not Found or removed')
+                raise Exception('could not find video')
             return match.group(1)
         
-        except urllib2.URLError, e:
-            common.addon.log_error(self.name + ': got http error %d fetching %s' %
-                                   (e.code, web_url))
-            common.addon.show_small_popup('Error','Http error: '+str(e), 8000, error_logo)
-            return False
         except Exception, e:
-            common.addon.log('**** Vidhog Error occured: %s' % e)
-            common.addon.show_small_popup(title='[B][COLOR white]VIDHOG[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
-            return False
-        
+            common.addon.log('**** Muchshare Error occured: %s' % e)
+            common.addon.show_small_popup('Error', str(e), 5000, '')
+            return self.unresolvable(code=0, msg='Exception: %s' % e)
         
     def get_url(self, host, media_id):
         return 'http://www.vidhog.com/%s' % media_id 

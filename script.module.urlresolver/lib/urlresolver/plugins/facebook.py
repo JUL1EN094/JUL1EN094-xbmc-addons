@@ -1,5 +1,5 @@
 '''
-playwire urlresolver plugin
+facebook urlresolver plugin
 Copyright (C) 2013 icharania
 
 This program is free software: you can redistribute it and/or modify
@@ -25,13 +25,12 @@ from urlresolver.plugnplay import Plugin
 import re
 import urllib2, urllib
 from urlresolver import common
-import xml.etree.ElementTree as ET
 
 logo=os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
-class PlaywireResolver(Plugin, UrlResolver, PluginSettings):
+class FacebookResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "playwire"
+    name = "facebook"
 
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -43,19 +42,35 @@ class PlaywireResolver(Plugin, UrlResolver, PluginSettings):
             web_url = self.get_url(host, media_id)
             link = self.net.http_GET(web_url).content
 
-            root = ET.fromstring(link)
-            stream = root.find('src')
-            if stream is not None:
-                return stream.text
-            else:
-                accessdenied = root.find('Message')
-                if accessdenied is not None:
-                    err_title = 'Access Denied'
-                    err_message = 'You do not have permission to view this content'
-                    common.addon.log_error(self.name + ' - fetching %s - %s - %s ' % (web_url,err_title,err_message))
-                    xbmc.executebuiltin('XBMC.Notification([B][COLOR white]'+__name__+'[/COLOR][/B] - '+err_title+',[COLOR red]'+err_message+'[/COLOR],8000,'+logo+')')
-                    return self.unresolvable(1, err_message)
+            if link.find('Video Unavailable') >= 0:
+                err_title = 'Content not available.'
+                err_message = 'The requested video was not found.'
+                common.addon.log_error(self.name + ' - fetching %s - %s - %s ' % (web_url,err_title,err_message))
+                xbmc.executebuiltin('XBMC.Notification([B][COLOR white]'+__name__+'[/COLOR][/B] - '+err_title+',[COLOR red]'+err_message+'[/COLOR],8000,'+logo+')')
+                return self.unresolvable(1, err_message)
 
+
+            params = re.compile('"params","([\w\%\-\.\\\]+)').findall(link)[0]
+            html = urllib.unquote(params.replace('\u0025', '%')).decode('utf-8')
+            html = html.replace('\\', '')
+
+            videoUrl = re.compile('(?:hd_src|sd_src)\":\"([\w\-\.\_\/\&\=\:\?]+)').findall(html)
+
+
+            vUrl = ''
+            vUrlsCount = len(videoUrl)
+            if vUrlsCount > 0:
+                q = self.get_setting('quality')
+                if q == '0':
+                    # Highest Quality
+                    vUrl = videoUrl[0]
+                else:
+                    # Standard Quality
+                    vUrl = videoUrl[vUrlsCount - 1]
+
+                return vUrl
+
+            else:
                 return self.unresolvable(0, 'No playable video found.')
         except urllib2.URLError, e:
             return self.unresolvable(3, str(e))
@@ -64,18 +79,20 @@ class PlaywireResolver(Plugin, UrlResolver, PluginSettings):
 
 
     def get_url(self, host, media_id):
-        return 'http://%s/embed/%s.xml' % (host, media_id)
+        return 'https://www.facebook.com/video/embed?video_id=%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?/\d+)/embed/(\d+)\.html', url)
+        r = re.search('//(.+?)/video/embed?video_id=(\w+)', url)
         return r.groups()
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
-        return re.match('http://(www\.)?cdn.playwire.com/\d+/embed/\d+\.html', url) or \
+        return re.match('https?://(www\.)?facebook.com/video/embed?video_id=(\w+)', url) or \
                self.name in host
 
     #PluginSettings methods
     def get_settings_xml(self):
         xml = PluginSettings.get_settings_xml(self)
+        xml += '<setting label="Video Quality" id="%s_quality" ' % self.__class__.__name__
+        xml += 'type="enum" values="High|Standard" default="0" />\n'
         return xml
