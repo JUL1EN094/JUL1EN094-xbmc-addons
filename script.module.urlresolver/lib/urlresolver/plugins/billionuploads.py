@@ -50,6 +50,10 @@ class billionuploads(Plugin, UrlResolver, PluginSettings):
             
                 common.addon.log( self.name + ' - Requesting GET URL: %s' % url )
                 
+                cj = cookielib.CookieJar()
+                normal = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+                normal.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36')]
+                
                 ########################################################
                 ######## CLOUD FLARE STUFF
                 #######################################################
@@ -61,8 +65,6 @@ class billionuploads(Plugin, UrlResolver, PluginSettings):
                         return response
                     https_response = http_response
 
-                cj = cookielib.CookieJar()
-                
                 opener = urllib2.build_opener(NoRedirection, urllib2.HTTPCookieProcessor(cj))
                 opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36')]
                 response = opener.open(url).read()
@@ -78,11 +80,11 @@ class billionuploads(Plugin, UrlResolver, PluginSettings):
                     
                     time.sleep(5)
                     
-                    normal = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-                    normal.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36')]
                     final= normal.open(domain_url+'cdn-cgi/l/chk_jschl?jschl_vc=%s&jschl_answer=%s'%(jschl,eval(maths)+len(domain))).read()
                     
                     html = normal.open(url).read()
+                else:
+                    html = response
                 ################################################################################
                    
                 #Check page for any error msgs

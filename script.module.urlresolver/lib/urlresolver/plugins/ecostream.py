@@ -42,54 +42,48 @@ class EcostreamResolver(Plugin, UrlResolver, PluginSettings):
     def get_media_url(self, host, media_id):
         # emulate click on button "Start Stream" (ss=1)
         web_url = self.get_url(host, media_id) + "?ss=1"
-
         try:
             html = self.net.http_POST(web_url,{'ss':'1'}).content
-        except urllib2.URLError, e:
-            common.addon.log_error(self.name + ': got http error %d fetching %s' %
-                                    (e.code, web_url))
-            return False
-
-        # get vars
-        sPattern = "var t=setTimeout\(\"lc\('([^']+)','([^']+)','([^']+)','([^']+)'\)"
-        r = re.findall(sPattern, html)
-        if r:
+            # get vars
+            sPattern = "var t=setTimeout\(\"lc\('([^']+)','([^']+)','([^']+)','([^']+)'\)"
+            r = re.findall(sPattern, html)
+            if not r:
+                raise Exception ('Unable to resolve Ecostream link. Post var not found.')
             for aEntry in r:
                 sS = str(aEntry[0])
                 sK = str(aEntry[1])
                 sT = str(aEntry[2])
                 sKey = str(aEntry[3])
                 # get name of php file
-                try:
-                    html = self.net.http_GET('http://www.ecostream.tv/assets/js/common.js').content
-                except urllib2.URLError, e:
-                    common.addon.log_error(self.name + ': got http error %d fetching %s' %
-                                    (e.code, web_url))
-                    return False
+                web_url = 'http://www.ecostream.tv/assets/js/common.js'
+                html = self.net.http_GET(web_url).content
                 sPattern = "url: '([^=]+)="
                 r = re.search(sPattern, html)
                 if r is None :
-                    common.addon.log_error(self.name + ': name of php file not found')
-                    return False
+                    raise Exception ('Unable to resolve Ecostream link. Name of php-file not found.')
                 # send vars and retrieve stream url
-                sNextUrl = r.group(1)+'='+sS+'&k='+sK+'&t='+sT+'&key='+sKey
+                web_url = r.group(1)+'='+sS+'&k='+sK+'&t='+sT+'&key='+sKey
                 postParams = ({'s':sS,'k':sK,'t':sT,'key':sKey})
                 postHeader = ({'Referer':'http://www.ecostream.tv', 'X-Requested-With':'XMLHttpRequest'})
-                try:
-                    html = self.net.http_POST(sNextUrl, postParams,headers = postHeader).content
-                except urllib2.URLError, e:
-                    common.addon.log_error(self.name + ': got http error %d fetching %s' %
-                                            (e.code, sNextUrl))
-                    return False
-
+                html = self.net.http_POST(web_url, postParams,headers = postHeader).content
+                
                 sPattern = '<param name="flashvars" value="file=(.*?)&'
                 r = re.search(sPattern, html)
-                if r:
-                    sLinkToFile = 'http://www.ecostream.tv'+r.group(1)
-                    return sLinkToFile
-
-
-        return False
+                if not r:
+                    raise Exception ('Unable to resolve Ecostream link. Filelink not found.')
+                sLinkToFile = 'http://www.ecostream.tv'+r.group(1)
+                return urllib2.unquote(sLinkToFile)
+                    
+        except urllib2.URLError, e:
+            common.addon.log_error(self.name + ': got http error %d fetching %s' %
+                                    (e.code, web_url))
+            common.addon.show_small_popup('Error','Http error: '+str(e), 8000, error_logo)
+            return self.unresolvable(code=3, msg='Exception: %s' % e) 
+        except Exception, e:
+            common.addon.log('**** Ecostream Error occured: %s' % e)
+            common.addon.show_small_popup(title='[B][COLOR white]Ecostream[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' 
+            % e, delay=5000, image=error_logo)
+            return self.unresolvable(code=0, msg='Exception: %s' % e)
 
 
     def get_url(self, host, media_id):
