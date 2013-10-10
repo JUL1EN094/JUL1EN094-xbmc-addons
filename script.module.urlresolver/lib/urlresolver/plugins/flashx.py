@@ -22,9 +22,13 @@ from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
 import urllib2
 from urlresolver import common
+import os
 
 # Custom imports
 import re
+
+
+error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
 
 class FlashxResolver(Plugin, UrlResolver, PluginSettings):
@@ -36,7 +40,7 @@ class FlashxResolver(Plugin, UrlResolver, PluginSettings):
         self.priority = int(p)
         self.net = Net()
         #e.g. http://flashx.tv/player/embed_player.php?vid=1503&width=600&height=370&autoplay=no
-        self.pattern = 'http://((?:www.|play.)?flashx.tv)/(?:player/embed_player.php\?vid=|player/embed.php\?vid=|video/)([0-9a-zA-Z/]+)'
+        self.pattern = 'http://((?:www.|play.)?flashx.tv)/(?:player/embed_player.php\?vid=|player/embed.php\?vid=|video/)([0-9a-zA-Z/-]+)'
 
 
     def get_media_url(self, host, media_id):
@@ -61,14 +65,13 @@ class FlashxResolver(Plugin, UrlResolver, PluginSettings):
                 raise Exception ('Unable to resolve Flashx link. Embedded link not found.')
             web_url = r.group(1)
             html = self.net.http_GET(web_url).content
+            form_values = {}
             #get post var
-            pattern = 'name="id" value="([^"]+)"'
-            r = re.search(pattern, html)
+            for i in re.finditer('<input.*?name="(.*?)".*?value="(.*?)">', html):
+                form_values[i.group(1)] = i.group(2)
             if not r:
                 raise Exception ('Unable to resolve Flashx link. Post var not found.')
-            web_url = 'http://play.flashx.tv/player/view.php'
-            form_values = {}
-            form_values['id'] = r.group(1)
+            web_url = 'http://play.flashx.tv/player/show.php'
             html = self.net.http_POST(web_url, form_data=form_values).content
             #get config url
             pattern = 'data="([^"]+)"'
@@ -85,6 +88,8 @@ class FlashxResolver(Plugin, UrlResolver, PluginSettings):
             r = re.search(pattern, html)
             if not r:
                 raise Exception ('Unable to resolve Flashx link. Filelink not found.')
+            return r.group(1)
+            
         except urllib2.URLError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %
                                     (e.code, web_url))

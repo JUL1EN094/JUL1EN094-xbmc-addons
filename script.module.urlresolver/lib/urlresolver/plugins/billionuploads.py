@@ -39,7 +39,6 @@ class billionuploads(Plugin, UrlResolver, PluginSettings):
         self.net = Net()
 
     def get_media_url(self, host, media_id):
-        # UPDATED BY THE-ONE @ XBMCHUB - 08-27-2013
         try:
                 url = self.get_url(host, media_id)
                 
@@ -99,61 +98,6 @@ class billionuploads(Plugin, UrlResolver, PluginSettings):
                     xbmc.executebuiltin('XBMC.Notification([B][COLOR white]BILLIONUPLOADS[/COLOR][/B],[COLOR red]File Not Found[/COLOR],8000,'+logo+')')
                     return self.unresolvable(code=1, msg='File Not Found')                
 
-                
-                # NEW BILLION UPLOADS
-                #postid = re.search('<input type="hidden" name="id" value="(.+?)">', html).group(1)                
-                #video_src_url = 'http://new.billionuploads.com/embed-' + postid + '.html'
-                #common.addon.log(self.name + ' - Requesting GET URL: %s' % video_src_url)
-                #html = normal.open(video_src_url).read()
-                
-                #dialog.close()
-                
-                # SOLVEMEDIA CAPTCHA
-                #try:
-                #    os.remove(captcha_img)
-                #except: 
-                #    pass
-                                    
-                #noscript=re.compile('<iframe src="(.+?)"').findall(html)[0]
-                #check = net.http_GET(noscript).content
-                #hugekey=re.compile('id="adcopy_challenge" value="(.+?)">').findall(check)[0]           
-                #captcha_headers= {'User-Agent':'Mozilla/6.0 (Macintosh; I; Intel Mac OS X 11_7_9; de-LI; rv:1.9b4) Gecko/2012010317 Firefox/10.0a4',
-                #     'Host':'api.solvemedia.com','Referer':video_src_url,'Accept':'image/png,image/*;q=0.8,*/*;q=0.5'}
-                #open(captcha_img, 'wb').write( net.http_GET("http://api.solvemedia.com%s"%re.compile('<img src="(.+?)"').findall(check)[0]).content)
-                
-                #img = xbmcgui.ControlImage(550,15,240,100,captcha_img)
-                #wdlg = xbmcgui.WindowDialog()
-                #wdlg.addControl(img)
-                #wdlg.show()
-            
-                #Small wait to let user see image
-                #time.sleep(3)
-            
-                #Prompt keyboard for user input
-                #kb = xbmc.Keyboard('', 'Type the letters in the image', False)
-                #kb.doModal()
-                #capcode = kb.getText()
-            
-                #Check input
-                #if (kb.isConfirmed()):
-                #    userInput = kb.getText()
-                #    if userInput != '':
-                #        capcode = kb.getText()
-                #    elif userInput == '':
-                #        common.addon.show_error_dialog(["You must enter the text from the image to access video"])
-                #        return self.unresolvable(code=0, msg='Captcha text not entered')
-                #else:
-                #    return self.unresolvable(code=0, msg='Captcha text not entered')
-                #wdlg.close()
-                    
-                #common.addon.log(self.name + ' - Requesting POST URL: %s' % video_src_url)
-                #data={'op':'video_embed','file_code':postid, 'adcopy_response':capcode,'adcopy_challenge':hugekey}
-                #html = normal.open(video_src_url, urllib.urlencode(data)).read()
-                
-                
-                
-                ####
-                #OLD BILLION UPLOADS
                 data = {}
                 r = re.findall(r'type="hidden" name="(.+?)" value="(.+?)">', html)
                 for name, value in r:
@@ -194,7 +138,11 @@ class billionuploads(Plugin, UrlResolver, PluginSettings):
                     dialog.update(50)
                 
                 data.update({'submit_btn':''})
-                data.update({'geekref':'yeahman'})
+                r = re.search('document\.getElementById\(\'grease\'\)\.innerHTML=decodeURIComponent\(\"(.+?)\"\);', html)
+                if r:
+                    r = re.findall('type="hidden" name="(.+?)" value="(.+?)">', urllib.unquote(r.group(1)).decode('utf8') )
+                    for name, value in r:
+                        data.update({name:value})
                 
                 html = normal.open(url, urllib.urlencode(data)).read()
                 
