@@ -1,4 +1,9 @@
-﻿Version 0.0.8 (04-07-2013) par JUL1EN094 :
+﻿Version 0.0.9 (04-07-2013) par JUL1EN094 :
+- Résolution de bug : modification de l'init des 'Infos'
+- Résolution de bug : modification de self.getInfosTitle() (le lien se termine par '/' et pas de infos['Title'])
+- Modif requirement : urlresolver v2.0.9 -> v2.1.0
+
+Version 0.0.8 (04-07-2013) par JUL1EN094 :
 - Résolution de bug : erreur lors de la creation du downloader dûe à des noms trop longs
 
 Version 0.0.7 (17-06-2013) par JUL1EN094 :

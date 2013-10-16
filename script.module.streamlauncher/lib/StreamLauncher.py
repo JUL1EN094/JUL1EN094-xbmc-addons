@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.8 par JUL1EN094
+# version 0.0.9 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -91,9 +91,11 @@ class StreamLauncher():
         #détermination des infos + infos['Title'] (necessaire) : self.infos
         if Infos :
             self.infos = Infos
-        if not self.infos['Title']: 
+        else :
+            self.infos = {}
+        if 'Title' not in self.infos: 
             self.infos['Title'] = self.getInfosTitle()
-        if not self.infos['Title']:
+        if 'Title' not in self.infos:
             return None
         #-------------
         #détermination du mode : self.mode
@@ -173,6 +175,8 @@ class StreamLauncher():
         if self.linkurl :
             infos = {}
             infos['Title'] = self.linkurl.split('/')[-1]
+            if infos['Title'] == '' :
+                infos['Title'] = self.linkurl.split('/')[-2]
             return infos['Title']
         else :
             return False    
