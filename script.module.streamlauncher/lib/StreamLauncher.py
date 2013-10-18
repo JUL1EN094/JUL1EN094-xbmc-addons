@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.9 par JUL1EN094
+# version 0.1.0 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -245,9 +245,9 @@ class StreamLauncher():
             url_no_token = url.split('?token=')[0]
             extension = url_no_token.split('.')[-1]
             try :
-                video_name = self.RemoveDisallowedFilenameChars(unicode(self.infos['Title']))[:128].rstrip('.')
+                video_name = self.RemoveDisallowedFilenameChars(unicode(self.infos['Title']))[:128].rstrip('. ')
             except :
-                video_name = self.RemoveDisallowedFilenameChars(unicode(url_no_token.split('/')[-1].split('.')[0]))[:128].rstrip('.')
+                video_name = self.RemoveDisallowedFilenameChars(unicode(url_no_token.split('/')[-1].split('.')[0]))[:128].rstrip('. ')
             localfiledirectory = os.path.join(dlfolder, video_name)
             if not os.path.exists(localfiledirectory):
                 os.makedirs(localfiledirectory, mode=0777)
