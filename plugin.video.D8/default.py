@@ -20,8 +20,8 @@ common.plugin = "plugin.video.D8"
 
 __addonID__         = "plugin.video.D8"
 __author__          = "JUL1EN094"
-__date__            = "15-03-2013"
-__version__         = "1.0.1"
+__date__            = "23-10-2013"
+__version__         = "1.0.2"
 __credits__         = ""
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __settings__        = __addon__
@@ -67,7 +67,7 @@ class D8:
         url       = None
         name      = None
         mode      = None
-        iconimage = None            
+        iconimage = ''            
         try:
             url=urllib.unquote_plus(params["url"])
         except:
@@ -240,6 +240,26 @@ class D8:
                                 tabs_url_end = common.parseDOM(tabs,"a",ret="href") [0]
                                 tabs_url     = "http://"+web_url_base.encode("utf-8")+tabs_url_end.encode("utf-8")
                                 self.addDir(tabs_name.encode("utf-8"),tabs_url,4,iconimage)
+            else : 
+                dessous_s = common.parseDOM(html,'li',attrs={'class':'dessous'})
+                for item in dessous_s :
+                    print item.encode('utf-8')
+                    item_url   = common.parseDOM(item,'a',ret='href')[0]
+                    if item_url[:4]!= 'http' :
+                        item_url = WEBROOT + item_url
+                    item_image_s = common.parseDOM(item,'img',ret='src')
+                    if item_image_s : 
+                        item_image = item_image_s[0]
+                    else :
+                        item_image = ''
+                    try :
+                        item_name    = common.parseDOM(item,'a')[1].encode('utf-8')
+                    except :
+                        item_name    = common.parseDOM(item,'a')[0].encode('utf-8')
+                    print 'image'+str(item_image)
+                    print 'name'+str(item_name)
+                    print 'url'+str(item_url)
+                    self.addDir(item_name,item_url,3,item_image)
 
     def GET_EPISODES_D8(self,url,fanartimage):
         xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
@@ -257,8 +277,11 @@ class D8:
             xml              = xml_allitem.decode("iso-8859-1")
             list_emission_s  = common.parseDOM(xml,"ul",attrs={"class":u"list-programmes-emissions current"})[0]            
         else : 
-            cssnt_tabs_target = common.parseDOM(html,"ul",attrs={"class":u"cssnt-tabs-target"})[0]
-            list_emission_s   = common.parseDOM(html,"ul",attrs={"class":u"list-programmes-emissions current"})[0]
+            try :
+                cssnt_tabs_target = common.parseDOM(html,"ul",attrs={"class":u"cssnt-tabs-target"})[0]
+            except :
+                cssnt_tabs_target = common.parseDOM(html,"ul",attrs={"class":u"cssnt-tabs-target current"})[0]
+            list_emission_s   = common.parseDOM(cssnt_tabs_target,"ul",attrs={"class":u"list-programmes-emissions current"})[0]
         li_s              = common.parseDOM(list_emission_s,"li")
         print "NB : "+str(len(li_s))
         for li in li_s :
@@ -267,8 +290,14 @@ class D8:
             episode_url   = common.parseDOM(li,"a",ret="href")[0]
             episode_url   = re.findall("""\?vid=(.*)""",episode_url) [0]
             episode_url   = "D8 : VID="+episode_url.encode("utf-8")
+            if self.debug_mode :
+                print "episode url : "+str(episode_url)
             episode_name  = common.parseDOM(li,"h3")[0].encode("utf-8")
-            episode_image = re.findall("""style="background-image: url\((.*)\)""",li)[0]
+            if self.debug_mode :
+                print "episode name : "+str(episode_name)
+            episode_image = re.findall("""style=\"background-image: url\(\'(.*)\'\)""",li)[0]
+            if self.debug_mode :
+                print "episode image : "+str(episode_image)
             self.addLink(episode_name,episode_url,5,episode_image,fanart=fanartimage)
             
     def GET_EPISODES_CANAL(self,url,fanartimage):
