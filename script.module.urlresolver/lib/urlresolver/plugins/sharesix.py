@@ -42,6 +42,14 @@ class SharesixResolver(Plugin, UrlResolver, PluginSettings):
         try:
            # Otherwise just use the original url to get the content. For sharesix
             html = self.net.http_GET(web_url).content
+            
+            data = {}
+            r = re.findall(r'type="hidden"\s*name="(.+?)"\s*value="(.*?)"', html)
+            for name, value in r:
+                data[name] = value
+            data["method_free"] = "Free"
+            html = self.net.http_POST(web_url, data).content
+            
             # To build the streamable link, we need 
             # # the IPv4 addr (first 4 content below)
             # # the hash of the file

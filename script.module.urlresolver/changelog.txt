@@ -1,35 +1,7 @@
-[B]Version 1.1.0[/B]
-- New unresolvable() class for resolvers to return in case of an error, specify why it failed for addon to handle
-- New redx.png graphic file for reporting issues in resolvers
-- Updated all resolvers to display small box on exceptions
-- Added DoneVideo
-- Added EntroUpload
-- Added LimeVideo
-- Added MuchShare
-- Added PureVid
-- Added VideoZed
-- Added VidTo
-- Added YouWatch
-- Added LemUploads
-- Added MegaRelease
-- Added NosVideo
-- Added Vidto
-- Added MightyUpload
-- Added PrimeShare
-- Added Vidplay
-- Updated AllDebrid
-- Fixed RealDebrid
-- Fixed BillionUploads
-- Fixed 180Upload
-- Fixed HostingBulk
-- Fixed Ecostream
-- Fixed FlashX
-- Fixed DaClips
-
-[B]Version 1.0.9[/B]
+[B]Version 2.0.9[/B]
 - Fixed VeeHD
 
-[B]Version 1.0.8[/B]
+[B]Version 2.0.8[/B]
 - Added Bayfiles
 - Added CrunchyRoll
 - Added Movreel
@@ -47,18 +19,18 @@
 - Fixed VeeHD
 - Fixed VidHog
 
-[B]Version 1.0.7[/B]
+[B]Version 2.0.7[/B]
 - Vidxden: Fixed
 - Added: Sharesix (humla)
 
-[B]Version 1.0.6[/B]
+[B]Version 2.0.6[/B]
 - Videoweed: Allow Videoweed.eu/files/1423541 type
 - Divstage: Allow embedded urls to resolve
 - Filenuke: Removed www. from regex causing 502 errors
 - Xvidstage: Fixed
 - Stream2k: Fixed
 
-[B]Version 1.0.5[/B]
+[B]Version 2.0.5[/B]
 - Added streamcloud
 - Added zooupload
 - Fixed divxstage - handle url with .net
@@ -67,7 +39,8 @@
 - Fixed ecostream - new embed url pattern
 - Reverted putlocker code, added option for higher vid quality
 
-[B]Version 1.0.4[/B]
+[B]Version 2.0.4[/B]
+- Frodo branch
 - Updated putlocker and vidxden resolvers
 - Updated real-debrid
 

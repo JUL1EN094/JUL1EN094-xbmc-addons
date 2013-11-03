@@ -27,9 +27,9 @@ from lib import unwise
 #SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
 error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
-class NovamovResolver(Plugin, UrlResolver, PluginSettings):
+class NowvideoResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "novamov"
+    name = "nowvideo"
 
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -45,7 +45,7 @@ class NovamovResolver(Plugin, UrlResolver, PluginSettings):
             filekey = unwise.resolve_var(html, "flashvars.filekey")
             
             #get stream url from api
-            api = 'http://www.novamov.com/api/player.api.php?key=%s&file=%s' % (filekey, media_id)
+            api = 'http://www.nowvideo.sx/api/player.api.php?key=%s&file=%s' % (filekey, media_id)
             html = self.net.http_GET(api).content
             r = re.search('url=(.+?)&title', html)
             if r:
@@ -54,22 +54,22 @@ class NovamovResolver(Plugin, UrlResolver, PluginSettings):
                 r = re.search('file no longer exists',html)
                 if r:
                     raise Exception ('File Not Found or removed')
-            
+                
             return stream_url
         except urllib2.URLError, e:
-            common.addon.log_error('Novamov: got http error %d fetching %s' %
+            common.addon.log_error('Nowvideo: got http error %d fetching %s' %
                                     (e.code, web_url))
             return False
         except Exception, e:
-            common.addon.log_error('**** Novamov Error occured: %s' % e)
+            common.addon.log_error('**** Nowvideo Error occured: %s' % e)
             common.addon.show_small_popup(title='[B][COLOR white]NOVAMOV[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
             return False
 
     def get_url(self, host, media_id):
-        return 'http://www.novamov.com/video/%s' % media_id
+        return 'http://www.nowvideo.sx/video/%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(?:embed.)?(.+?)/(?:video/|embed.php\?v=)([0-9a-z]+)', url)
+        r = re.search('http://(www.|embed.nowvideo.(?:eu|sx))/(?:video/|embed.php\?v=([0-9a-z]+)&width)', url) 
         if r:
             return r.groups()
         else:
@@ -77,4 +77,4 @@ class NovamovResolver(Plugin, UrlResolver, PluginSettings):
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
-        return re.match('http://(www.|embed.)?no.+?/(video/|embed.php\?)', url) or 'novamov' in host
+        return re.match('http://(www.|embed.)?nowvideo.(?:eu|sx)/(video/|embed.php\?)(?:[0-9a-z]+|width)', url) or 'nowvideo' in host
