@@ -61,18 +61,18 @@ class UploadcResolver(Plugin, UrlResolver, PluginSettings):
             # modified by mscreations. get the file url from the returned javascript
             match = re.search("addVariable[(]'file','(.+?)'[)]", html, re.DOTALL + re.IGNORECASE)
             if match:
-                return match.group(1)
+                return match.group(1)+'|Referer=http%3A%2F%2Fwww.uploadc.com%2Fplayer%2Fplayer-embed.swf'
         
             raise Exception ('File Not Found or removed')
         except urllib2.URLError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %
                                    (e.code, web_url))
             common.addon.show_small_popup('Error','Http error: '+str(e), 8000, error_logo)
-            return False
+            return self.unresolvable(code=3, msg=e)
         except Exception, e:
             common.addon.log('**** Uploadc Error occured: %s' % e)
             common.addon.show_small_popup(title='[B][COLOR white]UPLOADC[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
-            return False
+            return self.unresolvable(code=0, msg=e)
 
     def get_url(self, host, media_id):
             return 'http://www.uploadc.com/%s' % (media_id)

@@ -53,15 +53,11 @@ class RPnetResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
             url   = url %(username, password, media_id)
             response = self.net.http_GET(url).content
             response = json.loads(response)
-            link = response['links'][0]['generated']
+            return response['links'][0]['generated']
         except Exception, e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
-            return False
-        
-        print 'RPnet: Resolved to %s' %link
-        return link
+            common.addon.log_error('**** Rpnet Error occured: %s' % e)
+            common.addon.show_small_popup(title='[B][COLOR white]RPNET[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
+            return self.unresolvable(code=0, msg=e)
 
     def get_url(self, host, media_id):
         return media_id
@@ -74,7 +70,7 @@ class RPnetResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
             url = 'http://premium.rpnet.biz/hoster.json'
             response = self.net.http_GET(url).content
             hosters = json.loads(response)
-            print 'rpnet patterns: %s' %hosters
+            common.addon.log('rpnet patterns: %s' % hosters)
             self.patterns = [re.compile(pattern) for pattern in hosters['supported']]
         return self.patterns 
 

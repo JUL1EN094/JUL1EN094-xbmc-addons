@@ -54,16 +54,17 @@ class NovamovResolver(Plugin, UrlResolver, PluginSettings):
                 r = re.search('file no longer exists',html)
                 if r:
                     raise Exception ('File Not Found or removed')
+                raise Exception ('Failed to parse url')
             
             return stream_url
         except urllib2.URLError, e:
             common.addon.log_error('Novamov: got http error %d fetching %s' %
                                     (e.code, web_url))
-            return False
+            return self.unresolvable(code=3, msg=e)
         except Exception, e:
             common.addon.log_error('**** Novamov Error occured: %s' % e)
             common.addon.show_small_popup(title='[B][COLOR white]NOVAMOV[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
-            return False
+            return self.unresolvable(code=0, msg=e)
 
     def get_url(self, host, media_id):
         return 'http://www.novamov.com/video/%s' % media_id

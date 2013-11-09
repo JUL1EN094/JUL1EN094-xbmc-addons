@@ -60,8 +60,8 @@ class CastampResolver(Plugin, UrlResolver, PluginSettings):
         flashplayer = ""
         file = ""
 
-        print "*******************************************"
-        print "web_url: " + web_url
+        common.addon.log("*******************************************")
+        common.addon.log("web_url: " + web_url)
 
         pattern_flashplayer = r"""'flashplayer': \"(.*?)\""""
         r = re.search(pattern_flashplayer, html)

@@ -59,6 +59,8 @@ class RealDebridResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
             #print str(jsonresult)
             if 'generated_links' in jsonresult :
                 generated_links = jsonresult['generated_links']
+                if len(generated_links) == 1:
+                    return generated_links[0][2].encode('utf-8')
                 line            = []
                 for link in generated_links :
                     extension = link[0].split('.')[-1]

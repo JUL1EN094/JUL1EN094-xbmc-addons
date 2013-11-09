@@ -27,7 +27,40 @@ from urlresolver import common
 #SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
 error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
-
+class Base36:
+    
+    def __init__(self,ls=False):
+        self.ls = False
+        if ls :
+            self.ls = ls
+    
+    def base36encode(self,number, alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'):
+        """Converts an integer to a base36 string."""
+        if not isinstance(number, (int, long)):
+            raise TypeError('number must be an integer')
+        base36 = ''
+        sign = ''
+        if number < 0:
+            sign = '-'
+            number = -number
+        if 0 <= number < len(alphabet):
+            return sign + alphabet[number]
+        while number != 0:
+            number, i = divmod(number, len(alphabet))
+            base36 = alphabet[i] + base36
+        return sign + base36
+     
+    def base36decode(self,number):
+        return int(number, 36)
+    
+    def param36decode(self,match_object) :
+        if self.ls :
+            param = int(match_object.group(0), 36)
+            return str(self.ls[param])
+        else :
+            return False
+    
+    
 class YouwatchResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "youwatch"
@@ -40,23 +73,29 @@ class YouwatchResolver(Plugin, UrlResolver, PluginSettings):
     def get_media_url(self, host, media_id):
         base_url = 'http://'+host+'.org/embed-'+media_id+'.html'
         try:
-            soup = self.net.http_GET(base_url).content
-            r = re.findall('file: "(.+)?",',soup.decode('utf-8'))
-            if r :
-                stream_url = r[0].encode('utf-8')
+            soup       = self.net.http_GET(base_url).content
+            html       = soup.decode('utf-8')
+            jscript    = re.findall("""function\(p,a,c,k,e,d\).*return p\}(.*)\)""",html)
+            if jscript :
+                lsParam   = eval(jscript[0].encode('utf-8'))
+                flashvars = self.exec_javascript(lsParam)
+                r         = re.findall('file:"(.*)",provider',flashvars)
+                if r :
+                    stream_url = r[0].encode('utf-8')
+                else :
+                    raise Exception ('File Not Found or removed')
             else :
-                raise Exception ('File Not Found or removed')  
-            return stream_url
-
+                raise Exception ('File Not Found or removed')
+            return stream_url  
         except urllib2.URLError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %
                                    (e.code, web_url))
             common.addon.show_small_popup('Error','Http error: '+str(e), 8000, error_logo)
-            return False
+            return self.unresolvable(code=3, msg=e)
         except Exception, e:
             common.addon.log('**** Youwatch Error occured: %s' % e)
             common.addon.show_small_popup(title='[B][COLOR white]YOUWATCH[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
-            return False
+            return self.unresolvable(code=0, msg=e)
 
     def get_url(self, host, media_id):
         return 'http://youwatch.org/%s' % media_id
@@ -73,6 +112,9 @@ class YouwatchResolver(Plugin, UrlResolver, PluginSettings):
         else :
             return False
 
+    def exec_javascript(self,lsParam) :
+        return re.sub('[a-zA-Z0-9]+',Base36(lsParam[3]).param36decode,str(lsParam[0]))
+    
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': 
             return False
