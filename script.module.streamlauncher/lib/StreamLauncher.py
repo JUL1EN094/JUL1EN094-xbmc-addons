@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.1.0 par JUL1EN094
+# version 0.1.1 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -215,7 +215,7 @@ class StreamLauncher():
                 data = keyboard.getText()
         # On retourne l'url si définie
         if data :
-            return True
+            return data
         # Sinon on retourne False
         else :
             return False

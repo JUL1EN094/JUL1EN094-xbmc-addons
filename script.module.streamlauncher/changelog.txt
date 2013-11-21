@@ -1,4 +1,7 @@
-﻿Version 0.0.9 (04-07-2013) par JUL1EN094 :
+﻿Version 0.1.1 (21-11-2013) par JUL1EN094 :
+- Résolution de bug : modification de getLinkUrl (return "data" instead of "True")
+
+Version 0.0.9 (04-07-2013) par JUL1EN094 :
 - Résolution de bug : modification de l'init des 'Infos'
 - Résolution de bug : modification de self.getInfosTitle() (le lien se termine par '/' et pas de infos['Title'])
 - Modif requirement : urlresolver v2.0.9 -> v2.1.0
