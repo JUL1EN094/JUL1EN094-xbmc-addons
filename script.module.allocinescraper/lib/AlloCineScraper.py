@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.1.2 par JUL1EN094
+# v0.1.3 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
