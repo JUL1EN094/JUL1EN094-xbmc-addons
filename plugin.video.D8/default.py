@@ -20,8 +20,8 @@ common.plugin = "plugin.video.D8"
 
 __addonID__         = "plugin.video.D8"
 __author__          = "JUL1EN094"
-__date__            = "23-10-2013"
-__version__         = "1.0.2"
+__date__            = "25-12-2013"
+__version__         = "1.0.3"
 __credits__         = ""
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __settings__        = __addon__
@@ -295,7 +295,10 @@ class D8:
             episode_name  = common.parseDOM(li,"h3")[0].encode("utf-8")
             if self.debug_mode :
                 print "episode name : "+str(episode_name)
-            episode_image = re.findall("""style=\"background-image: url\(\'(.*)\'\)""",li)[0]
+            try :
+                episode_image = re.findall("""style=\"background-image: url\((.*)\)""",li)[0]
+            except :
+                episode_image = re.findall("""style=\"background-image: url\(\'(.*)\'\)""",li)[0]
             if self.debug_mode :
                 print "episode image : "+str(episode_image)
             self.addLink(episode_name,episode_url,5,episode_image,fanart=fanartimage)
