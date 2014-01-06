@@ -45,7 +45,7 @@
 
 <addon id="plugin.video.D8"
        name="D8"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

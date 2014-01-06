@@ -20,8 +20,8 @@ common.plugin = "plugin.video.D8"
 
 __addonID__         = "plugin.video.D8"
 __author__          = "JUL1EN094"
-__date__            = "25-12-2013"
-__version__         = "1.0.3"
+__date__            = "05-01-2014"
+__version__         = "1.0.4"
 __credits__         = ""
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __settings__        = __addon__
@@ -105,7 +105,7 @@ class D8:
         elif mode==1:
             if self.debug_mode:
                 print "GET_EPISODES D8("+url+","+iconimage+")"
-            self.GET_EPISODES_D8(url,iconimage)
+            self.GET_EPISODES_D8(url,iconimage,name)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory(handle=int(sys.argv[1]),category=__language__(30000))
             xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -209,17 +209,27 @@ class D8:
     def GET_EMISSIONS_DIR(self,url,iconimage=''):    # Olala mal de crâne!!
         soup            = self.get_soup(url)
         html            = soup.decode("iso-8859-1")
-        try :                                     ## Ex Direct8 -> migrated Canal
+        ## Ex Direct8 -> migrated Canal
+        try :                                     
             cssnt_tabs_clic = common.parseDOM(html,"ul",attrs={"class":u"cssnt-tabs-clic"}) [0]
             li_s            = common.parseDOM(cssnt_tabs_clic,"li")
             for li in li_s :
                 titre = common.parseDOM(li,"h3")[0]
-                if (titre!=u'Commentaires') and (titre!=u'A propos') and (titre!=u'Concept') and (titre!=u'Commentez') :
-                    url_cat = common.parseDOM(li,"a",ret="href")[0].encode("utf-8")
-                    self.addDir(titre.encode("utf-8"),WEBROOT+url_cat,1,iconimage)
+                print str(titre.encode('utf-8'))
+                if titre.encode('utf-8') == 'Vidéos' :
+                    epiCat_s        = common.parseDOM(html,'li',attrs={'id':'liste','class':'current'})
+                    if len(epiCat_s)>1 :
+                        for epiCat in epiCat_s :
+                            print str(epiCat.encode('utf-8'))
+                            titre = common.parseDOM(epiCat,'h3',attrs={'class':'onglet-title'})[0]
+                            self.addDir(titre.encode("utf-8"),url,1,iconimage)
+                    else :
+                        self.addDir(titre.encode("utf-8"),url,1,iconimage)
+        ## CANAL PLUS original style
         except:
+            print 'CANALPLUS'
             canalplus_list = common.parseDOM(html,"div",attrs={"id":"canalplus"})
-            if canalplus_list :                    ## CANAL PLUS original style
+            if canalplus_list :                    
                 canalplus = canalplus_list [0]
                 mainSection_pattern = common.parseDOM(canalplus,"div",attrs={"id":"mainSection"}) [0]
                 button_plus_pattern = common.parseDOM(mainSection_pattern,"p",attrs={"class":u"button-plus"})
@@ -261,29 +271,38 @@ class D8:
                     print 'url'+str(item_url)
                     self.addDir(item_name,item_url,3,item_image)
 
-    def GET_EPISODES_D8(self,url,fanartimage):
+    def GET_EPISODES_D8(self,url,fanartimage,name):
         xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
         soup              = self.get_soup(url)
         html              = soup.decode("iso-8859-1")
-        plus_video_s      = common.parseDOM(html,"a",attrs={"id":"voir-plus-video"},ret="onclick")
+        epiCat_s          = common.parseDOM(html,'li',attrs={'id':'liste','class':'current'})
+        url_allitem_end = ""
+        pid    = re.findall('data-pid=\'([0-9]+)\'',html)[0]
+        ztid   = re.findall('data-ztidOnglet=\'([0-9]+)\'',html)[0]
+        onglet = re.findall('data-iOnglet=\'([0-9]+)\'',html)[0]
+        print 'PID ' +str(pid)
+        print 'ZTID ' +str(ztid)
+        print 'ONGLET ' +str(onglet)
+        plus_video_s      = common.parseDOM(html,"a",attrs={"id":"btn-plus-video_[0-9]"},ret="onclick")
         if plus_video_s :
-            param_onglet     = ()
-            plus_video       = plus_video_s[0]
-            param_onglets_1  = re.findall(u"""javascript:afficherPlusDePhotos(.*);""", plus_video)[0].replace("\'","").replace("(","").replace(")","")
-            print param_onglets_1
-            param_onglet     = param_onglets_1.split(",")
-            url_allitem      = WEBLIVEONGLET+"?pid="+param_onglet[1].encode("utf-8").strip()+"&ztid="+param_onglet[2].encode("utf-8").strip()+"&onglet="+param_onglet[0].encode("utf-8").strip()+"&page="+param_onglet[3].encode("utf-8").strip()
-            xml_allitem      = self.get_soup(url_allitem)
-            xml              = xml_allitem.decode("iso-8859-1")
-            list_emission_s  = common.parseDOM(xml,"ul",attrs={"class":u"list-programmes-emissions current"})[0]            
-        else : 
-            try :
-                cssnt_tabs_target = common.parseDOM(html,"ul",attrs={"class":u"cssnt-tabs-target"})[0]
-            except :
-                cssnt_tabs_target = common.parseDOM(html,"ul",attrs={"class":u"cssnt-tabs-target current"})[0]
-            list_emission_s   = common.parseDOM(cssnt_tabs_target,"ul",attrs={"class":u"list-programmes-emissions current"})[0]
-        li_s              = common.parseDOM(list_emission_s,"li")
-        print "NB : "+str(len(li_s))
+            n = 0
+            while (n < len(epiCat_s)) :
+                url_allitem_end += "&nbPlusVideos"+str(n)+"=20"
+                n += 1
+        url_allitem = WEBLIVEONGLET+"?pid="+str(pid)+"&ztid="+str(ztid)+"&onglet="+str(onglet)+url_allitem_end
+        print 'URL : '+ url_allitem
+        xml_allitem = self.get_soup(url_allitem)
+        xml         = xml_allitem.decode("iso-8859-1")
+        print str(xml.encode('utf-8'))
+        epiCat_s = common.parseDOM(xml,'li',attrs={'id':'liste','class':'current'})
+        if len(epiCat_s)>1 :
+            for epiCat in epiCat_s :
+                titre = common.parseDOM(epiCat,'h3',attrs={'class':'onglet-title'})[0]
+                if titre.encode('utf-8') == name :
+                    Items = epiCat
+        else :
+            Items = epiCat_s[0]
+        li_s = common.parseDOM(Items,'li')
         for li in li_s :
             print "LI : "
             print li.encode("utf-8")
@@ -301,8 +320,8 @@ class D8:
                 episode_image = re.findall("""style=\"background-image: url\(\'(.*)\'\)""",li)[0]
             if self.debug_mode :
                 print "episode image : "+str(episode_image)
-            self.addLink(episode_name,episode_url,5,episode_image,fanart=fanartimage)
-            
+            self.addLink(episode_name,episode_url,5,episode_image,fanart=fanartimage)                
+                    
     def GET_EPISODES_CANAL(self,url,fanartimage):
         xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
         soup                 = self.get_soup(url)
