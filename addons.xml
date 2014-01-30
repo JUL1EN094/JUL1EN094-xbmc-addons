@@ -239,7 +239,7 @@
 
 <addon id="script.module.urlresolver"
      name="urlresolver"
-     version="2.1.2.003"
+     version="2.1.2.004"
      provider-name="Eldorado">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
