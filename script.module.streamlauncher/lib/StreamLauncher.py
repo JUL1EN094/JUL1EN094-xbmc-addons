@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.1.1 par JUL1EN094
+# version 0.1.2 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -21,7 +21,7 @@
 #---------------------------------------------------------------------
 # IMPORTS
 #xbmc and generals tools
-import xbmc, xbmcgui, xbmcplugin 
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon 
 import os, sys, shutil
 import time
 import urllib
@@ -42,6 +42,14 @@ ERROR = 4
 CONNECTING = 5
 UNDEFINED = 6
 FINISHED = 7
+#---------------------------------------------------------------------
+# PATH
+__addonID__    = "script.module.streamlauncher"
+__addon__      = xbmcaddon.Addon( __addonID__ )
+__addonDir__   = xbmc.translatePath(__addon__.getAddonInfo( "path" ))
+__imagesDir__  = xbmc.translatePath(os.path.join( __addonDir__, 'resources', 'images'))
+__OkLogo__     = xbmc.translatePath(os.path.join(__imagesDir__,'greeninch.png'))
+__ErrorLogo__  = xbmc.translatePath(os.path.join(__imagesDir__,'redx.png'))
 #---------------------------------------------------------------------
 
 class StreamLauncher():
@@ -277,7 +285,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)        
                 #ETAPE 1 : définition de videoPlayerUrl --> url qui sera téléchargée
@@ -294,7 +302,7 @@ class StreamLauncher():
                                 time.sleep(0.1)
                             else :
                                 progress_launch.close()
-                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000)')
+                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000,'+__ErrorLogo__+')')
                                 launching = False
                                 time.sleep(0.1)
                         # si non débridage
@@ -306,7 +314,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)            
                 #ETAPE 2 : Définition et création du répertoire local
@@ -329,7 +337,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)
                 #ETAPE 3 : création de l'instance du downloader
@@ -346,7 +354,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création de l\'instance du downloader",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création de l\'instance du downloader",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)            
                 #ETAPE 4 : Download
@@ -361,7 +369,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de lancement du téléchargement",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de lancement du téléchargement",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)
         except :
@@ -389,7 +397,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)        
                 #ETAPE 1 : définition de tempurl --> url qui sera téléchargée
@@ -406,7 +414,7 @@ class StreamLauncher():
                                 time.sleep(0.1)
                             else :
                                 progress_launch.close()
-                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000)')
+                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000,'+__ErrorLogo__+')')
                                 launching = False
                                 time.sleep(0.1)
                         # si non débridage
@@ -418,7 +426,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)            
                 #ETAPE 2 : Définition et création du répertoire local
@@ -441,7 +449,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)
                 #ETAPE 3 : création de l'instance du downloader
@@ -462,7 +470,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création de l\'instance du downloader",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création de l\'instance du downloader",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)            
                 #ETAPE 4 : Download
@@ -475,7 +483,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du lancement du téléchargement",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du lancement du téléchargement",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1) 
                 #Etape 5 : Lancement de la video
@@ -511,7 +519,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la création du lanceur",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)
                 #ETAPE 1 : définition de videoPlayerUrl
@@ -528,7 +536,7 @@ class StreamLauncher():
                                 time.sleep(0.1)
                             else :
                                 progress_launch.close()
-                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000)')
+                                xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors du débridage de la video",5000,'+__ErrorLogo__+')')
                                 launching = False
                                 time.sleep(0.1)
                         # si non débridage
@@ -540,7 +548,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la définition de l\'url de la video lue",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)
                 #ETAPE 2 : Envoie de videoPlayerUrl à XBMC
@@ -559,7 +567,7 @@ class StreamLauncher():
                     except :
                         print_exc()
                         progress_launch.close()
-                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000)')
+                        xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de l\'envoie de l\'url définie à XBMC",5000,'+__ErrorLogo__+')')
                         launching = False
                         time.sleep(0.1)
         except :
@@ -611,7 +619,7 @@ class StreamLauncher():
                     try :
                         download_info = self.downloader.getInfos()
                         if download_info['status'] == FINISHED :
-                            xbmc.executebuiltin('XBMC.Notification("DPstream","Téléchargement terminé",10000)')
+                            xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Téléchargement terminé",10000,'+__OkLogo__+')')
                             notnotif = False
                     except :
                         pass
@@ -725,7 +733,7 @@ class StreamLauncher():
                         time.sleep(0.5)
                 except :
                     print_exc()
-                    xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la connexion au fichier distant",5000)')
+                    xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la connexion au fichier distant",5000,'+__ErrorLogo__+')')
                     progress.close()
                     try :
                         self.downloader.stop()
@@ -759,7 +767,7 @@ class StreamLauncher():
                         step = 2
                 except:
                     print_exc()            
-                    xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la connexion au fichier distant",5000)')
+                    xbmc.executebuiltin('XBMC.Notification("StreamLauncher","Erreur lors de la connexion au fichier distant",5000,'+__ErrorLogo__+')')
                     progress.close()
                     try :
                         self.downloader.stop()
