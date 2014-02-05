@@ -1,3 +1,6 @@
+[B]Version 2.4.0.002[/B]
+- Set FR language by default
+
 [B]Version 2.4.0.001[/B]
 - Add tvdb language option
 - Add 'Reset Database' option
