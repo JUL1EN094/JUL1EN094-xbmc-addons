@@ -1,0 +1,2 @@
+﻿Version 0.0.1 (07-02-2014) par JUL1EN094 :
+- Creation de la lib getTrailer
