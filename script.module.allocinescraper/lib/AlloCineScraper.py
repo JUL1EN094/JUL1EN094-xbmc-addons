@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.1.3 par JUL1EN094
+# v0.1.4 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     AlloCineScraper XBMC Module
@@ -19,7 +19,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 #---------------------------------------------------------------------
-
 #IMPORTS
 #xbmc 
 import xbmc
@@ -252,7 +251,11 @@ class AlloCineScraper():
             #realisateurs
             if 'directors' in castingShortdict :  xbmcDict['Director'] = castingShortdict['directors']
             #acteurs
-            if 'actors'    in castingShortdict :  xbmcDict['Cast'] = castingShortdict['actors']
+            if 'actors' in castingShortdict :  
+                actors = castingShortdict['actors'].split(',')
+                xbmcDict['Cast'] = []
+                for actor in actors :
+                    xbmcDict['Cast'].append(actor)    
         # Bande Annonce
         if 'trailer' in movieDict :
             trailerDict = movieDict['trailer']
@@ -260,7 +263,6 @@ class AlloCineScraper():
                 trailerCode = trailerDict['code']
                 trailersurl = []
                 trailersurl = self.getTrailersUrl(trailerCode, maxquality=maxTrailerQuality)
-                xbmcDict['TrailersUrl'] = trailersurl 
                 if ('hd' in trailersurl) and (trailersurl['hd'] != ''):
                     xbmcDict['Trailer'] = trailersurl['hd']
                 elif ('md' in trailersurl) and (trailersurl['md'] != ''):
@@ -318,4 +320,3 @@ class AlloCineScraper():
                 print '--------------'                       
         else :
             return False
-            

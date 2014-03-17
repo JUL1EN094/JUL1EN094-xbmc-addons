@@ -1,4 +1,8 @@
-﻿Version 0.1.3 (25-12-2013) par JUL1EN094 :
+﻿Version 0.1.4 (17-03-2014) par JUL1EN094 :
+- Gotham adaptation 
+- Fix Cast as list of tuples
+
+Version 0.1.3 (25-12-2013) par JUL1EN094 :
 Increase minimum python version to be compatible with Gotham (2.0 -> 2.1.0)
 
 Version 0.1.2 (22-05-2013) par JUL1EN094 :
