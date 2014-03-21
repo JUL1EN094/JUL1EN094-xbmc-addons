@@ -1,2 +1,5 @@
+[B]Version 1.0.1[/B]
+- Change repository's access url
+
 [B]Version 1.0.0[/B]
 - Initial version
