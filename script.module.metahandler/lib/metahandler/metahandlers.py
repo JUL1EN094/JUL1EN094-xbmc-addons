@@ -956,8 +956,7 @@ class MetaData:
         else:
             common.addon.log('No match in local DB', 0)
             return None
-
-
+            
     def _cache_lookup_by_name(self, media_type, name, year=''):
         '''
         Lookup in SQL DB for video meta data by name and year
@@ -1002,6 +1001,39 @@ class MetaData:
             common.addon.log('No match in local DB', 0)
             return None
 
+    
+    def _cache_lookup_by_nocover(self, media_type):
+        '''
+        Lookup in SQL DB for video meta data without any cover or thumb or banner
+        
+        Args:
+            media_type (str): 'movie' or 'tvshow'
+                        
+        Returns:
+            "LIST of DICT" of matched meta data or None if no match.
+        '''        
+        if media_type == self.type_movie:
+            sql_select = "SELECT * FROM movie_meta WHERE cover_url = '' AND thumb_url = '' AND backdrop_url = '' "
+        elif media_type == self.type_tvshow:
+            sql_select = "SELECT * FROM tvshow_meta WHERE cover_url = '' AND banner_url = '' AND backdrop_url = ''"
+            if DB == 'mysql':
+                sql_select = sql_select.replace("ISNULL", "IS NULL")
+        common.addon.log('Looking up in local cache by nocover for: %s' % (media_type), 0)
+        try:
+            self.dbcur.execute(sql_select)            
+            lsmatched = self.dbcur.fetchall()
+            matchedrow = []
+            for matched in lsmatched :
+                matchedrow.append(dict(matched))
+        except Exception, e:
+            common.addon.log('************* Error selecting from cache db: %s' % e, 4)
+            return None
+        if matchedrow:
+            common.addon.log('Found meta information by nocover in cache table: %s' % matchedrow, 0)
+            return matchedrow
+        else:
+            common.addon.log('No match in local DB', 0)
+            return None
     
     def _cache_save_video_meta(self, meta_group, name, media_type, overlay=6):
         '''
@@ -1095,7 +1127,7 @@ class MetaData:
             
         if imdb_id:
             sql_delete = "DELETE FROM %s WHERE imdb_id = '%s'" % (table, imdb_id)
-        elif tmdb_id:
+        elif tmdb_id and media_type == self.type_movie :
             sql_delete = "DELETE FROM %s WHERE tmdb_id = '%s'" % (table, tmdb_id)
         else:
             name =  self._clean_string(name.lower())
@@ -1107,6 +1139,9 @@ class MetaData:
         common.addon.log('SQL DELETE: %s' % sql_delete, 0)
         try:
             self.dbcur.execute(sql_delete)
+            #Commit all transactions
+            self.dbcon.commit()
+            common.addon.log('SQL DELETE Successfully Commited', 0)
         except Exception, e:
             common.addon.log('************* Error attempting to delete from cache table: %s ' % e, 4)
             pass    
