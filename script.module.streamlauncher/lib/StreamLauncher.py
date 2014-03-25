@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.1.2 par JUL1EN094
+# version 0.1.3 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -53,7 +53,7 @@ __ErrorLogo__  = xbmc.translatePath(os.path.join(__imagesDir__,'redx.png'))
 #---------------------------------------------------------------------
 
 class StreamLauncher():
-    def __init__(self, url=False, Infos=False, Type=False, dlfolder=False, precachesize=False, intro = False, introtime = False, needdebrid = False):
+    def __init__(self, url=False, Infos=False, Type=False, dlfolder=False, precachesize=False, intro = False, introtime = False, needdebrid = False, KeepDownloadedFile=False):
         #mode 
         self.mode             = False
         #url d'entrée
@@ -85,7 +85,9 @@ class StreamLauncher():
         #video  : durée de la vidéo lue déjà visionnée
         self.videotimewatched = False
         #extension de la video
-        self.extension        = False  
+        self.extension        = False
+        #Conservation du fichier téléchargé
+        self.KeepDownloadedFile = KeepDownloadedFile  
         
         #-------------
         #détermination du lien : self.linkurl
@@ -633,8 +635,9 @@ class StreamLauncher():
                 print str(item[0])+' : '+str(item[1])    
             #Si le film est complet
             if download_info['status'] == FINISHED : 
-                if not xbmcgui.Dialog().yesno("StreamLauncher", "Fichier complet : \""+ self.infos['Title'] +"\"\nSouhaitez-vous le conserver ?") :
-                    shutil.rmtree(self.videolocalfolder)
+                if not self.KeepDownloadedFile :
+                    if not xbmcgui.Dialog().yesno("StreamLauncher", "Fichier complet : \""+ self.infos['Title'] +"\"\nSouhaitez-vous le conserver ?") :
+                        shutil.rmtree(self.videolocalfolder)
             #Sinon si le film est incomplet, on demande quoi faire
             elif download_info['status'] == DOWNLOADING  :
                 #Si relance de la lecture
