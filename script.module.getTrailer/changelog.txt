@@ -1,2 +1,5 @@
-﻿Version 0.0.1 (07-02-2014) par JUL1EN094 :
+﻿Version 0.0.2 (31-03-2014) par JUL1EN094 :
+- Modification de la chaîne recherchée (bande annonce officielle -> bande annonce) ==> plus de résultats
+
+Version 0.0.1 (07-02-2014) par JUL1EN094 :
 - Creation de la lib getTrailer

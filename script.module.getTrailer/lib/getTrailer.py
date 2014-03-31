@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.1 par JUL1EN094
+# v0.0.2 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     getTrailer XBMC Module
@@ -58,7 +58,7 @@ class getTrailer():
                     res_name.append(res.title.encode('utf8'))
                     res_url.append(res.url.encode('utf8'))
         else:
-            results = self.Search_YTonGoogle(search+' bande annonce officielle')
+            results = self.Search_YTonGoogle(search+' bande annonce')
             for res in results:
                 if res.url.encode('utf8').startswith('http://www.youtube.com/watch'):
                     res_name.append(res.title.encode('utf8'))
@@ -71,7 +71,7 @@ class getTrailer():
                 default = search
                 title   = 'Recherche manuelle de B.A. pour '+search
             else:
-                default = search+' bande annonce officielle'
+                default = search+' bande annonce'
                 title   = 'Recherche manuelle de B.A. pour '+search
             keyboard = xbmc.Keyboard(default, title)
             keyboard.doModal()        
