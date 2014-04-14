@@ -20,8 +20,8 @@ common.plugin = "plugin.video.D8"
 
 __addonID__         = "plugin.video.D8"
 __author__          = "JUL1EN094"
-__date__            = "05-01-2014"
-__version__         = "1.0.4"
+__date__            = "14-04-2014"
+__version__         = "1.0.5"
 __credits__         = ""
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __settings__        = __addon__
@@ -414,7 +414,7 @@ class D8:
                     if live :
                         video_url = common.parseDOM(video,"IPAD")[0]
                     else :
-                        video_url = common.parseDOM(video,"HD")[0]
+                        video_url = common.parseDOM(video,"HLS")[0]
                 except :
                     video_url = common.parseDOM(video,"HAUT_DEBIT")[0]
                 return video_url                                                          

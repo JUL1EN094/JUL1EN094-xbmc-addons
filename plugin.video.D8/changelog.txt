@@ -1,3 +1,6 @@
+﻿1.0.5 (14-04-2014) par JUL1EN04
++ Modification du choix de la video : HD -> HLS
+
 1.0.4 (05-01-2014) par JUL1EN094  
 + Optimisation du parsing
 
