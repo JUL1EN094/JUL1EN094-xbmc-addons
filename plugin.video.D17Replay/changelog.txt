@@ -1,4 +1,8 @@
-﻿1.0.6 (01-02-2013) par JUL1EN094
+﻿1.0.7 (28-04-2014) par JUL1EN094
++ Modification de la qualité de la video ('HD' --> 'HLS') suite aux modifications chez canal+
++ Modification du parsing 
+
+1.0.6 (01-02-2013) par JUL1EN094
 + Adaptation 0.0.6 pour Frodo
 
 0.0.6 (28-01-2013) par JUL1EN094

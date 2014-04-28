@@ -22,8 +22,8 @@ common.plugin      = "plugin.video.D17Replay"
 
 __addonID__        = "plugin.video.D17Replay"
 __author__         = "JUL1EN094"
-__date__           = "01-02-2013"
-__version__        = "1.0.6"
+__date__           = "28-04-2014"
+__version__        = "1.0.7"
 __credits__        = "Merci aux auteurs des autres addons replay du dépôt Passion-XBMC pour leur inspiration"
 __addon__          = xbmcaddon.Addon( __addonID__ )
 __settings__       = __addon__
@@ -154,6 +154,8 @@ class D17Replay:
             for block in block_videos_s :
                 bvh_titles_s = common.parseDOM(block,"h3",attrs={"class":"bvh-title"})
                 for bvh in bvh_titles_s :
+                    if bvh.startswith("<a href") : 
+                        bvh = common.parseDOM(bvh,'a')[0]
                     self.addDir(bvh.encode("utf-8"),url,2,"")
 
     def GET_EPISODES(self,url,name):
@@ -167,6 +169,8 @@ class D17Replay:
             for block in block_videos_s :
                 bvh_titles_s = common.parseDOM(block,"h3",attrs={"class":"bvh-title"})
                 for bvh in bvh_titles_s :
+                    if bvh.startswith("<a href") : 
+                        bvh = common.parseDOM(bvh,'a')[0]
                     if bvh.encode("utf-8")==name :
                         Mylist = common.parseDOM(block,"ul",attrs={"class":"bv-list MYlist"})[0]
                         li_s   = common.parseDOM(Mylist,"li")
@@ -184,7 +188,7 @@ class D17Replay:
         for video in video_s :
             id = common.parseDOM(video,'ID') [0]
             if str(id) == str(vid) :
-                video_url = common.parseDOM(video,"HD")[0]
+                video_url = common.parseDOM(video,"HLS")[0]
                 return video_url            
           
     def set_debug_mode(self):
