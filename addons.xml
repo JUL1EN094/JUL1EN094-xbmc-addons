@@ -238,7 +238,7 @@
 
 <addon id="script.module.metahandler"
      name="metahandler"
-     version="2.6.0.001"
+     version="2.7.0.001"
      provider-name="Eldorado">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
