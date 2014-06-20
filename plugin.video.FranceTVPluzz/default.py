@@ -26,8 +26,8 @@ common.plugin = "plugin.video.FranceTVPluzz"
 
 __addonID__         = "plugin.video.FranceTVPluzz"
 __author__          = "JUL1EN094"
-__date__            = "01-03-2013"
-__version__         = "1.0.7"
+__date__            = "20-06-2014"
+__version__         = "1.1.0"
 __credits__         = ""
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __settings__        = __addon__
@@ -165,7 +165,7 @@ class FranceTVPluzz:
             prog_list = []
             for programme in programmes :
                 video_cat = programme['rubrique'].encode("utf-8")
-                if video_cat == cat:
+                if (video_cat == cat) or (cat=='Autre' and video_cat=='') :
                     video_name  = programme['titre'].encode("utf-8")
                     if video_name not in prog_list :
                         video_url   = url
@@ -173,8 +173,8 @@ class FranceTVPluzz:
                         video_infos = {}
                         if programme['accroche'] :
                             video_infos['Plot']  = programme['accroche'].encode("utf-8")
-                        if programme['realisateurs'] :
-                            video_infos['Cast']      = programme['acteurs'].encode("utf-8")
+                        if programme['acteurs'] :
+                            video_infos['Cast'] = programme['acteurs'].encode('utf-8').split(", ")
                         if programme['realisateurs'] :
                             video_infos['Director']  = programme['realisateurs'].encode("utf-8")
                         if programme['format'] :
@@ -204,7 +204,7 @@ class FranceTVPluzz:
             programmes  = jsoncatalog['programmes']
             for programme in programmes :
                 video_cat = programme['rubrique'].encode("utf-8")
-                if video_cat == cat:
+                if (video_cat == cat) or (cat=='Autre' and video_cat=='') :
                     video_name  = programme['titre'].encode("utf-8")
                     if video_name == name : 
                         if programme['sous_titre'] != "" :
@@ -214,8 +214,8 @@ class FranceTVPluzz:
                         video_infos = {}
                         if programme['accroche'] :
                             video_infos['Plot']      = programme['accroche'].encode("utf-8")
-                        if programme['realisateurs'] :
-                            video_infos['Cast']      = programme['acteurs'].encode("utf-8")
+                        if programme['acteurs'] :
+                            video_infos['Cast'] = programme['acteurs'].encode('utf-8').split(", ")
                         if programme['realisateurs'] :
                             video_infos['Director']  = programme['realisateurs'].encode("utf-8")
                         video_infos['Genre'] = cat
@@ -271,34 +271,6 @@ class FranceTVPluzz:
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_DATE )
         
-            
-#   "id_diffusion":"76737822",
-#   "code_programme":"chante",
-#   "id_programme":"6663",
-#   "titre":"Chante !",
-#   "sous_titre":"Disgr\u00e2ce",
-#   "accroche":"Tina, Audrey et Stan entrent dans l'\u00e2ge adulte...",
-#   "url_image_racine":"\/staticftv\/ref_emissions\/2013-02-03\/COL_277040_csa1",
-#   "extension_image":"jpg",
-#   "datemodif_image":"1359792017",
-#   "chaine":"france2",
-#   "date":"2013-02-03",
-#   "heure":"06:05",
-#   "duree":"25",
-#   "csa_code":"TP",
-#   "csa_nom_long":"Tous publics",
-#   "nb_vues":"",
-#   "indice_selection_ftv_chaine":"72",
-#   "indice_selection_ftv_home":"",
-#   "rubrique":"S\u00e9rie & Fiction",
-#   "format":"S\u00e9rie",
-#   "genre_simplifie":"S\u00e9rie ",
-#   "cible_publicitaire":"",
-#   "production":"",
-#   "nationalite":"fran\u00e7aise",
-#   "presentateurs":"",
-#   "invites":"",
-
     def get_catalog_configuration(self,filename) :
         zf              = zipfile.ZipFile(CATALOG_PATH)
         data            = zf.read(filename)

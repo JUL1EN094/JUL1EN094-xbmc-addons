@@ -1,4 +1,15 @@
-﻿1.0.7.(01-03-2013) par JUL1EN094
+1.1.0 (20-06-2014) par JUL1EN094
++ Nettoyage du code
+
+1.0.9 (20-06-2014) par JUL1EN094
++ Reprise de modifications de la version 1.0.8
++ Plus de vidéos dans la catégorie 'Autres'
++ Ajout de l'import simplejson dans addon.xml
+
+1.0.8.(17-06-2014) par Inrepublica
++ Correction d'un bug avec les series et fictions (Merci à quatsch pour son correctif)
+
+1.0.7 (01-03-2013) par JUL1EN094
 + Récupération du catalog a chaque ouverture du plugin plutiot que une fois par jour
 + Ajout des dates de diffusion dans les titres
 
