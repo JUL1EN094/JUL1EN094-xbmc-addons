@@ -22,25 +22,20 @@ from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
 import urllib,urllib2
 from urlresolver import common
-import re
+import re,xbmc
 
 class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "uploadcrazy.net"
+    name = "trollvid.net"
     
     def __init__(self):
         p = self.get_setting('priority') or 100
         self.priority = int(p)
         self.net = Net()
-        # http://video.vidcrazy.net/nvs.php?file=tenkai-knights06&w=640&h=360&bg=http://i.imgur.com/hdCEPmh.jpg
-        # http://video.vidcrazy.net/ancv.php?file=aladdin305&w=640&h=360&bg=http://i.imgur.com/hdCEPmh.jpg
-        # http://embeds.uploadcrazy.net/ancv.php?file=aladdin305&w=640&h=360&bg=http://i.imgur.com/H1dqUbf.jpg
-        self.pattern = 'http://((?:embeds.)?uploadcrazy.net)/(\D+.php\?file=[0-9a-zA-Z\-_]+)[&]*'
-        #self.pattern = 'http://((?:www.)?vidcrazy.net)/embed/(.+?)'
+        self.pattern = 'http://((?:sv\d*.)?trollvid.net)/embed.php.file=([0-9a-zA-Z]+)' # http://sv3.trollvid.net/embed.php?file=([0-9a-zA-Z]+)&
     
     def get_url(self, host, media_id):
-            return 'http://embeds.uploadcrazy.net/%s' % (media_id)
-            #return 'http://embeds.uploadcrazy.net/embed.php?file=%s' % (media_id)
+            return 'http://sv3.trollvid.net/embed.php?file=%s&w=800&h=600&bg=' % (media_id)
     
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)
@@ -55,19 +50,31 @@ class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
         web_url = self.get_url(host, media_id)
         post_url = web_url
         hostname = self.name
+        common.addon.log(media_id)
         common.addon.log(web_url)
         try:
             resp = self.net.http_GET(web_url)
             html = resp.content
         except urllib2.URLError, e:
-            common.addon.log_error(hostname+': got http error %d fetching %s' % (e.code, web_url))
+            common.addon.log_error(hostname+': got http error %d fetching 1st url %s' % (e.code, web_url))
             return self.unresolvable(code=3, msg='Exception: %s' % e) #return False
-        #print html
-        r = re.search("'file'\s*:\s*'(.+?)'", html)
+        
+        #try:
+        #	data = {}; r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">', html); data['usr_login']=''
+        #	for name, value in r: data[name] = value
+        #	data['imhuman']='Proceed to video'; data['btn_download']='Proceed to video'
+        #	xbmc.sleep(2000)
+        #	html = self.net.http_POST(post_url, data).content
+        #except urllib2.URLError, e:
+        #    common.addon.log_error(hostname+': got http error %d fetching 2nd url %s' % (e.code, web_url))
+        #    return self.unresolvable(code=3, msg='Exception: %s' % e) #return False
+        
+        r = re.search('clip\s*:\s*\n*\s*{\s*\n*\s*\n*\s*\n*\s*url\s*:\s*"(http.+?)"', html)
         if r:
             stream_url = urllib.unquote_plus(r.group(1))
+            #stream_url = str(r.group(1))
+            print stream_url
         else:
             common.addon.log_error(hostname+': stream url not found')
             return self.unresolvable(code=0, msg='no file located') #return False
         return stream_url
-	

@@ -32,13 +32,11 @@ class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
         p = self.get_setting('priority') or 100
         self.priority = int(p)
         self.net = Net()
-        # http://video.vidcrazy.net/nvs.php?file=tenkai-knights06&w=640&h=360&bg=http://i.imgur.com/hdCEPmh.jpg
-        # http://video.vidcrazy.net/ancv.php?file=aladdin305&w=640&h=360&bg=http://i.imgur.com/hdCEPmh.jpg
-        self.pattern = 'http://((?:video.)?vidcrazy.net)/\D+.php\?file=([0-9a-zA-Z\-_]+)[&]*'
-        #self.pattern = 'http://((?:www.)?vidcrazy.net)/embed/(.+?)'
+        self.pattern = 'http://((?:video.)?vidcrazy.net)/(\D+.php\?file=[0-9a-zA-Z\-_]+)[&]*'
     
     def get_url(self, host, media_id):
-            return 'http://video.vidcrazy.net/nvs.php?file=%s' % (media_id)
+            return 'http://video.vidcrazy.net/%s' % (media_id)
+            #return 'http://video.vidcrazy.net/nvs.php?file=%s' % (media_id)
     
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)

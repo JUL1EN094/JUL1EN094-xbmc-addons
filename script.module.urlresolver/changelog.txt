@@ -1,7 +1,47 @@
-[B]Version 1.1.2[/B]
+[B]Version 2.4.0.002[/B]
+- Added Teramixer
+
+[B]Version 2.4.0[/B]
+- Reverted back to using t0mm0.common as addon.common is creating naming issues
+
+[B]Version 2.3.0[/B]
+- Added Cloudy
+- Fixed Divxstage
+- Fixed Ecostream
+- Fixed HostingBulk
+- Fixed Movshare
+- Fixed TheFile
+- Fixed Vidxden
+- Updated Putlocker/Firedrive to check for more variations
+- Converted URLResolver completely to use addon.common instead of t0mm0.common
+
+[B]Version 2.2.0[/B]
+- Added CheeseStreams
+- Added Play44
+- Added Bestreams
+- Added FireDrive (renamed Putlocker)
+- Added UploadCrazy
+- Added VidCrazy
+- Added Video44
+- Added VideoFun
+- Added ViUp
+- Added VidZur
+- Added YourUpload
+- Fixed BillionUploads
+- Fixed Divxstage
+- Fixed Ecostream
+- Fixed HugeFiles
+- Fixed Movzap
+- Fixed NowVideo
+- Fixed ShareSix
+- Fixed YouWatch
+- Updated Real-Debrid login methods
+- Updated Vidhog for no wait time
+
+[B]Version 2.1.2[/B]
 - Vidxden bugfix
 
-[B]Version 1.1.1[/B]
+[B]Version 2.1.1[/B]
 - New unwise class for new unpacking method some sites are now using
 - Added VideoTanker
 - Added NowVideo
@@ -19,7 +59,7 @@
 - Updated premiumize.me - check on if login exists
 - Updated rpnet - check if login exists
 
-[B]Version 1.1.0[/B]
+[B]Version 2.1.0[/B]
 - New unresolvable() class for resolvers to return in case of an error, specify why it failed for addon to handle
 - New redx.png graphic file for reporting issues in resolvers
 - Updated all resolvers to display small box on exceptions
@@ -47,10 +87,10 @@
 - Fixed FlashX
 - Fixed DaClips
 
-[B]Version 1.0.9[/B]
+[B]Version 2.0.9[/B]
 - Fixed VeeHD
 
-[B]Version 1.0.8[/B]
+[B]Version 2.0.8[/B]
 - Added Bayfiles
 - Added CrunchyRoll
 - Added Movreel
@@ -68,18 +108,18 @@
 - Fixed VeeHD
 - Fixed VidHog
 
-[B]Version 1.0.7[/B]
+[B]Version 2.0.7[/B]
 - Vidxden: Fixed
 - Added: Sharesix (humla)
 
-[B]Version 1.0.6[/B]
+[B]Version 2.0.6[/B]
 - Videoweed: Allow Videoweed.eu/files/1423541 type
 - Divstage: Allow embedded urls to resolve
 - Filenuke: Removed www. from regex causing 502 errors
 - Xvidstage: Fixed
 - Stream2k: Fixed
 
-[B]Version 1.0.5[/B]
+[B]Version 2.0.5[/B]
 - Added streamcloud
 - Added zooupload
 - Fixed divxstage - handle url with .net
@@ -88,7 +128,8 @@
 - Fixed ecostream - new embed url pattern
 - Reverted putlocker code, added option for higher vid quality
 
-[B]Version 1.0.4[/B]
+[B]Version 2.0.4[/B]
+- Frodo branch
 - Updated putlocker and vidxden resolvers
 - Updated real-debrid
 

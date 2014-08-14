@@ -1,6 +1,6 @@
 '''
 sharesix urlresolver plugin
-Copyright (C) 2011 humla
+Copyright (C) 2014 tknorris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ from urlresolver import common
 #SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
 error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
+USER_AGENT='Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
+
 class SharesixResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "sharesix"
@@ -40,6 +42,10 @@ class SharesixResolver(Plugin, UrlResolver, PluginSettings):
         web_url = self.get_url(host, media_id)
 
         try:
+            headers = {
+                'User-Agent': USER_AGENT,
+                'Referer': web_url
+            }
            # Otherwise just use the original url to get the content. For sharesix
             html = self.net.http_GET(web_url).content
             
@@ -47,23 +53,22 @@ class SharesixResolver(Plugin, UrlResolver, PluginSettings):
             r = re.findall(r'type="hidden"\s*name="(.+?)"\s*value="(.*?)"', html)
             for name, value in r:
                 data[name] = value
-            data["method_free"] = "Free"
-            html = self.net.http_POST(web_url, data).content
+            #data[u"method_premium"] = "Premium"; 
+            data[u"method_free"] = "Free"; 
+            data[u"op"] = "download1"; data[u"referer"] = web_url; data[u"usr_login"] = "";
+            html = self.net.http_POST(web_url, data, headers=headers).content
             
-            # To build the streamable link, we need 
-            # # the IPv4 addr (first 4 content below)
-            # # the hash of the file
-            metadata = re.compile('\|\|?(\d+)\|\|?(\d+)\|\|?(\d+)\|\|?(\d+)\|.+?video\|(.+?)\|\|?file').findall(html)
-
-            if (len(metadata) > 0):
-                metadata = metadata[0]
-                stream_url="http://"+metadata[3]+"."+metadata[2]+"."+metadata[1]+"."+metadata[0]+"/d/"+ metadata[4]+"/video.flv"
+            r = re.search("var\s+lnk1\s*=\s*'(.*?)'", html)
+            if r:
+                stream_url=r.group(1)+'|User-Agent=%s' % (USER_AGENT)
                 return stream_url
+            else:
+                raise Exception('Unable to locate link')
             
             if 'file you were looking for could not be found' in html:
                 raise Exception ('File Not Found or removed')
 
-        except urllib2.URLError, e:
+        except urllib2.HTTPError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %
                                    (e.code, web_url))
             common.addon.show_small_popup('Error','Http error: '+str(e), 5000, error_logo)

@@ -113,7 +113,7 @@ class RealDebridResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
         common.addon.log_debug('in valid_url %s : %s' % (url, host))
         self.get_all_hosters()
         for host in self.hosters :
-            common.addon.log_debug('RealDebrid checking host : %s' %str(host))
+            #common.addon.log_debug('RealDebrid checking host : %s' %str(host))
             if re.search(host,url):
                 common.addon.log_debug('RealDebrid Match found')
                 return True

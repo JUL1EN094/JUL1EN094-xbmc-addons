@@ -30,6 +30,9 @@ from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
 
+#SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
+error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
+
 #SET DEFAULT TIMEOUT FOR SLOW SERVERS:
 socket.setdefaulttimeout(30)
 
@@ -78,6 +81,8 @@ class VidxdenResolver(Plugin, UrlResolver, PluginSettings):
         try:
             resp = self.net.http_GET(web_url)
             html = resp.content
+            if "No such file or the file has been removed due to copyright infringement issues." in html:
+                raise Exception ('File Not Found or removed')
             try: os.remove(img)
             except: pass
             filename=re.compile('<input name="fname" type="hidden" value="(.+?)">').findall(html)[0]
@@ -111,9 +116,9 @@ class VidxdenResolver(Plugin, UrlResolver, PluginSettings):
             else:
                 raise Exception ('vidxden: stream url not found')
 
-            return "%s|User-Agent=%s"%(stream_url,'Mozilla%2F5.0%20(Windows%20NT%206.1%3B%20rv%3A11.0)%20Gecko%2F20100101%20Firefox%2F11.0')
-
-        except urllib2.URLError, e:
+            return "%s" % (stream_url)
+            
+        except urllib2.HTTPError, e:
             common.addon.log_error('Vidxden: got http error %d fetching %s' %
                                   (e.code, web_url))
             common.addon.show_small_popup('Error','Http error: '+str(e), 5000, error_logo)
@@ -153,7 +158,7 @@ class VidxdenResolver(Plugin, UrlResolver, PluginSettings):
         xml += '<setting id="vidxden_captchax" '
         xml += 'type="slider" label="Captcha Image X Position" range="0,500" default="335" option="int" />\n'
         xml += '<setting id="vidxden_captchay" '
-        xml += 'type="slider" label="Captcha Image Y Position" range="0,500" default="30" option="int" />\n'
+        xml += 'type="slider" label="Captcha Image Y Position" range="0,500" default="0" option="int" />\n'
         xml += '<setting id="vidxden_captchah" '
         xml += 'type="slider" label="Captcha Image Height" range="0,500" default="180" option="int" />\n'
         xml += '<setting id="vidxden_captchaw" '

@@ -26,21 +26,18 @@ import re
 
 class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "uploadcrazy.net"
+    name = "vidcrazy.net"
     
     def __init__(self):
         p = self.get_setting('priority') or 100
         self.priority = int(p)
         self.net = Net()
-        # http://video.vidcrazy.net/nvs.php?file=tenkai-knights06&w=640&h=360&bg=http://i.imgur.com/hdCEPmh.jpg
-        # http://video.vidcrazy.net/ancv.php?file=aladdin305&w=640&h=360&bg=http://i.imgur.com/hdCEPmh.jpg
-        # http://embeds.uploadcrazy.net/ancv.php?file=aladdin305&w=640&h=360&bg=http://i.imgur.com/H1dqUbf.jpg
-        self.pattern = 'http://((?:embeds.)?uploadcrazy.net)/(\D+.php\?file=[0-9a-zA-Z\-_]+)[&]*'
-        #self.pattern = 'http://((?:www.)?vidcrazy.net)/embed/(.+?)'
+        self.pattern = 'http://((?:video.)?videovalley.net)/vidvalley/(\D+.php\?file=[0-9a-zA-Z\-_]+)[&]*'
     
     def get_url(self, host, media_id):
-            return 'http://embeds.uploadcrazy.net/%s' % (media_id)
-            #return 'http://embeds.uploadcrazy.net/embed.php?file=%s' % (media_id)
+            return 'http://videovalley.net/vidvalley/%s&w=640&h=360' % (media_id)
+            #return 'http://videovalley.net/vidvalley/ancv.php?file=%s&w=640&h=360' % (media_id)
+            #return 'http://videovalley.net/vidvalley/nvs.php?file=%s&w=640&h=360' % (media_id)
     
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)

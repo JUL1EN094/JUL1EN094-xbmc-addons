@@ -20,43 +20,43 @@ from t0mm0.common.net import Net
 from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
-import re, os
-import xbmcgui
+import re,os,xbmcgui
 from urlresolver import common
-
 #SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
-error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
-
-net = Net()
-
+error_logo=os.path.join(common.addon_path,'resources','images','redx.png')
+net=Net()
 class AllmyvideosResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
-    name = "allmyvideos"
-
-
+    implements=[UrlResolver,PluginSettings]
+    name="allmyvideos"
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
-
-
-    def get_media_url(self, host, media_id):
+        p=self.get_setting('priority') or 100
+        self.priority=int(p)
+        self.net=Net()
+    def get_media_url(self,host,media_id):
         try:
-            url = self.get_url(host, media_id)
-            html = self.net.http_GET(url).content
-            dialog = xbmcgui.DialogProgress()
-            dialog.create('Resolving', 'Resolving Allmyvideos Link...')       
+            dialog=xbmcgui.DialogProgress()
+            dialog.create('Resolving','Resolving Allmyvideos Link...')       
             dialog.update(0)
-    
+            
+            url=self.get_url1st(host,media_id)
+            html=self.net.http_GET(url).content
+            dialog.update(20)
+            r=re.search('"mediaid"\s*:\s*".*?",\s*"sources"\s*:\s*.\n*\s*.\n*\s*"file"\s*:\s*"(.+?)"',html)
+            if r:
+                dialog.update(100)
+                dialog.close()
+                return r.group(1)
+            
+            url=self.get_url(host,media_id)
+            html=self.net.http_GET(url).content
+            
             data = {}
-            r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">', html)
-            for name, value in r:
-                data[name] = value
-                
-            html = net.http_POST(url, data).content
+            r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">',html)
+            for name,value in r: data[name]=value
+            html=net.http_POST(url,data).content
             dialog.update(50)
-
-            r = re.search('"file" : "(.+?)"', html)
+            
+            r=re.search('"sources"\s*:\s*.\n*\s*.\n*\s*"file"\s*:\s*"(.+?)"',html)
             if r:
                 dialog.update(100)
                 dialog.close()
@@ -64,27 +64,19 @@ class AllmyvideosResolver(Plugin, UrlResolver, PluginSettings):
             else:
                 dialog.close()
                 raise Exception('could not find video')          
-        
         except Exception, e:
             common.addon.log('**** Allmyvideos Error occured: %s' % e)
             common.addon.show_small_popup('Error', str(e), 5000, '')
             return self.unresolvable(code=0, msg='Exception: %s' % e)
-        
     def get_url(self, host, media_id):
         return 'http://allmyvideos.net/%s' % media_id 
-        
-
+    def get_url1st(self, host, media_id):
+        return 'http://allmyvideos.net/embed-%s.html' % media_id 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/([0-9a-zA-Z]+)',url)
-        if r:
-            return r.groups()
-        else:
-            return False
-        return('host', 'media_id')
-
-
-    def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return (re.match('http://(www.)?allmyvideos.net/' +
-                         '[0-9A-Za-z]+', url) or
-                         'allmyvideos' in host)
+        r = re.search('//(.+?)/(?:embed-)?([0-9a-zA-Z]+)',url)
+        if r: return r.groups()
+        else: return False
+        return('host','media_id')
+    def valid_url(self,url,host):
+        if self.get_setting('enabled')=='false': return False
+        return (re.match('http://(www.)?allmyvideos.net/[0-9A-Za-z]+', url) or re.match('http://(www.)?allmyvideos.net/embed-[0-9A-Za-z]+[\-]*\d*[x]*\d*.*[html]*', url) or 'allmyvideos' in host)

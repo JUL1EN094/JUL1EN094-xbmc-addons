@@ -28,4 +28,5 @@ addon_path = addon.get_path()
 plugins_path = os.path.join(addon_path, 'lib', 'urlresolver', 'plugins')
 profile_path = addon.get_profile()
 settings_file = os.path.join(addon_path, 'resources', 'settings.xml')
+addon_version = addon.get_version()
 

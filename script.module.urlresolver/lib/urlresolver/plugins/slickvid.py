@@ -1,5 +1,5 @@
 '''
-Nosvideo urlresolver plugin
+Allmyvideos urlresolver plugin
 Copyright (C) 2013 Vinnydude
 
 This program is free software: you can redistribute it and/or modify
@@ -21,70 +21,61 @@ from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
 import re, os
+import xbmcgui
 from urlresolver import common
-from lib import jsunpack
 
 #SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
 error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
 net = Net()
 
-class NosvideoResolver(Plugin, UrlResolver, PluginSettings):
+class AllmyvideosResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "nosvideo"
+    name = "slickvid"
+
 
     def __init__(self):
         p = self.get_setting('priority') or 100
         self.priority = int(p)
         self.net = Net()
 
+
     def get_media_url(self, host, media_id):
-        code=0
         try:
             url = self.get_url(host, media_id)
             html = self.net.http_GET(url).content
-            if 'File Not Found' in html:
-                code=1
-                raise Exception('File Not Found')
-            
-            headers = {
-                'Referer': url
-            }
+            dialog = xbmcgui.DialogProgress()
+            dialog.create('Resolving', 'Resolving slickvid Link...')       
+            dialog.update(0)
     
             data = {}
-            r = re.findall(r'type="hidden" name="(.+?)"\s* value="(.+?)"', html)
+            r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">', html)
             for name, value in r:
                 data[name] = value
-            data.update({'method_free':'Free Download'})
+                
+            html = net.http_POST(url, data).content
+            dialog.update(50)
             
-            html = net.http_POST(url, data, headers=headers).content
-
-            r = re.search('(eval\(function\(p,a,c,k,e,[dr].*)',html)
+            r = re.search('file\s*:\s*"(.+?)"', html)
             if r:
-                js = jsunpack.unpack(r.group(1))
-                r = re.search('playlist=(.*)&config=',js)
-                if r:
-                    html = self.net.http_GET(r.group(1)).content
-                    r = re.search('<file>\s*(.*)\s*</file>',html)
-                    if r:
-                        return r.group(1)
-                    else:
-                        raise Exception('Unable to locate video file')
-                else:
-                    raise Exception('Unable to locate playlist')
+                dialog.update(100)
+                dialog.close()
+                return r.group(1)
             else:
-                raise Exception('Unable to locate packed data')
-                                                    
+                dialog.close()
+                raise Exception('could not find video')          
+        
         except Exception, e:
-            common.addon.log('**** Nosvideo Error occured: %s' % e)
-            common.addon.show_small_popup('*** Nosvideo Error occured ***', str(e), 5000, '')
-            return self.unresolvable(code=code, msg='Exception: %s' % e)
+            common.addon.log('**** slickvid Error occured: %s' % e)
+            common.addon.show_small_popup('Error', str(e), 5000, '')
+            return self.unresolvable(code=0, msg='Exception: %s' % e)
         
     def get_url(self, host, media_id):
-        return 'http://nosvideo.com/?v=%s' % media_id
+        return 'http://slickvid.com/%s' % media_id 
+        
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/(?:\?v\=)?([0-9a-zA-Z]+)',url)
+        r = re.search('//(.+?)/(?:embed-)?([0-9a-zA-Z]+)',url)
         if r:
             return r.groups()
         else:
@@ -94,6 +85,4 @@ class NosvideoResolver(Plugin, UrlResolver, PluginSettings):
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
-        return (re.match('http://(www.)?nosvideo.com/' +
-                         '\?v\=[0-9A-Za-z]+', url) or
-                         'nosvideo' in host)
+        return (re.match('http://(www.)?slickvid.com/[0-9A-Za-z]+', url) or re.match('http://(www.)?slickvid.com/embed-[0-9A-Za-z]+[\-]*\d*[x]*\d*.*[html]*', url) or 'slickvid' in host)

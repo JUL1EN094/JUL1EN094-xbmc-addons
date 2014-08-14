@@ -67,7 +67,6 @@ class DivxstageResolver(Plugin, UrlResolver, PluginSettings):
             return self.unresolvable(code=0, msg=e)
 
     def get_url(self, host, media_id):
-        common.addon.log('http://www.divxstage.eu/video/%s' % media_id)
         return 'http://www.divxstage.eu/video/%s' % media_id
 
     def get_host_and_id(self, url):
@@ -83,4 +82,4 @@ class DivxstageResolver(Plugin, UrlResolver, PluginSettings):
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
         #http://embed.divxstage.eu/embed.php?v=8da26363e05fd&width=746&height=388&c=000
-        return re.match('http://(?:www.|embed.)?divxstage.(?:eu|net)/', url) or 'divxstage' in host
+        return (re.match('http://(?:www.|embed.)?divxstage.(?:eu|net)/', url) or 'divxstage' in host)
