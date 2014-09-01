@@ -264,7 +264,7 @@
 
 <addon id="script.module.streamlauncher"
      name="streamlauncher"
-     version="0.1.3"
+     version="0.1.4"
      provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />

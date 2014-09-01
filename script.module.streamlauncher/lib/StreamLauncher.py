@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.1.3 par JUL1EN094
+# version 0.1.4 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -53,7 +53,7 @@ __ErrorLogo__  = xbmc.translatePath(os.path.join(__imagesDir__,'redx.png'))
 #---------------------------------------------------------------------
 
 class StreamLauncher():
-    def __init__(self, url=False, Infos=False, Type=False, dlfolder=False, precachesize=False, intro = False, introtime = False, needdebrid = False, KeepDownloadedFile=False):
+    def __init__(self, url=False, Infos=False, Type=False, dlfolder=False, precachesize=False, intro = False, introtime = False, needdebrid = False, KeepDownloadedFile=False, useragent=False):
         #mode 
         self.mode             = False
         #url d'entrée
@@ -145,6 +145,12 @@ class StreamLauncher():
         else :
             self.needdebrid = False
         #-------------
+        #détermination de l'agent utilisateur web : self.useragent
+        if useragent :
+            self.useragent = useragent
+        else :
+            self.useragent = "Mozilla/5.0 (Windows NT 5.1; rv:15.0) Gecko/20100101 Firefox/15.0.1"
+        #-------------
         ## STREAM 
         if self.mode == 'stream' :
             self.LaunchStream() 
@@ -173,7 +179,8 @@ class StreamLauncher():
         classinfos['videototaltime']   = self.videototaltime
         classinfos['videotimewatched'] = self.videotimewatched
         classinfos['downloader']       = self.downloader
-        classinfos['extension']        = self.extension  
+        classinfos['extension']        = self.extension
+        classinfos['useragent']        = self.useragent  
         return classinfos 
     
     def getDlFolder(self):
@@ -461,11 +468,11 @@ class StreamLauncher():
                         #création de l'instance du downloader (StreamLauncherDownloader)
                         import StreamLauncherDownloader as sldownloader
                         if self.extension == 'mp4' or self.extension == 'MP4':
-                            self.downloader = sldownloader.MP4download(tempurl,self.videolocalfolder)
+                            self.downloader = sldownloader.MP4download(tempurl,self.videolocalfolder,useragent = self.useragent)
                         elif self.extension == 'flv' or self.extension == 'FLV':
-                            self.downloader = sldownloader.FLVdownload(tempurl,self.videolocalfolder)
+                            self.downloader = sldownloader.FLVdownload(tempurl,self.videolocalfolder,useragent = self.useragent)
                         else :
-                            self.downloader = sldownloader.DownloadFile(tempurl,self.videolocalfolder)                        
+                            self.downloader = sldownloader.DownloadFile(tempurl,self.videolocalfolder,useragent = self.useragent)                        
                         progress_launch.update( 80, 'Downloader OK...')
                         step = 4
                         time.sleep(0.1)

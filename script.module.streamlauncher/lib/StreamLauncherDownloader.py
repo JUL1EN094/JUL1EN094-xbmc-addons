@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.0.3 par JUL1EN094
+# version 0.0.4 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncherDownloader XBMC Module
@@ -75,7 +75,7 @@ class DownloadFile(threading.Thread):
             downloader.resume()
     """        
     
-    def __init__(self, url, localDir, auth=None, timeout=20.0, autoretry=False, retries=20,cache_size = 5 * 1024 * 1024 * 1024, cookies = False):
+    def __init__(self, url, localDir, auth=None, timeout=20.0, autoretry=False, retries=20,cache_size = 5 * 1024 * 1024 * 1024, cookies = False, useragent="Mozilla/5.0 (Windows NT 5.1; rv:15.0) Gecko/20100101 Firefox/15.0.1"):
         """Note that auth argument expects a tuple, ('username','password')"""
         threading.Thread.__init__(self)
         self.url = url.split('|')[0]
@@ -96,6 +96,7 @@ class DownloadFile(threading.Thread):
         self.cache_size = cache_size
         self.localdir = localDir
         self.localFileName =  os.path.join(localDir,self.RemoveDisallowedFilenameChars(self.getUrlFilename(self.url))[:128])
+        self.useragent = useragent
     
     def run(self, callBack=None):
         """attempts to resume file download"""
@@ -222,6 +223,7 @@ class DownloadFile(threading.Thread):
     def seektoresume(self) :
         req = urllib2.Request(self.url)
         req.headers['Range'] = 'bytes=%s-%s' % (self.cur, self.getUrlFileSize())
+        req.add_header('User-Agent',self.useragent)
         urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
         return urllib2Obj
         
@@ -271,7 +273,9 @@ class DownloadFile(threading.Thread):
                 n = 0
                 while n<=5 and not self.UrlFileSize :
                     try :
-                        urllib2Obj = urllib2.urlopen(self.url, timeout=10)
+                        req = urllib2.Request(self.url)
+                        req.add_header('User-Agent',self.useragent)
+                        urllib2Obj = urllib2.urlopen(req, timeout=10)
                         size = urllib2Obj.headers.get('content-length')
                         self.UrlFileSize =  size
                     except :
@@ -330,10 +334,15 @@ class DownloadFile(threading.Thread):
                 self.__downloadFile__(authObj, f, callBack=callBack)
         else:
             req = urllib2.Request(self.url)
+            req.add_header('User-Agent',self.useragent)
             if self.cookies :
                 print 'ADD HEADER COOKIE : '+str(self.cookies)
                 req.add_header('Cookie',self.cookies)
-            urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)        
+            try :
+                urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
+            except urllib2.HTTPError, error:
+                link = error.read()
+                print 'ERROR READ : '+str(link)        
             self.status = CDownload.DOWNLOADING
             self.__downloadFile__(urllib2Obj, f, callBack=callBack)
         return True
@@ -397,6 +406,7 @@ class DownloadFile(threading.Thread):
 class FLVdownload(DownloadFile):    
     def seektoresume(self) :
         req = urllib2.Request(self.url + '?start=' + str(self.cur))
+        req.add_header('User-Agent',self.useragent)
         if self.cookies :
             print 'ADD HEADER COOKIE : '+str(self.cookies)
             req.add_header('Cookie',self.cookies)
@@ -448,6 +458,7 @@ class MP4download(DownloadFile):
             url = self.url + '?start=' + str(curTime+offset)
             print url
             req = urllib2.Request(url)
+            req.add_header('User-Agent',self.useragent)
             if self.cookies :
                 print 'ADD HEADER COOKIE : '+str(self.cookies)
                 req.add_header('Cookie',self.cookies)
