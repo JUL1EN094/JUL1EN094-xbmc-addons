@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.1.4 par JUL1EN094
+# version 0.1.5 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -22,7 +22,7 @@
 # IMPORTS
 #xbmc and generals tools
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon 
-import os, sys, shutil
+import os, sys, shutil, re
 import time
 import urllib
 #print_exc
@@ -66,6 +66,8 @@ class StreamLauncher():
         self.videoPlayerUrl   = False
         #downloader
         self.downloader       = False
+        #cookie
+        self.cookie           = False
         #informations de la video
         self.infos            = False
         #taille du precache
@@ -164,23 +166,23 @@ class StreamLauncher():
         
     def getClassInfos(self):
         classinfos = {}
-        classinfos['linkurl']          = self.linkurl
-        classinfos['infos']            = self.infos
-        classinfos['mode']             = self.mode
+        classinfos['cookie']           = self.cookie
+        classinfos['debridurl']        = self.debridurl
         classinfos['dlfolder']         = self.dlfolder
+        classinfos['downloader']       = self.downloader
+        classinfos['extension']        = self.extension  
+        classinfos['infos']            = self.infos
         classinfos['intro']            = self.intro
         classinfos['introtime']        = self.introtime
-        classinfos['videolocalfolder'] = self.videolocalfolder
-        classinfos['precachesize']     = self.precachesize
-        classinfos['debridurl']        = self.debridurl
+        classinfos['linkurl']          = self.linkurl
+        classinfos['mode']             = self.mode
         classinfos['needdebrid']       = self.needdebrid
+        classinfos['precachesize']     = self.precachesize
+        classinfos['videolocalfolder'] = self.videolocalfolder
         classinfos['videoPlayerUrl']   = self.videoPlayerUrl
         classinfos['videolocalname']   = self.videolocalname
         classinfos['videototaltime']   = self.videototaltime
         classinfos['videotimewatched'] = self.videotimewatched
-        classinfos['downloader']       = self.downloader
-        classinfos['extension']        = self.extension
-        classinfos['useragent']        = self.useragent  
         return classinfos 
     
     def getDlFolder(self):
@@ -356,7 +358,10 @@ class StreamLauncher():
                         #création de l'instance du downloader (SimpleDownloader)
                         import SimpleDownloader as simpledownloader
                         self.downloader = simpledownloader.SimpleDownloader()
-                        params = { "url": self.videoPlayerUrl, "download_path": self.videolocalfolder, "Title": self.infos['Title'] }
+                        if '|Cookie=' in self.videoPlayerUrl :
+                            self.cookie = urllib.unquote_plus(re.findall('Cookie=(.*)',self.videoPlayerUrl)[0]).replace('&',';')
+                            self.videoPlayerUrl = self.videoPlayerUrl.split('|')[0]
+                        params = { "url": self.videoPlayerUrl, "download_path": self.videolocalfolder, "Title": self.infos['Title'], "cookie": self.cookie }
                         progress_launch.update( 80, 'Downloader OK...')
                         step = 4
                         time.sleep(0.1)

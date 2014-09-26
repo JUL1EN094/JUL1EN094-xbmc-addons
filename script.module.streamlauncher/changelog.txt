@@ -1,4 +1,7 @@
-﻿Version 0.1.4 (20-08-2014) par JUL1EN094 :
+﻿Version 0.1.5 (26-09-2014) par JUL1EN094 :
+- Renvoie des cookies au module script.module.simple.downloader lors de l'utilisation du mode 'télécharger en arrière-plan'
+
+Version 0.1.4 (20-08-2014) par JUL1EN094 :
 - Ajout d'un paramètre user-agent
 
 Version 0.1.3 (25-03-2014) par JUL1EN094 :
