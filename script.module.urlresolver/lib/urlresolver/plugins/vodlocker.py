@@ -62,7 +62,7 @@ class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
         if r:
             #stream_url=urllib.unquote_plus(r.group(1))
             stream_url=str(r.group(1))
-            print stream_url
+            #print stream_url
         else:
             common.addon.log_error(hostname+': stream url not found')
             return self.unresolvable(code=0,msg='no file located') #return False

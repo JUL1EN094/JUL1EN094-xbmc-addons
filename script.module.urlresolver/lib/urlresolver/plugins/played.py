@@ -10,12 +10,17 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 from t0mm0.common.net import Net
 from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
 import urllib2,xbmcgui,re
 from urlresolver import common
+
+#SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
+error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
+
 class playedResolver(Plugin,UrlResolver,PluginSettings):
     implements=[UrlResolver,PluginSettings]
     name="played"
@@ -27,17 +32,17 @@ class playedResolver(Plugin,UrlResolver,PluginSettings):
         web_url=self.get_url(host,media_id)
         try:
             html=self.net.http_GET(web_url,{'host':'played.to'}).content
-            try:
-                played=re.compile('file: "(.+?)"').findall(html)[0]
-                if len(played) > 12: return played
-            except: pass
-            id=re.compile('<input type="hidden" name="id" value="(.+?)">').findall(html)[0]
-            fname=re.compile('<input type="hidden" name="fname" value="(.+?)">').findall(html)[0]
-            hash=re.compile('<input type="hidden" name="hash" value="(.+?)">').findall(html)[0]
-            data={'op':'download1','usr_login':'','id':id,'fname':fname,'referer':'','hash':hash,'imhuman':'Continue+to+Video'}
+            data = {}
+            r = re.findall(r'type="hidden" name="(.+?)"\s* value="(.+?)"', html)
+            for name, value in r:
+                data[name] = value
+            data.update({'btn_download':'Continue to Video'})
             html=self.net.http_POST(web_url,data).content
-            played=re.compile('file: "(.+?)"').findall(html)[0]
-            return played
+            match = re.search('file: "(.+?)"', html)
+            if match:
+                return match.group(1)
+            else:
+                return self.unresolvable(code=0,msg='unable to locate video') 
         except urllib2.URLError, e:
             common.addon.log_error('Played: got http error %d fetching %s' % (e.code,web_url))
             common.addon.show_small_popup('Error','Http error: '+str(e),5000,error_logo)

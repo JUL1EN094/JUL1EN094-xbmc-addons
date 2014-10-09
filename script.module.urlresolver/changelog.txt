@@ -1,6 +1,3 @@
-[B]Version 2.4.0.002[/B]
-- Added Teramixer
-
 [B]Version 2.4.0[/B]
 - Reverted back to using t0mm0.common as addon.common is creating naming issues
 

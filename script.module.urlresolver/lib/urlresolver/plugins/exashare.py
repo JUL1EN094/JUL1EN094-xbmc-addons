@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 
 """
-Teramixer.com urlresolver XBMC Addon
+Exashare.com urlresolver XBMC Addon
 Copyright (C) 2014 JUL1EN094 
 
 This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
 import urllib, urllib2, os, re
-import base64
 from t0mm0.common.net import Net
 from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
@@ -31,9 +30,9 @@ error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 #SET OK_LOGO# THANKS TO JUL1EN094
 ok_logo = os.path.join(common.addon_path, 'resources', 'images', 'greeninch.png')
 
-class TeramixerResolver(Plugin, UrlResolver, PluginSettings):
+class ExashareResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "teramixer"    
+    name = "exashare"    
 
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -44,11 +43,7 @@ class TeramixerResolver(Plugin, UrlResolver, PluginSettings):
         base_url = 'http://www.'+host+'.com/'+media_id
         try:
             html  = self.net.http_GET(base_url).content
-            encodedUrl = re.findall("""filepath = '(.*)';""", html)[0]
-            encodedUrl = encodedUrl[9:]
-            encodedUrl = base64.b64decode(encodedUrl)
-            if not encodedUrl.startswith('aws'): encodedUrl = encodedUrl[1:]
-            stream_url = 'http://'+encodedUrl
+            stream_url = re.findall('file: "([^"]+)"', html)[0]
             return stream_url
         except urllib2.HTTPError, e:
             e = e.code
@@ -61,25 +56,25 @@ class TeramixerResolver(Plugin, UrlResolver, PluginSettings):
             common.addon.show_small_popup('Error','URL error: %s' % e, 8000, image=error_logo)
             return self.unresolvable(code=3, msg=e)
         except IndexError, e :
-            if re.search("""<title>File not found or deleted - Teramixer</title>""", html) :
+            if re.search("""File Not Found""", html) :
                 e = 'File not found or removed'
-                common.addon.log('**** Teramixer Error occured: %s' % e)
-                common.addon.show_small_popup(title='[B][COLOR white]TERAMIXER[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
+                common.addon.log('**** Exashare Error occured: %s' % e)
+                common.addon.show_small_popup(title='[B][COLOR white]EXASHARE[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
                 return self.unresolvable(code=1, msg=e)
             else :
-                common.addon.log('**** Teramixer Error occured: %s' % e)
-                common.addon.show_small_popup(title='[B][COLOR white]TERAMIXER[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
+                common.addon.log('**** Exashare Error occured: %s' % e)
+                common.addon.show_small_popup(title='[B][COLOR white]EXASHARE[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
                 return self.unresolvable(code=0, msg=e) 
         except Exception, e:
-            common.addon.log('**** Teramixer Error occured: %s' % e)
-            common.addon.show_small_popup(title='[B][COLOR white]TERAMIXER[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
+            common.addon.log('**** Exashare Error occured: %s' % e)
+            common.addon.show_small_popup(title='[B][COLOR white]EXASHARE[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
             return self.unresolvable(code=0, msg=e)
 
     def get_url(self, host, media_id):
-        return 'http://www.teramixer.com/%s' % media_id
+        return 'http://www.exashare.com/%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('http://(www.)?(.+?).com/(embed/)?(.+)', url)
+        r = re.search('http://(www.)?(.+?).com/(embed\-)?(.+)(\-[0-9]+x[0-9]+.html)?', url)
         if r :
             ls = r.groups()
             ls = (ls[1],ls[3])
@@ -90,7 +85,7 @@ class TeramixerResolver(Plugin, UrlResolver, PluginSettings):
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': 
             return False
-        return re.match('http://(www.)?teramixer.com/(embed/)?[0-9A-Za-z]+',url) or 'teramixer.com' in host    
+        return re.match('http://(www.)?exashare.com/(embed\-)?[0-9A-Za-z]+(\-[0-9]+x[0-9]+.html)?',url) or 'exashare.com' in host    
 
     def get_settings_xml(self):
         xml = PluginSettings.get_settings_xml(self)

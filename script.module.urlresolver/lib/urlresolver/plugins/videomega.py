@@ -42,11 +42,11 @@ class VideomegaResolver(Plugin, UrlResolver, PluginSettings):
             stream_url = None
 
             # find the unescape string 
-            r = re.search('if\s+\(\!validstr\){\s+document.write\(unescape\("(.+?)"\)\);\s+}else{',html)
+            r = re.search('document\.write\(unescape\("([^"]+)',html)
 
             if r:
                 unescaped_str = urllib.unquote(r.group(1))
-                r = re.search('file:\s+"(.+?)",',unescaped_str)
+                r = re.search('file:\s+"([^"]+)',unescaped_str)
                 if r:
                     stream_url = r.group(1)
                     stream_url = stream_url.replace(" ","%20")
