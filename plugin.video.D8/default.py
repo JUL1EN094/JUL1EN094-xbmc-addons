@@ -20,8 +20,8 @@ common.plugin = "plugin.video.D8"
 
 __addonID__         = "plugin.video.D8"
 __author__          = "JUL1EN094"
-__date__            = "14-04-2014"
-__version__         = "1.0.5"
+__date__            = "10-10-2014"
+__version__         = "1.0.6"
 __credits__         = ""
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __settings__        = __addon__
@@ -85,10 +85,10 @@ class D8:
         except:
             pass            
         if self.debug_mode:
-            print "Mode: "+str(mode)
-            print "URL: "+str(url)
-            print "Name: "+str(name)
-            print "Iconimage: "+str(iconimage)
+            print "D8 addon : Mode      -> "+str(mode)
+            print "D8 addon : URL       -> "+str(url)
+            print "D8 addon : Name      -> "+str(name)
+            print "D8 addon : Iconimage ->  "+str(iconimage)
  
         # Check if directories in user data exist
         for i in range(len(dirCheckList)):
@@ -96,15 +96,15 @@ class D8:
     
         if mode==None or url==None or len(url)<1:
             if self.debug_mode:
-                print "GET_CATEGORIES("+WEBSITE+")"
-            self.GET_CATEGORIES(WEBSITE)
+                print "D8 addon : GET_CATEGORIES("+WEBROOT+")"
+            self.GET_CATEGORIES(WEBROOT)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory(handle=int(sys.argv[1]),category=__language__(30000))
             xbmcplugin.endOfDirectory(int(sys.argv[1]))
                             
         elif mode==1:
             if self.debug_mode:
-                print "GET_EPISODES D8("+url+","+iconimage+")"
+                print "D8 addon : GET_EPISODES D8("+url+","+iconimage+")"
             self.GET_EPISODES_D8(url,iconimage,name)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory(handle=int(sys.argv[1]),category=__language__(30000))
@@ -112,7 +112,7 @@ class D8:
 
         elif mode==2:
             if self.debug_mode:
-                print "GET_EMISSIONS : "+url 
+                print "D8 addon : GET_EMISSIONS : "+url 
             self.GET_EMISSIONS(url)         
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory(handle=int(sys.argv[1]),category=__language__(30000))
@@ -120,7 +120,7 @@ class D8:
                     
         elif mode==3:
             if self.debug_mode:
-                print "GET_EMISSIONS_DIR("+url+","+iconimage+")"
+                print "D8 addon : GET_EMISSIONS_DIR("+url+","+iconimage+")"
             self.GET_EMISSIONS_DIR(url,iconimage)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory(handle=int(sys.argv[1]),category=__language__(30000))
@@ -128,7 +128,7 @@ class D8:
             
         elif mode==4:
             if self.debug_mode:
-                print "GET_EPISODES CANAL("+url+","+iconimage+")"
+                print "D8 addon : GET_EPISODES CANAL("+url+","+iconimage+")"
             self.GET_EPISODES_CANAL(url,iconimage)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory(handle=int(sys.argv[1]),category=__language__(30000))
@@ -136,28 +136,28 @@ class D8:
             
         elif mode==5:
             if self.debug_mode:
-                print "PLAY_VIDEO"
+                print "D8 addon : PLAY_VIDEO"
             VID_cplus = re.findall("""CANAL PLUS : VID=(.*)""",url)
             VID_d8    = re.findall("""D8 : VID=(.*)""",url)
             VID_live  = re.findall("""LIVE : VID=(.*)""",url)
             if VID_cplus :
                 VID = VID_cplus[0]
-                print "vid :"+VID
+                print "D8 addon : vid -> "+VID
                 video_url = self.GET_VIDEO_CANAL(VID,'cplus/')
             elif VID_d8 :
                 VID = VID_d8[0]
-                print "vid :"+VID
+                print "D8 addon : vid -> "+VID
                 video_url = self.GET_VIDEO_CANAL(VID,'d8/')
             elif VID_live :
                 VID = VID_live[0]
-                print "vid :"+VID
+                print "D8 addon : vid -> "+VID
                 video_url = self.GET_VIDEO_CANAL(VID,'d8/',live=True)
             item = xbmcgui.ListItem(path=video_url) 
             xbmcplugin.setResolvedUrl(handle=int(sys.argv[1]), succeeded=True, listitem=item)
 
         elif mode==100:
             if self.debug_mode:
-                print "GET_LIVE"
+                print "D8 addon : GET_LIVE"
             self.GET_LIVE(url)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory(handle=int(sys.argv[1]),category=__language__(30000))
@@ -176,7 +176,7 @@ class D8:
         if links:
             for anchor in links :
                 if self.debug_mode:
-                    print "categorie : "+anchor[1].encode("utf-8")
+                    print "D8 addon : categorie -> "+anchor[1].encode("utf-8")
                 self.addDir(anchor[1].encode("utf-8"),WEBROOT+(anchor[0].encode("utf-8")),2,"")
         self.addDir('Live',WEBLIVE,100,"")
 
@@ -189,20 +189,20 @@ class D8:
             blockcom_illu   = common.parseDOM(item,"a",attrs={"class":u"blockcom-illu parent-cglow parent-fil-mign"},ret="href")[0]
             emission_url    = WEBROOT+(blockcom_illu.encode("utf-8"))
             if self.debug_mode :
-                print "emission url : "+emission_url
+                print "D8 addon : emission url   -> "+emission_url
             emission_image  = common.parseDOM(item,"img",ret="src")[0]
             if self.debug_mode :
-                print "emission image : "+emission_image
+                print "D8 addon : emission image -> "+emission_image
             emission_titre  = common.parseDOM(item,"h3",attrs={"class":u"bkcc-title bkcc-title-solo a-ch"})[0].encode("utf-8")
             if self.debug_mode :
-                print "emission titre : "+emission_titre
+                print "D8 addon : emission titre -> "+emission_titre
             emission_plot_s = common.parseDOM(item,"p")            
             if emission_plot_s :
                 emission_plot = emission_plot_s[0].replace("<br />","\n").replace("<strong>","").replace("</strong>","").encode("utf-8")
             else :
                 emission_plot = ''
             if self.debug_mode :
-                print "emission plot : "+str(emission_plot)
+                print "D8 addon : emission plot  -> "+str(emission_plot)
             info            = {'Title':emission_titre,'Plot':emission_plot}
             self.addDir(emission_titre,emission_url,3,emission_image,info)
   
@@ -215,21 +215,21 @@ class D8:
             li_s            = common.parseDOM(cssnt_tabs_clic,"li")
             for li in li_s :
                 titre = common.parseDOM(li,"h3")[0]
-                print str(titre.encode('utf-8'))
-                if titre.encode('utf-8') == 'Vidéos' :
+                print 'D8 addon : '+str(titre.encode('utf-8'))
+                if re.search('Vid.+os?',titre.encode('utf-8'),re.IGNORECASE) or re.search('Live',titre.encode('utf-8'),re.IGNORECASE): 
                     epiCat_s        = common.parseDOM(html,'li',attrs={'id':'liste','class':'current'})
                     if len(epiCat_s)>1 :
                         for epiCat in epiCat_s :
-                            print str(epiCat.encode('utf-8'))
-                            titre = common.parseDOM(epiCat,'h3',attrs={'class':'onglet-title'})[0]
+                            print 'D8 addon : '+str(epiCat.encode('utf-8'))
+                            titre  = common.parseDOM(epiCat,'h3',attrs={'class':'onglet-title'})[0]
                             self.addDir(titre.encode("utf-8"),url,1,iconimage)
                     else :
                         self.addDir(titre.encode("utf-8"),url,1,iconimage)
         ## CANAL PLUS original style
         except:
-            print 'CANALPLUS'
             canalplus_list = common.parseDOM(html,"div",attrs={"id":"canalplus"})
             if canalplus_list :                    
+                print 'D8 addon : CANALPLUS1'
                 canalplus = canalplus_list [0]
                 mainSection_pattern = common.parseDOM(canalplus,"div",attrs={"id":"mainSection"}) [0]
                 button_plus_pattern = common.parseDOM(mainSection_pattern,"p",attrs={"class":u"button-plus"})
@@ -252,6 +252,7 @@ class D8:
                                 self.addDir(tabs_name.encode("utf-8"),tabs_url,4,iconimage)
             else : 
                 dessous_s = common.parseDOM(html,'li',attrs={'class':'dessous'})
+                print 'D8 addon : CANALPLUS2'
                 for item in dessous_s :
                     print item.encode('utf-8')
                     item_url   = common.parseDOM(item,'a',ret='href')[0]
@@ -266,10 +267,10 @@ class D8:
                         item_name    = common.parseDOM(item,'a')[1].encode('utf-8')
                     except :
                         item_name    = common.parseDOM(item,'a')[0].encode('utf-8')
-                    print 'image'+str(item_image)
-                    print 'name'+str(item_name)
-                    print 'url'+str(item_url)
-                    self.addDir(item_name,item_url,3,item_image)
+                    print 'D8 addon : image -> '+str(item_image)
+                    print 'D8 addon : name  -> '+str(item_name)
+                    print 'D8 addon : url   -> '+str(item_url)
+                    self.addDir(item_name,item_url,1,item_image)
 
     def GET_EPISODES_D8(self,url,fanartimage,name):
         xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
@@ -280,9 +281,9 @@ class D8:
         pid    = re.findall('data-pid=\'([0-9]+)\'',html)[0]
         ztid   = re.findall('data-ztidOnglet=\'([0-9]+)\'',html)[0]
         onglet = re.findall('data-iOnglet=\'([0-9]+)\'',html)[0]
-        print 'PID ' +str(pid)
-        print 'ZTID ' +str(ztid)
-        print 'ONGLET ' +str(onglet)
+        print 'D8 addon : PID ' +str(pid)
+        print 'D8 addon : ZTID ' +str(ztid)
+        print 'D8 addon : ONGLET ' +str(onglet)
         plus_video_s      = common.parseDOM(html,"a",attrs={"id":"btn-plus-video_[0-9]"},ret="onclick")
         if plus_video_s :
             n = 0
@@ -290,36 +291,40 @@ class D8:
                 url_allitem_end += "&nbPlusVideos"+str(n)+"=20"
                 n += 1
         url_allitem = WEBLIVEONGLET+"?pid="+str(pid)+"&ztid="+str(ztid)+"&onglet="+str(onglet)+url_allitem_end
-        print 'URL : '+ url_allitem
+        print 'D8 addon : URL : '+ url_allitem
         xml_allitem = self.get_soup(url_allitem)
         xml         = xml_allitem.decode("iso-8859-1")
-        print str(xml.encode('utf-8'))
+        print 'D8 addon : '+str(xml.encode('utf-8'))
         epiCat_s = common.parseDOM(xml,'li',attrs={'id':'liste','class':'current'})
+        Items    = ''
         if len(epiCat_s)>1 :
             for epiCat in epiCat_s :
                 titre = common.parseDOM(epiCat,'h3',attrs={'class':'onglet-title'})[0]
                 if titre.encode('utf-8') == name :
                     Items = epiCat
-        else :
+        if len(Items)==0 :
             Items = epiCat_s[0]
         li_s = common.parseDOM(Items,'li')
         for li in li_s :
-            print "LI : "
+            print "D8 addon : LI : "
             print li.encode("utf-8")
             episode_url   = common.parseDOM(li,"a",ret="href")[0]
             episode_url   = re.findall("""\?vid=(.*)""",episode_url) [0]
             episode_url   = "D8 : VID="+episode_url.encode("utf-8")
             if self.debug_mode :
-                print "episode url : "+str(episode_url)
+                print "D8 addon : episode url   -> "+str(episode_url)
             episode_name  = common.parseDOM(li,"h3")[0].encode("utf-8")
+            detail        = common.parseDOM(li,'div',attrs={'class':'lv-details'})
+            if detail :
+                episode_name = '%s - [I]%s[/I]' %(episode_name,detail[0].encode("utf-8"))
             if self.debug_mode :
-                print "episode name : "+str(episode_name)
+                print "D8 addon : episode name  -> "+str(episode_name)
             try :
                 episode_image = re.findall("""style=\"background-image: url\((.*)\)""",li)[0]
             except :
                 episode_image = re.findall("""style=\"background-image: url\(\'(.*)\'\)""",li)[0]
             if self.debug_mode :
-                print "episode image : "+str(episode_image)
+                print "D8 addon : episode image -> "+str(episode_image)
             self.addLink(episode_name,episode_url,5,episode_image,fanart=fanartimage)                
                     
     def GET_EPISODES_CANAL(self,url,fanartimage):
