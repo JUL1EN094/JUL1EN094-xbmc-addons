@@ -136,4 +136,4 @@ class CloudyResolver(Plugin, UrlResolver, PluginSettings):
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
-        return re.match('https?://(?:www\.|embed\.)cloudy\.(?:ec|eu|sx|ch|com)/(?:video/|embed\.php\?id=)([0-9a-z]+)', url) or 'cloudy' in host
+        return re.match('https?://(?:www\.|embed\.)cloudy\.(?:ec|eu|sx|ch|com)/(?:video/|embed\.php\?id=)([0-9a-z]+)', url) or 'cloudy.' in host

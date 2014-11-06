@@ -46,6 +46,8 @@ class MightyuploadResolver(Plugin, UrlResolver, PluginSettings):
             for i in re.finditer('<input type="hidden" name="(.*?)" value="(.*?)"', html):
                 form_values[i.group(1)] = i.group(2)   
             html = self.net.http_POST(web_url, form_data=form_values).content
+            r = re.search('<IFRAME SRC="(.*?)" .*?></IFRAME>',html,re.DOTALL)
+            html = self.net.http_GET(r.group(1)).content           
             r = re.search("<div id=\"player_code\">.*?<script type='text/javascript'>(.*?)</script>",html,re.DOTALL)
             if not r:
                 raise Exception ('Unable to resolve Mightyupload link. Player config not found.')

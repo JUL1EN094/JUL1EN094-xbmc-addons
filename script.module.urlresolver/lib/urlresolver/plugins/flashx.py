@@ -92,7 +92,6 @@ class FlashxResolver(Plugin, UrlResolver, PluginSettings):
         except Exception, e:
             common.addon.log_error('flashx.tv: general error occured: %s' % e)
             common.addon.show_small_popup(title='[B][COLOR white]FLASHX.TV[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
-            raise
             return self.unresolvable(code=0, msg=e)
 
         return False

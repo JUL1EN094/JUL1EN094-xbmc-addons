@@ -101,7 +101,12 @@ class HugefilesResolver(Plugin, UrlResolver, PluginSettings):
             # can't use t0mm0 net because the post doesn't return until the file is downloaded
             request = urllib2.Request(url, urllib.urlencode(data))
             response = urllib2.urlopen(request)
-            return response.geturl()
+            stream_url = response.geturl()
+            
+            # assume that if the final url matches the original url that the process failed
+            if stream_url == url:
+                raise Exception('Unable to find stream url')
+            return stream_url
         except urllib2.HTTPError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %(e.code, url))
             common.addon.show_small_popup('Error','Http error: '+str(e), 5000, error_logo)
