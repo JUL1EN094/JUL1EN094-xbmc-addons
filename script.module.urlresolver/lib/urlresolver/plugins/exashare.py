@@ -114,23 +114,26 @@ class ExashareResolver(Plugin, UrlResolver, PluginSettings):
             return True
     
     def login(self):
-        if (self.get_setting('login')=='true') and self.needLogin() :
-            common.addon.log('logging in exashare')
-            url = 'http://www.exashare.com/'
-            data = {'login':self.get_setting('username') , 'password':self.get_setting('password') , 'op':'login' , 'redirect':'/login.html'}        
-            source = self.net.http_POST(url,data).content
-            if re.search('Your username is for logging in and cannot be changed', source):            
-                common.addon.log('logged in exashare')
+        if (self.get_setting('login')=='true') :
+            if self.needLogin() :
+                common.addon.log('logging in exashare')
+                url = 'http://www.exashare.com/'
+                data = {'login':self.get_setting('username') , 'password':self.get_setting('password') , 'op':'login' , 'redirect':'/login.html'}        
+                source = self.net.http_POST(url,data).content
+                if re.search('Your username is for logging in and cannot be changed', source):            
+                    common.addon.log('logged in exashare')
+                    common.addon.show_small_popup(title='[B][COLOR white]EXASHARE LOGIN [/COLOR][/B]', msg='[COLOR green]Logged[/COLOR]', delay=2000, image=ok_logo)
+                    self.net.save_cookies(self.cookie_file)
+                    self.net.set_cookies(self.cookie_file)
+                    return True
+                else:
+                    common.addon.log('error logging in exashare')
+                    common.addon.show_small_popup(title='[B][COLOR white]EXASHARE LOGIN ERROR [/COLOR][/B]', msg='[COLOR red]Not logged[/COLOR]', delay=2000, image=error_logo)
+                    return False
+            else :
                 common.addon.show_small_popup(title='[B][COLOR white]EXASHARE LOGIN [/COLOR][/B]', msg='[COLOR green]Logged[/COLOR]', delay=2000, image=ok_logo)
-                self.net.save_cookies(self.cookie_file)
-                self.net.set_cookies(self.cookie_file)
-                return True
-            else:
-                common.addon.log('error logging in exashare')
-                common.addon.show_small_popup(title='[B][COLOR white]EXASHARE LOGIN ERROR [/COLOR][/B]', msg='[COLOR red]Not logged[/COLOR]', delay=2000, image=error_logo)
-                return False
         else :
-            common.addon.show_small_popup(title='[B][COLOR white]EXASHARE LOGIN [/COLOR][/B]', msg='[COLOR green]Logged[/COLOR]', delay=2000, image=ok_logo)
+            if os.path.exists(self.cookie_file) : os.remove(self.cookie_file)
             return True
                     
     #PluginSettings methods
