@@ -19,21 +19,15 @@ import CommonFunctions
 common = CommonFunctions
 common.plugin = "plugin.video.GulliReplay"
 
-
-
-
 __addonID__         = "plugin.video.GulliReplay"
 __author__          = "JUL1EN094"
-__date__            = "01-02-2013"
-__version__         = "2.0.0"
+__date__            = "24-11-2014"
 __credits__         = "Merci aux auteurs des autres addons replay du repo Passion XBMC pour leur inspiration"
 __addon__           = xbmcaddon.Addon(__addonID__)
 __settings__        = __addon__
 __language__        = __addon__.getLocalizedString
 __addonDir__        = __settings__.getAddonInfo("path")
-
-
-   
+__version__         = __settings__.getAddonInfo("version")   
 
 # Global Variable
 ROOTDIR             = __settings__.getAddonInfo('path')
@@ -42,16 +36,10 @@ MEDIA_PATH          = os.path.join(BASE_RESOURCE_PATH,"media")
 ADDON_DATA          = xbmc.translatePath("special://profile/addon_data/%s/"%__addonID__)
 CACHEDIR            = os.path.join(ADDON_DATA,"cache")
 THUMB_CACHE_PATH    = os.path.join(xbmc.translatePath("special://profile/"),"Thumbnails","Video")
-WEBSITE             = "http://replay.gulli.fr"  
-
-
-
+WEBSITE             = "http://replay.gulli.fr"
 
 # List of directories to check at startup
 dirCheckList        = (CACHEDIR,)
-
-       
-
 
 class GulliReplay:
     """
@@ -117,8 +105,8 @@ class GulliReplay:
         elif mode==2:
             if self.debug_mode:
                 print "PLAY_VIDEO"
-            rtmp_url = self.PLAY_VIDEO(url)
-            item     = xbmcgui.ListItem(path=rtmp_url) 
+            video_url = self.PLAY_VIDEO(url)
+            item      = xbmcgui.ListItem(path=video_url) 
             xbmcplugin.setResolvedUrl(handle=int(sys.argv[1]), succeeded=True, listitem=item)
             
         xbmcplugin.addSortMethod(handle=int(sys.argv[1]),sortMethod=xbmcplugin.SORT_METHOD_UNSORTED)
@@ -181,44 +169,28 @@ class GulliReplay:
                 self.addLink(titre_episode,episode_url,2,image_url)
  
     def PLAY_VIDEO(self,url):
-        smil_url   = self.get_smil_url(url)
-        video_name = self.get_video_filename(smil_url)
-        streamer   = "rtmp://stream2.lgdf.yacast.net/gulli_replay"
-        app        = "gulli_replay"
-        swfUrl     = "http://cdn1-gulli.ladmedia.fr/extension/lafrontoffice/design/standard/flash/jwplayer/release/player.swf"
-        swfVfy     = "1"
-        extension  = re.findall("""\.(.*)""",video_name) [0]
-        if extension :
-            rtmp_url   = streamer +" app="+app+" swfUrl="+swfUrl+" playpath=mp4:"+video_name+" swfVfy="+swfVfy
-            if self.debug_mode:
-                print rtmp_url
-            return rtmp_url
+        embed_url  = self.get_embed_url(url)
+        if embed_url :
+            video_url = self.get_video_url(embed_url)
+        return video_url
 
-    def get_smil_url(self,url):
-        soup             = self.get_soup(url)
-        html             = soup.decode("utf-8")
-        wrapper_pattern  = common.parseDOM(html,"div",attrs={"id":u"wrapper"}) [0]
-        column_2_pattern = common.parseDOM(wrapper_pattern,"div",attrs={"class":u"column_2"}) [0]
-        script_pattern   = common.parseDOM(column_2_pattern,"script") [1]
-        script           = script_pattern.encode("utf-8")
-        script_split     = script.split("""display geoblocking message""") [0]
-        script_split     = script_split.encode("utf-8")
-        smil_url         = re.findall(u""".*type:.*"POST".*url:.*"(.*)".*data:""",script_split) [0]
-        if smil_url :
-            smil_url = smil_url.encode("utf-8")
-            if self.debug_mode :
-                print "smil_url : "+smil_url
-            return smil_url
+    def get_embed_url(self,url):
+        soup  = self.get_soup(url)
+        html  = soup.decode("utf-8")
+        src   = re.findall("""jQuery\(\'.flashcontent\'\)\.html\(\'<iframe src=\"(.+?)\"""",html)
+        if src :
+            return src[0]
+        else :
+            return False
         
-    def get_video_filename(self,url):
+    def get_video_url(self,url):
         soup           = self.get_soup(url)
         html           = soup.decode("utf-8")
-        dico           = ast.literal_eval(html) 
-        video_filename = dico["filename"]
-        video_filename = video_filename.encode("utf-8")
-        if self.debug_mode :
-            print "video_filename : "+video_filename
-        return video_filename
+        file_url = re.findall("""file: '(.+?)',""", html)
+        if file_url :
+            return file_url[0]
+        else :
+            return False
 
     def set_debug_mode(self):
         debug =__settings__.getSetting('debug')
