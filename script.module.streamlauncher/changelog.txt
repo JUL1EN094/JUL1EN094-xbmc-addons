@@ -1,4 +1,7 @@
-﻿Version 0.1.5 (26-09-2014) par JUL1EN094 :
+﻿Version 0.1.6 (01-12-2014) par JUL1EN094 :
+- Corrections mineures pour Gotham et Helix
+
+Version 0.1.5 (26-09-2014) par JUL1EN094 :
 - Renvoie des cookies au module script.module.simple.downloader lors de l'utilisation du mode 'télécharger en arrière-plan'
 
 Version 0.1.4 (20-08-2014) par JUL1EN094 :

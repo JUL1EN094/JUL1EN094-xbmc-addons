@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# version 0.1.5 par JUL1EN094
+# version 0.1.6 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     StreamLauncher XBMC Module
@@ -676,7 +676,7 @@ class StreamLauncher():
                         while caching1 :
                             download_info = self.downloader.getInfos()
                             if download_info['status'] == DOWNLOADING : 
-                                progress1.update(int(download_info['downloaded'])*100/int(download_info['size']),'Téléchargement en cours...\nSi vous annulez, le fichier en cache sera supprimé')
+                                progress1.update(int(download_info['downloaded'])*100/int(download_info['size']))
                                 time.sleep(0.5)
                             elif download_info['status'] == FINISHED :
                                 caching1 = False
