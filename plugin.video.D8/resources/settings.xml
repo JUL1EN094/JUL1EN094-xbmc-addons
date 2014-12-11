@@ -6,7 +6,8 @@
     <!-- ADVANCED -->
   	<category label="30010">
 	    <setting label="30011" type="bool" id="debug" default="false" />
-	</category>
+	    <setting label="30012" type="labelenum" id="videotype" values="BAS_DEBIT|HAUT_DEBIT|HD|MOBILE|SMOOTH_STREAMING|IPHONE|IPAD|HDS|HLS|" default="HLS" />
+    </category>
     
     <!-- DOWNLOAD -->
 

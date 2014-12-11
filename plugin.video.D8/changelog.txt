@@ -1,4 +1,9 @@
-﻿1.0.6 (10-10-2014) par JUL1EN094
+﻿2.0.0 (11-12-2014) par JUL1EN094
++ Refonte globale du code
++ Suppression du parsing au profit de l'API Canal+
++ Ajout des options 'format des vidéos' 
+
+1.0.6 (10-10-2014) par JUL1EN094
 + Optimisation du parsing
 
 1.0.5 (14-04-2014) par JUL1EN04

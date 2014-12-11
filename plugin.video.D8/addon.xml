@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.D8"
        name="D8"
-       version="1.0.6"
+       version="2.0.0"
        provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -16,6 +16,7 @@
     <summary>D8v</summary>
     <summary lang="fr">D8</summary>
     <description>D8.tv</description>
-    <description lang="fr">Plugin donnant accès aux vidéos du site web D8.tv</description>
+    <description lang="fr">Extension donnant accès aux vidéos de la chaîne française D8</description>
+    <description lang="fr">Addon to watch videos from french tv channel D8</description>
   </extension>
 </addon>
