@@ -18,7 +18,7 @@ __addonID__   = "plugin.video.D8"
 __addon__     = xbmcaddon.Addon( __addonID__ )
 __addonDir__  = __addon__.getAddonInfo("path")
 __author__    = __addon__.getAddonInfo("author")
-__date__      = "11-12-2014"
+__date__      = "12-15-2014"
 __language__  = __addon__.getLocalizedString
 __version__   = __addon__.getAddonInfo("version")
 #---------------------------------------------------------------------
@@ -27,7 +27,7 @@ ICON_PATH     = os.path.join(__addonDir__,"icon.png")
 FANART_PATH   = os.path.join(__addonDir__,"fanart.jpg")
 # Web Variables 
 LAB_URL       = 'http://lab.canal-plus.pro/web/app_prod.php/api'
-CAT_URL       = LAB_URL+'/replay'
+CAT_URL       = LAB_URL+'/replay/1'
 LIVE_URL      = "http://www.d8.tv/pid5323-d8-live.html"
 PGINFOS_URL   = LAB_URL+'/pfv'
 USER_AGENT    = 'Mozilla/5.0 (Windows NT 5.1; rv:15.0) Gecko/20100101 Firefox/15.0.1'

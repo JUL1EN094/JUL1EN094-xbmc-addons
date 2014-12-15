@@ -45,7 +45,7 @@
 
 <addon id="plugin.video.D8"
        name="D8"
-       version="2.0.0"
+       version="2.0.1"
        provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -56,12 +56,17 @@
         <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>D8v</summary>
-    <summary lang="fr">D8</summary>
-    <description>D8.tv</description>
     <description lang="fr">Extension donnant accès aux vidéos de la chaîne française D8</description>
-    <description lang="fr">Addon to watch videos from french tv channel D8</description>
+    <description lang="en">Addon to watch videos from french tv channel D8</description>
+    <disclaimer></disclaimer>
+    <email>JUJUL1EN094@gmail.com</email>
+    <forum></forum>
+    <language>fr</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <platform>all</platform>
+    <source>http://github.com/JUL1EN094/plugin.video.D8</source>
+    <summary>D8</summary>
+    <website></website>
   </extension>
 </addon>
 
