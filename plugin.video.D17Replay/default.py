@@ -22,8 +22,8 @@ common.plugin      = "plugin.video.D17Replay"
 
 __addonID__        = "plugin.video.D17Replay"
 __author__         = "JUL1EN094"
-__date__           = "28-04-2014"
-__version__        = "1.0.7"
+__date__           = "15-12-2014"
+__version__        = "1.0.8"
 __credits__        = "Merci aux auteurs des autres addons replay du dépôt Passion-XBMC pour leur inspiration"
 __addon__          = xbmcaddon.Addon( __addonID__ )
 __settings__       = __addon__

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.D17Replay"
        name="D17 Replay"
-       version="1.0.7"
+       version="1.0.8"
        provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -17,5 +17,6 @@
     <summary lang="fr">D17 Replay</summary>
     <description>D17 Catchup TV</description>
     <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de la chaîne D17</description>
+    <broken>D17Replay addon replaced by D17 addon</broken>
   </extension>
 </addon>
