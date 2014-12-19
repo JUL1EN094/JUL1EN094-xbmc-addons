@@ -70,9 +70,9 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.D8"
+<addon id="plugin.video.d8"
        name="D8"
-       version="2.0.1"
+       version="2.0.2"
        provider-name="JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -91,7 +91,7 @@
     <language>fr</language>
     <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
     <platform>all</platform>
-    <source>http://github.com/JUL1EN094/plugin.video.D8</source>
+    <source>http://github.com/JUL1EN094/plugin.video.d8</source>
     <summary>D8</summary>
     <website></website>
   </extension>

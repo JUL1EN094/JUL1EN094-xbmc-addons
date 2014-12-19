@@ -14,11 +14,11 @@ import simplejson as json
 # print_exc
 from traceback import print_exc
 #---------------------------------------------------------------------
-__addonID__   = "plugin.video.D8"
+__addonID__   = "plugin.video.d8"
 __addon__     = xbmcaddon.Addon( __addonID__ )
 __addonDir__  = __addon__.getAddonInfo("path")
 __author__    = __addon__.getAddonInfo("author")
-__date__      = "12-15-2014"
+__date__      = "12-19-2014"
 __language__  = __addon__.getLocalizedString
 __version__   = __addon__.getAddonInfo("version")
 #---------------------------------------------------------------------
@@ -110,7 +110,7 @@ class D8:
         # import parseDOM
         import CommonFunctions
         common = CommonFunctions
-        common.plugin = "plugin.video.D8" 
+        common.plugin = "plugin.video.d8" 
         #---------------------------------
         live_id    = common.parseDOM(html,"input",attrs={"type":u"hidden","id":"iVideoEnCours"}, ret="value")[0]
         video_url  = self.get_video_url(live_id)
