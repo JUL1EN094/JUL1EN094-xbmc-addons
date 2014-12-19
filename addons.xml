@@ -22,6 +22,32 @@
   </extension>
 </addon>
 
+<addon id="plugin.video.d17"
+       name="D17"
+       version="1.0.2"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <description lang="fr">Extension donnant accès aux vidéos de la chaîne française D17</description>
+    <description lang="en">Addon to watch videos from french tv channel D17</description>
+    <disclaimer></disclaimer>
+    <email>JUJUL1EN094@gmail.com</email>
+    <forum></forum>
+    <language>fr</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <platform>all</platform>
+    <source>http://github.com/JUL1EN094/plugin.video.d17</source>
+    <summary>D17</summary>
+    <website></website>
+  </extension>
+</addon>
+
 <addon id="plugin.video.D17Replay"
        name="D17 Replay"
        version="1.0.8"
@@ -41,6 +67,33 @@
     <description>D17 Catchup TV</description>
     <description lang="fr">Plugin donnant accès aux vidéos de rattrapage de la chaîne D17</description>
     <broken>D17Replay addon replaced by D17 addon</broken>
+  </extension>
+</addon>
+
+<addon id="plugin.video.d8"
+       name="D8"
+       version="2.0.2"
+       provider-name="JUL1EN094">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.parsedom" version="2.5.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <description lang="fr">Extension donnant accès aux vidéos de la chaîne française D8</description>
+    <description lang="en">Addon to watch videos from french tv channel D8</description>
+    <disclaimer></disclaimer>
+    <email>JUJUL1EN094@gmail.com</email>
+    <forum></forum>
+    <language>fr</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <platform>all</platform>
+    <source>http://github.com/JUL1EN094/plugin.video.d8</source>
+    <summary>D8</summary>
+    <website></website>
   </extension>
 </addon>
 
