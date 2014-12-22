@@ -1,6 +1,6 @@
 ﻿1.0.8 (15-12-2014) par JUL1EN094
 + Bump version to v1.0.8
-+ Extension passée en 'broken', car remplacée par l'extension addon
++ Extension passée en 'broken', car remplacée par l'extension D17
 
 1.0.7 (28-04-2014) par JUL1EN094
 + Modification de la qualité de la video ('HD' --> 'HLS') suite aux modifications chez canal+
