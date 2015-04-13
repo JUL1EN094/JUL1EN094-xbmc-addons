@@ -1,14 +1,60 @@
-[B]Version 2.5.0.004[/B] 
-- Fixed Exashare logging's methods
+[B]Version 2.8.0.001[/B]
+- Fixed Exashare plugin
+- Fixed Teramixer plugin
 
-[B]Version 2.5.0.003[/B] 
-- Added Exashare logging's methods
+[B]Version 2.8.0[/B]
+- Code Base Changes:
+    - Speed enhancements - Further to changes made in 2.7.0 
+        - New routine to select appropriate host for given url
+    - Compile resolver settings into reduced number of tabs to avoid Helix 100 settings tab limit
+- Resolvers Added:
+- Resolvers Fixed/Updated:
+    - HugeFiles
+    - Bestreams
+    - VideoMega
+    - Vidplay
+    - Vidxden
+    - Letwatchus
+    - 180Upload
 
-[B]Version 2.5.0.002[/B] 
-- Bump version number
-
-[B]Version 2.5.0.001[/B]
-- Up Purevid to prevent lock accounts
+   
+[B]Version 2.7.0[/B]
+- Code Base Changes:
+    - Speed enhancements:
+        - Don't load into mem all resolvers on init, load only when used
+        - Only build settings.xml on first init after initial install or new version
+    - Verify final link doesn't give http error before returning
+- Resolvers Added:
+    - RoyalVids
+    - VShare
+    - CloudyVideos
+    - Streamin.to
+- Resolvers Fixed/Updated:
+    - MovReel
+    - BillionUploads
+    - Novamov
+    - Premiumize
+    - TheVideo.me
+    - VidSpot
+    - VeeHD
+    - Vidbull
+- Removed dead resolvers
+    
+[B]Version 2.6.0[/B]
+- Code Base Changes:
+    - Allow host validation to work with universal resolvers
+- Resolvers Added:
+    - Realvid
+    - Letwatch
+    - Speedvideo
+    - Videohut
+- Resolvers Fixed/Updated:
+    - Vidbull
+    - VeeHD
+    - VODLocker (speed improvement)
+    - MightyUpload
+    - Exashare
+    - Tunepk
 
 [B]Version 2.5.0[/B]
 - Added Teramixer

@@ -29,6 +29,7 @@ net = Net()
 class veeHDResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
     implements = [UrlResolver, SiteAuth, PluginSettings]
     name = "veeHD"
+    domains = [ "veehd.com" ]
     profile_path = common.profile_path
     cookie_file = os.path.join(profile_path, '%s.cookies' % name)
     
@@ -43,37 +44,39 @@ class veeHDResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
 
     #UrlResolver methods
     def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
         try:
+            if not self.get_setting('login')=='true' or not (self.get_setting('username') and self.get_setting('password')):
+                raise Exception('VeeHD requires a username & password')
+
+            web_url = self.get_url(host, media_id)
             html = self.net.http_GET(web_url).content
 
-            fragment = re.search('playeriframe".+?attr.+?src : "(.+?)"', html)
-            frag = 'http://%s%s'%(host,fragment.group(1))
-
-            html = self.net.http_GET(frag).content
-
-            r = re.search('"video/divx" src="(.+?)"', html)
-            if r:
-                stream_url = r.group(1)
-            else:
-                message = self.name + '- 1st attempt at finding the stream_url failed probably an Mp4, finding Mp4'
-                common.addon.log_debug(message)
-                a = re.search('"url":"(.+?)"', html)
-                r=urllib.unquote(a.group(1))
+            # two possible playeriframe's: stream and download
+            for match in re.finditer('playeriframe.+?src\s*:\s*"([^"]+)', html):
+                player_url = 'http://%s%s'%(host,match.group(1))
+                html = self.net.http_GET(player_url).content
+                
+                # if the player html contains an iframe the iframe url has to be gotten and then the player_url tried again
+                r = re.search('<iframe.*?src="([^"]+)', html)
                 if r:
-                    stream_url = r
-                else:
-                    raise Exception ('File Not Found or removed')
-            return stream_url
+                    frame_url = 'http://%s%s'%(host,r.group(1))
+                    self.net.http_GET(frame_url)
+                    html = self.net.http_GET(player_url).content
+
+                patterns = ['"video/divx"\s+src="([^"]+)', '"url"\s*:\s*"([^"]+)', 'href="([^"]+(?:mp4|avi))']
+                for pattern in patterns:
+                    r = re.search(pattern, html)
+                    if r:
+                        stream_url = urllib.unquote(r.group(1))
+                        return stream_url
+
+            raise Exception ('File Not Found or Removed')
         except Exception, e:
             common.addon.log('**** VeeHD Error occured: %s' % e)
-            common.addon.show_small_popup('Error', str(e), 5000, '')
             return self.unresolvable(code=0, msg='Exception: %s' % e)    
-    
         
     def get_url(self, host, media_id):
         return 'http://veehd.com/video/%s' % media_id
-                
         
     def get_host_and_id(self, url):
         r = re.search('//(.+?)/video/([0-9A-Za-z]+)', url)
@@ -87,6 +90,7 @@ class veeHDResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
         return (re.match('http://(www.)?veehd.com/' +
                          '[0-9A-Za-z]+', url) or
                          'veehd' in host)
+       
     #SiteAuth methods
     def login(self):
         loginurl = 'http://veehd.com/login'
@@ -103,7 +107,6 @@ class veeHDResolver(Plugin, UrlResolver, SiteAuth, PluginSettings):
             return True
         else:
             return False
-        
         
     #PluginSettings methods
     def get_settings_xml(self):

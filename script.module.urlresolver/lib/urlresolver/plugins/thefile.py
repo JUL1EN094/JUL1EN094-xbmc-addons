@@ -31,6 +31,7 @@ error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 class TheFileResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "thefile"
+    domains = [ "thefile.me" ]
 
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -44,7 +45,6 @@ class TheFileResolver(Plugin, UrlResolver, PluginSettings):
                 'Referer': web_url
             }
             html = self.net.http_GET(web_url).content
-            #print html.encode('ascii','ignore')
             
             # check if we have a p,ac,k,e,d source
             r = re.search('<script\stype=(?:"|\')text/javascript(?:"|\')>(eval\(function\(p,a,c,k,e,[dr]\)(?!.+player_ads.+).+?)</script>',html,re.DOTALL)
@@ -60,10 +60,8 @@ class TheFileResolver(Plugin, UrlResolver, PluginSettings):
             data.update({'referer': web_url})
             data.update({'method_free': 'Free Download'})
             data.update({'op': 'download1'})
-            #print data
             
             html = self.net.http_POST(web_url, data, headers=headers).content
-            #print html.encode('ascii','ignore')
             
             data = {}
             r = re.findall(r'type="hidden"\s*name="(.+?)"\s*value="(.*?)"', html)
@@ -71,10 +69,8 @@ class TheFileResolver(Plugin, UrlResolver, PluginSettings):
             data.update({'referer': web_url})
             data.update({'btn_download': 'Create Download Link'})
             data.update({'op': 'download2'})
-            #print data
             
             html = self.net.http_POST(web_url, data, headers=headers).content
-            #print html.encode('ascii','ignore')
             
             r = re.search(r'<span>\s*<a\s+href="(.+?)".*</a>\s*</span>',html)
             if r:

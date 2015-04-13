@@ -33,7 +33,8 @@ ok_logo = os.path.join(common.addon_path, 'resources', 'images', 'greeninch.png'
 
 class TeramixerResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "teramixer"    
+    name = "teramixer"
+    domains = [ "teramixer.com" ]    
 
     def __init__(self):
         p = self.get_setting('priority') or 100

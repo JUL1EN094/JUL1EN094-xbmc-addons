@@ -30,6 +30,7 @@ error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 class DaclipsResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "daclips"
+    domains = [ "daclips.in", "daclips.com" ]
 
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -59,7 +60,7 @@ class DaclipsResolver(Plugin, UrlResolver, PluginSettings):
             else:
                 raise Exception ('Unable to resolve Daclips link')
 
-        except urllib2.URLError, e:
+        except urllib2.HTTPError, e:
             common.addon.log_error('daclips: got http error %d fetching %s' %
                                   (e.code, web_url))
             common.addon.show_small_popup('Error','Http error: '+str(e), 5000, error_logo)

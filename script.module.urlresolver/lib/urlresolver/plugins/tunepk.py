@@ -31,16 +31,18 @@ logo=os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 class TunePkResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "tune.pk"
+    domains = [ "tune.pk" ]
 
     def __init__(self):
         p = self.get_setting('priority') or 100
         self.priority = int(p)
         self.net = Net()
+        self.pattern = '(.+tune.pk)/(?:player|video|play)/(?:[\w\.\?]+=)?(\d+)'
 
     def get_media_url(self, host, media_id):
         try:
             web_url = self.get_url(host, media_id)
-            link = self.net.http_GET(web_url).content
+            link = repr(self.net.http_GET(web_url).content)
 
             if link.find('404 Not Found') >= 0:
                 err_title = 'Content not available.'
@@ -51,10 +53,10 @@ class TunePkResolver(Plugin, UrlResolver, PluginSettings):
 
             videoUrl = []
             # borrowed from AJ's turtle-x
-            html = link.replace('\n\r', '').replace('\r', '').replace('\n', '')
-            sources = re.compile("{(.+?)}").findall(re.compile("sources:(.+?)]").findall(html)[0])
+            html = link.replace('\n\r', '').replace('\r', '').replace('\n', '').replace('\\', '')
+            sources = re.compile("{(.+?)}").findall(re.compile("sources (.+?)]").findall(html)[0])
             for source in sources:
-                video_link = str(re.compile('file[: ]*"(.+?)"').findall(source)[0])
+                video_link = str(re.compile('"file":"(.*?)"').findall(source)[0])
                 videoUrl.append(video_link)
 
 
@@ -86,13 +88,12 @@ class TunePkResolver(Plugin, UrlResolver, PluginSettings):
         return 'http://embed.tune.pk/play/%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/player/embed_player\.php\?vid\=(\w+)', url)
+        r = re.search(self.pattern, url)
         return r.groups()
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
-        return re.match('http://(www\.)?tune.pk/player/embed_player\.php\?vid\=(\w+)', url) or \
-               self.name in host
+        return re.match(self.pattern, url) or self.name in host
 
     #PluginSettings methods
     def get_settings_xml(self):

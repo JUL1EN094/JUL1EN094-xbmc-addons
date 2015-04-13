@@ -15,55 +15,61 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+import os
+import xbmc
 from t0mm0.common.net import Net
 from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
-import urllib,urllib2,re,xbmc
+import re
+import urllib2
 from urlresolver import common
-class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
+
+logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
+
+class VodlockerResolver(Plugin, UrlResolver, PluginSettings):
     implements=[UrlResolver,PluginSettings]
     name="vodlocker.com"
+    domains=[ "vodlocker.com" ]
+    
     def __init__(self):
         p=self.get_setting('priority') or 100
         self.priority=int(p)
         self.net=Net()
         self.pattern='http://((?:www.)?vodlocker.com)/(?:embed-)?([0-9a-zA-Z]+)(?:-\d+x\d+.html)?'
-    def get_url(self,host,media_id): return 'http://vodlocker.com/%s' % (media_id)
+    
+    def get_url(self,host,media_id): 
+        return 'http://vodlocker.com/embed-%s-640x400.html' % (media_id)
+
     def get_host_and_id(self,url):
         r=re.search(self.pattern,url)
         if r: return r.groups()
         else: return False
+
     def valid_url(self,url,host):
         if self.get_setting('enabled')=='false': return False
         return re.match(self.pattern,url) or self.name in host
+
     def get_media_url(self,host,media_id):
-        web_url=self.get_url(host,media_id)
-        post_url=web_url
-        hostname=self.name
-        common.addon.log(media_id)
-        common.addon.log(web_url)
         try:
-            resp=self.net.http_GET(web_url)
-            html=resp.content
+            web_url = self.get_url(host, media_id)
+            link = self.net.http_GET(web_url).content
+
+            if link.find('404 Not Found') >= 0:
+                err_title = 'Content not available.'
+                err_message = 'The requested video was not found.'
+                common.addon.log_error(self.name + ' - fetching %s - %s - %s ' % (web_url,err_title,err_message))
+                xbmc.executebuiltin('XBMC.Notification([B][COLOR white]'+__name__+'[/COLOR][/B] - '+err_title+',[COLOR red]'+err_message+'[/COLOR],8000,'+logo+')')
+                return self.unresolvable(1, err_message)
+
+            video_link = str(re.compile('file[: ]*"(.+?)"').findall(link)[0])
+
+            if len(video_link) > 0:
+                return video_link
+            else:
+                return self.unresolvable(0, 'No playable video found.')
         except urllib2.URLError, e:
-            common.addon.log_error(hostname+': got http error %d fetching 1st url %s' % (e.code,web_url))
-            return self.unresolvable(code=3, msg='Exception: %s' % e) #return False
-        try:
-        	data={}; r=re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">',html); data['usr_login']=''
-        	for name,value in r: data[name]=value
-        	data['imhuman']='Proceed to video'; data['btn_download']='Proceed to video'
-        	xbmc.sleep(2000)
-        	html=self.net.http_POST(post_url,data).content
-        except urllib2.URLError,e:
-            common.addon.log_error(hostname+': got http error %d fetching 2nd url %s' % (e.code,web_url))
-            return self.unresolvable(code=3,msg='Exception: %s' % e) #return False
-        r=re.search('file\s*:\s*"(http://.+?)"',html)
-        if r:
-            #stream_url=urllib.unquote_plus(r.group(1))
-            stream_url=str(r.group(1))
-            #print stream_url
-        else:
-            common.addon.log_error(hostname+': stream url not found')
-            return self.unresolvable(code=0,msg='no file located') #return False
-        return stream_url
+            return self.unresolvable(3, str(e))
+        except Exception, e:
+            return self.unresolvable(0, str(e))

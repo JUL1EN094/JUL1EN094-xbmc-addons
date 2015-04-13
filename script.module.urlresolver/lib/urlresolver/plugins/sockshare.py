@@ -36,6 +36,7 @@ error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 class sockshareResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "sockshare"
+    domains = [ "sockshare.com" ]
     profile_path = common.profile_path
     cookie_file = os.path.join(profile_path, 'sockshare.cookies')
 
@@ -153,7 +154,6 @@ class sockshareResolver(Plugin, UrlResolver, PluginSettings):
     #SiteAuth methods
     def login(self):
         if self.login_stale():
-            print 'Need to login since session is invalid'
             url = 'http://www.sockshare.com/authenticate.php?login'
             source = self.net.http_GET(url).content
             self.net.save_cookies(self.cookie_file)
@@ -172,7 +172,6 @@ class sockshareResolver(Plugin, UrlResolver, PluginSettings):
                 response = self.net.http_POST(url, form_data=data)
                 self.net.save_cookies(self.cookie_file)
                 self.net.set_cookies(self.cookie_file)
-                #print response.get_url()
             else:
                 common.addon.log('Dialog was canceled')
                 return False

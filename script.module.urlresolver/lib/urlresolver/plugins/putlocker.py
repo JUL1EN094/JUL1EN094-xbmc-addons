@@ -35,7 +35,8 @@ error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
 class PutlockerResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
-    name = "putlocker/filedrive/firedrive"
+    name = "putlocker"
+    domains = [ "putlocker.com", "filedrive.com", "firedrive.com" ]
     profile_path = common.profile_path
     cookie_file = os.path.join(profile_path, 'putlocker.cookies')
 
@@ -211,7 +212,6 @@ class PutlockerResolver(Plugin, UrlResolver, PluginSettings):
     #SiteAuth methods
     def login(self):
         if self.login_stale():
-            #print 'Need to login since session is invalid'
             url = 'http://www.putlocker.com/authenticate.php?login'
             source = self.net.http_GET(url).content
             self.net.save_cookies(self.cookie_file)

@@ -30,6 +30,7 @@ error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 class NowvideoResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "nowvideo"
+    domains = [ "nowvideo.eu","nowvideo.ch","nowvideo.sx" ]
 
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -44,10 +45,8 @@ class NowvideoResolver(Plugin, UrlResolver, PluginSettings):
             ip_key = key[0]
             pattern = 'var %s="(.+?)".+?flashvars.file="(.+?)"'% str(ip_key)
             r = re.search(pattern,html, re.DOTALL)
-            #print 'find key: '+str(r)
             if r:
                 filekey, filename= r.groups()
-                #print "FILEBLOBS=%s  %s"%(filename,filekey)
             else:
                 r = re.search('file no longer exists',html)
                 if r:
@@ -64,9 +63,20 @@ class NowvideoResolver(Plugin, UrlResolver, PluginSettings):
                 if r:
                     raise Exception ('File Not Found or removed')
                 raise Exception ('Failed to parse url')
+            
+            try:
+                # test the url, should throw 404
+                nv_header = self.net.http_HEAD(stream_url)
+            except urllib2.HTTPError, e:
+                # if error 404, redirect it back (two pass authentification)
+                api = 'http://www.nowvideo.sx/api/player.api.php?pass=undefined&cid3=undefined&key=%s&user=undefined&numOfErrors=1&errorUrl=%s&cid=1&file=%s&cid2=undefined&errorCode=404' % (filekey, urllib.quote_plus(stream_url), filename)
+                html = self.net.http_GET(api).content
+                r = re.search('url=(.+?)&title', html)
+                if r:
+                    stream_url = urllib.unquote(r.group(1))
                 
             return stream_url
-        except urllib2.URLError, e:
+        except urllib2.HTTPError, e:
             common.addon.log_error('Nowvideo: got http error %d fetching %s' %
                                     (e.code, web_url))
             return self.unresolvable(code=3, msg=e)
@@ -79,8 +89,7 @@ class NowvideoResolver(Plugin, UrlResolver, PluginSettings):
         return 'http://embed.nowvideo.sx/embed.php?v=%s' % media_id
 
     def get_host_and_id(self, url):
-        #print url
-        r = re.search('((?:http://|www.|embed.)nowvideo.(?:eu|sx|ch))/(?:video/|embed.php\?v=)([0-9a-z]+)', url)
+        r = re.search('((?:http://|www.|embed.)nowvideo.(?:eu|sx|ch))/(?:video/|embed.php\?.*?v=)([0-9a-z]+)', url)
         if r:
             return r.groups()
         else:

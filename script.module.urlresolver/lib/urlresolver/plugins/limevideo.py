@@ -23,12 +23,14 @@ from urlresolver.plugnplay import Plugin
 import re, xbmcgui
 from urlresolver import common
 from lib import jsunpack
+from lib import captcha_lib
 
 net = Net()
 
 class LimevideoResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "limevideo"
+    domains = [ "limevideo.net" ]
 
 
     def __init__(self):
@@ -53,15 +55,11 @@ class LimevideoResolver(Plugin, UrlResolver, PluginSettings):
                 
             html = net.http_POST(url, data).content
             
-            captcha = re.compile("left:(\d+)px;padding-top:\d+px;'>&#(.+?);<").findall(html)
-            result = sorted(captcha, key=lambda ltr: int(ltr[0]))
-            solution = ''.join(str(int(num[1])-48) for num in result)
-
             r = re.findall(r'type="hidden" name="(.+?)" value="(.+?)">', html)
             for name, value in r:
                 data[name] = value
-                data.update({'code':solution})
-            
+            data.update(captcha_lib.do_captcha(html))
+
             html = net.http_POST(url, data).content
     
             sPattern =  '<script type=(?:"|\')text/javascript(?:"|\')>(eval\('

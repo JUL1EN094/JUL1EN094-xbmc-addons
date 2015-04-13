@@ -22,12 +22,14 @@ from t0mm0.common.net import Net
 import re
 import xbmcgui
 import xbmc
+import os
 
 net = Net()
+IMG_FILE = 'captcha_img.gif'
 
 def get_response(img):
     try:
-        img = xbmcgui.ControlImage(450,15,400,130,img)
+        img = xbmcgui.ControlImage(450, 0, 400, 130, img)
         wdlg = xbmcgui.WindowDialog()
         wdlg.addControl(img)
         wdlg.show()
@@ -37,28 +39,63 @@ def get_response(img):
         if (kb.isConfirmed()):
             solution = kb.getText()
             if solution == '':
-                raise Exception ('You must enter text in the image to access video')
+                raise Exception('You must enter text in the image to access video')
             else:
                 return solution
         else:
-            raise Exception ('Captcha Error')
+            raise Exception('Captcha Error')
     finally:
         wdlg.close()
 
-def do_solvemedia_captcha(captcha_url, puzzle_img):
-    common.addon.log_debug('SolveMedia Captcha')
+def do_captcha(html):
+    solvemedia = re.search('<iframe src="((?:https?:)?//api.solvemedia.com[^"]+)', html)
+    recaptcha = re.search('<script\s+type="text/javascript"\s+src="(http://www.google.com[^"]+)', html)
+    
+    if solvemedia:
+        return do_solvemedia_captcha(solvemedia.group(1))
+    elif recaptcha:
+        return do_recaptcha(recaptcha.group(1))
+    else:
+        captcha = re.compile("left:(\d+)px;padding-top:\d+px;'>&#(.+?);<").findall(html)
+        result = sorted(captcha, key=lambda ltr: int(ltr[0]))
+        solution = ''.join(str(int(num[1]) - 48) for num in result)
+        if solution:
+            return {'code': solution}
+        else:
+            return {}
+
+def do_solvemedia_captcha(captcha_url):
+    common.addon.log_debug('SolveMedia Captcha: %s' % (captcha_url))
+    if captcha_url.startswith('//'): captcha_url = 'http:' + captcha_url
     html = net.http_GET(captcha_url).content
-    hugekey=re.search('id="adcopy_challenge" value="(.+?)">', html).group(1)
-    open(puzzle_img, 'wb').write(net.http_GET("http://api.solvemedia.com%s" % re.search('<img src="(.+?)"', html).group(1)).content)
-    solution = get_response(puzzle_img)
-    return {'adcopy_challenge': hugekey,'adcopy_response': solution}
+    data = {
+            'adcopy_challenge': ''  # set to blank just in case not found; avoids exception on return
+    }
+    for match in re.finditer(r'type=hidden.*?name="([^"]+)".*?value="([^"]+)', html):
+        name, value = match.groups()
+        data[name] = value
+
+    captcha_img = os.path.join(common.profile_path, IMG_FILE)
+    try: os.remove(captcha_img)
+    except: pass
+    
+    #Check for alternate puzzle type - stored in a div
+    alt_puzzle = re.search('<div><iframe src="(/papi/media.+?)"', html)
+    if alt_puzzle:
+        open(captcha_img, 'wb').write(net.http_GET("http://api.solvemedia.com%s" % alt_puzzle.group(1)).content)
+    else:
+        open(captcha_img, 'wb').write(net.http_GET("http://api.solvemedia.com%s" % re.search('<img src="(/papi/media.+?)"', html).group(1)).content)
+            
+    solution = get_response(captcha_img)
+    data['adcopy_response'] = solution
+    html = net.http_POST('http://api.solvemedia.com/papi/verify.noscript', data)
+    return {'adcopy_challenge': data['adcopy_challenge'], 'adcopy_response': 'manual_challenge'}
 
 def do_recaptcha(captcha_url):
-    common.addon.log_debug('Google ReCaptcha')
+    common.addon.log_debug('Google ReCaptcha: %s' % (captcha_url))
+    if captcha_url.startswith('//'): captcha_url = 'http:' + captcha_url
     html = net.http_GET(captcha_url).content
     part = re.search("challenge \: \\'(.+?)\\'", html)
-    captchaimg = 'http://www.google.com/recaptcha/api/image?c='+part.group(1)
-    solution = get_response(captchaimg)
-    return {'recaptcha_challenge_field': part.group(1),'recaptcha_response_field': solution}
-
-    
+    captcha_img = 'http://www.google.com/recaptcha/api/image?c=' + part.group(1)
+    solution = get_response(captcha_img)
+    return {'recaptcha_challenge_field': part.group(1), 'recaptcha_response_field': solution}

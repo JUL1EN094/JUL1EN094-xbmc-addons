@@ -1,6 +1,6 @@
 """
 streamcloud urlresolver plugin
-Copyright (C) 2012 Lynx187
+Copyright (C) 2012 Lynx187 
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,13 +27,10 @@ import xbmcgui
 import re
 import time
 
-#SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
-error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
-
-
 class StreamcloudResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "streamcloud"
+    domains = [ "streamcloud.eu" ]
 
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -67,11 +64,9 @@ class StreamcloudResolver(Plugin, UrlResolver, PluginSettings):
         except urllib2.URLError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %
                                    (e.code, web_url))
-            common.addon.show_small_popup('Error','Http error: '+str(e), 8000, error_logo)
             return self.unresolvable(code=3, msg=e)
         except Exception, e:
             common.addon.log('**** Streamcloud Error occured: %s' % e)
-            common.addon.show_small_popup(title='[B][COLOR white]STREAMCLOUD[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
             return self.unresolvable(code=0, msg=e)
 
     def get_url(self, host, media_id):
@@ -88,4 +83,3 @@ class StreamcloudResolver(Plugin, UrlResolver, PluginSettings):
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False
         return re.match('http://(www.)?streamcloud.eu/[0-9A-Za-z]+', url) or 'streamcloud' in host
-

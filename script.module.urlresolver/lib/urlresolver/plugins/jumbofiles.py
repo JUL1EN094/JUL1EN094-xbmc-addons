@@ -23,13 +23,11 @@ from urlresolver.plugnplay import Plugin
 import re
 import urllib2
 from urlresolver import common
-import os, xbmcgui
-from vidxden import unpack_js
-
 
 class JumbofilesResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "jumbofiles"
+    domains = [ "jumbofiles.com" ]
 
 
     def __init__(self):
@@ -43,8 +41,6 @@ class JumbofilesResolver(Plugin, UrlResolver, PluginSettings):
             common.addon.log('jumbofiles: in get_media_url %s %s' % (host, media_id))
             web_url = self.get_url(host, media_id)
             html = self.net.http_GET(web_url).content
-    
-            dialog = xbmcgui.Dialog()
     
             if 'file has been removed' in html:
                 raise Exception ('File has been removed.')
@@ -63,12 +59,10 @@ class JumbofilesResolver(Plugin, UrlResolver, PluginSettings):
         except urllib2.URLError, e:
             common.addon.log_error('Jumbofiles: got http error %d fetching %s' %
                                   (e.code, web_url))
-            common.addon.show_small_popup('Error','Http error: '+str(e), 5000, error_logo)
             return self.unresolvable(code=3, msg=e)
         
         except Exception, e:
             common.addon.log_error('**** Jumbofiles Error occured: %s' % e)
-            common.addon.show_small_popup(title='[B][COLOR white]JUMBOFILES[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
             return self.unresolvable(code=0, msg=e)
     
 

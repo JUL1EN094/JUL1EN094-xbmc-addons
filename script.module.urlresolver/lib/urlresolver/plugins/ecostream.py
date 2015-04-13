@@ -32,6 +32,7 @@ error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 class EcostreamResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "ecostream"
+    domains = [ "ecostream.tv" ]
     profile_path = common.profile_path
     cookie_file = os.path.join(profile_path, 'ecostream.cookies')
 
@@ -53,7 +54,7 @@ class EcostreamResolver(Plugin, UrlResolver, PluginSettings):
                 return self.unresolvable(code = 1, msg = msg)
             self.net.save_cookies(self.cookie_file)
             
-            web_url = 'http://www.ecostream.tv/js/ecos.js'
+            web_url = 'http://www.ecostream.tv/js/ecoss.js'
             js = self.net.http_GET(web_url).content
             r = re.search("\$\.post\('([^']+)'[^;]+'#auth'\).html\(''\)", js)
             if not r:

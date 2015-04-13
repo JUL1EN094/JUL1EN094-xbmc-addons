@@ -20,26 +20,22 @@ from t0mm0.common.net import Net
 from urlresolver.plugnplay.interfaces import UrlResolver
 from urlresolver.plugnplay.interfaces import PluginSettings
 from urlresolver.plugnplay import Plugin
-import re, urllib, urllib2, os, xbmcgui
+import re, urllib, urllib2
 from urlresolver import common
 from lib import jsunpack
-
-#SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
-error_logo = os.path.join(common.addon_path, 'resources', 'images', 'redx.png')
 
 USER_AGENT='Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
 MAX_TRIES=3
 
-class SharesixResolver(Plugin, UrlResolver, PluginSettings):
+class TheVideoResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "thevideo"
-
+    domains = [ "thevideo.me" ]
 
     def __init__(self):
         p = self.get_setting('priority') or 100
         self.priority = int(p)
         self.net = Net()
-
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
@@ -72,7 +68,6 @@ class SharesixResolver(Plugin, UrlResolver, PluginSettings):
                 headers['Cookie']=urllib.urlencode(cookies)
     
                 html = self.net.http_POST(web_url, data, headers=headers).content
-                #print 'Try: %s/%s' % (tries, MAX_TRIES)
                 r = re.search("<script type='text/javascript'>(eval\(function\(p,a,c,k,e,d\).*?)</script>",html,re.DOTALL)
                 if r:
                     js = jsunpack.unpack(r.group(1))
@@ -95,25 +90,20 @@ class SharesixResolver(Plugin, UrlResolver, PluginSettings):
         except urllib2.HTTPError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %
                                    (e.code, web_url))
-            common.addon.show_small_popup('Error','Http error: '+str(e), 5000, error_logo)
             return self.unresolvable(code=3, msg=e)
         except Exception, e:
             common.addon.log_error('**** TheVideo Error occured: %s' % e)
-            common.addon.show_small_popup(title='[B][COLOR white]THEVIDEO[/COLOR][/B]', msg='[COLOR red]%s[/COLOR]' % e, delay=5000, image=error_logo)
             return self.unresolvable(code=0, msg=e)
-
 
     def get_url(self, host, media_id):
         return 'http://%s/%s' % (host, media_id)
 
-
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/([0-9a-zA-Z/]+)', url)
+        r = re.search('//(.+?)/(?:embed-)?([0-9a-zA-Z/]+)', url)
         if r:
             return r.groups()
         else:
             return False
-
 
     def valid_url(self, url, host):
         if self.get_setting('enabled') == 'false': return False

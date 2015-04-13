@@ -36,8 +36,9 @@ should be defined as follows::
 
 import urlresolver
 from urlresolver import common
-from urlresolver.plugnplay import Interface
-import sys
+from urlresolver.plugnplay import Interface, AutoloadPlugin
+import sys, re
+from fnmatch import translate
 
 def _function_id(obj, nFramesUp):
 	'''Create a string naming the function n frames up on the stack.'''
@@ -47,8 +48,11 @@ def _function_id(obj, nFramesUp):
 
 
 def not_implemented(obj=None):
-	'''Use this instead of ``pass`` for the body of abstract methods.'''
-	raise Exception("Unimplemented abstract method: %s" % _function_id(obj, 1))
+    '''Use this instead of ``pass`` for the body of abstract methods.
+       Use ImportError to indicate that the module hasn't yet been
+       loaded into memory.
+    '''
+    raise ImportError("Unimplemented abstract method: %s" % _function_id(obj, 1))
 
 
 class UrlResolver(Interface):
@@ -66,14 +70,22 @@ class UrlResolver(Interface):
     '''
     
     name = 'override_me'
-    '''(str) A human readable name for your plugin.'''
+    '''(str) A human readable name for your plugin. Must be defined and be unique'''
 
     priority = 100
     '''
     (int) The order in which plugins will be tried. Lower numbers are tried 
     first.
-    '''    
-
+    '''
+    
+    # Don't support any internet domain
+    domains = ['localdomain']
+    
+    '''(array) List of domains handled by this plugin.
+          (!) Write in a single line.
+          (!) Use ["*"] for universal resolvers.
+    '''
+    
     class unresolvable():
         '''
         An object returned to indicate that the url could not be resolved
@@ -99,6 +111,7 @@ class UrlResolver(Interface):
         def __init__(self, code=0, msg='Unknown Error'):
             self.code = code
             self.msg = msg
+            self._labels = {}
 
         def __nonzero__(self):
             return 0
@@ -137,9 +150,9 @@ class UrlResolver(Interface):
 
     def get_host_and_id(self, url):
         not_implemented(self)
-
-
-    def valid_url(self, web_url):
+    
+    
+    def valid_url(self, web_url, host):
         '''
         Determine whether this plugin is capable of resolving this URL. You must 
         implement this method.
@@ -335,3 +348,56 @@ class PluginSettings(Interface):
         value = common.addon.get_setting('%s_%s' % 
                                                 (self.__class__.__name__, key))
         return value
+
+''' Dummy class for uninitialized plugins
+    All bounded methods should be declared as "non_implemented" 
+'''
+class UrlStub(UrlResolver, PluginSettings, SiteAuth):
+    pass
+
+class UrlWrapper(UrlResolver, PluginSettings, SiteAuth, AutoloadPlugin):
+    _ref = UrlStub()
+    implements = []
+    _re_implements = re.compile('\s+implements\s*=\s*\[(.*)\]')
+    _re_domains = re.compile('\s+domains\s*=\s*\[(.*)\]')
+    _re_name = re.compile('\s+name\s*=\s*[\'"](.*)[\'"]')
+    _found_implements = False
+    _found_domains = False
+    _found_name = False
+
+    def __init__(self):
+        self.implements=[]
+        self._ref = UrlStub()
+
+    def proc_plugin_line(self, line):
+        ''' Simple parser for Python source code.
+            Find the lines that define which domains are supported,
+            and which interface is implemented.
+        '''
+        if not self._found_domains:
+            res = self._re_domains.match(line)
+            if res:
+                self._ref.domains = res.group(1).translate(None,' "\'').split(',')
+                self._found_domains = True
+
+        if not self._found_implements:
+            res = self._re_implements.match(line)
+            if res:
+                implements_names = res.group(1).translate(None,' "\'').split(',')
+                for handler in implements_names:
+                    self.implements.append(globals()[handler])
+                self._found_implements = True
+
+        if not self._found_name:
+            res = self._re_name.match(line)
+            if res:
+                self.name = res.group(1)
+                self._found_name = True
+
+    def plugin_ready(self):
+        return (self._found_domains and self._found_implements and self._found_name)
+
+    @classmethod
+    def implementors(klass):
+        return UrlResolver.implementors()
+

@@ -27,6 +27,7 @@ import re
 class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "videoboxone.com"
+    domains = [ "videoboxone.com" ]
     
     def __init__(self):
         p = self.get_setting('priority') or 100
@@ -58,7 +59,6 @@ class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
         except urllib2.URLError, e:
             common.addon.log_error(hostname+': got http error %d fetching %s' % (e.code, web_url))
             return self.unresolvable(code=3, msg='Exception: %s' % e) #return False
-        #print html
         r = re.search("'file'\s*:\s*'(.+?)'", html)
         if r:
             stream_url = urllib.unquote_plus(r.group(1))
