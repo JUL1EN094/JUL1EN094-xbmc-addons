@@ -25,7 +25,6 @@ from time import sleep
 import re
 import os
 
-net = Net()
 class VivosxResolver(Plugin, UrlResolver, PluginSettings):
     implements = [UrlResolver, PluginSettings]
     name = "vivosx"
@@ -37,40 +36,35 @@ class VivosxResolver(Plugin, UrlResolver, PluginSettings):
         self.net = Net()
     
     def get_media_url(self, host, media_id):
-        try:
-            web_url = self.get_url(host, media_id)
-            
-            # get landing page
-            html = self.net.http_GET(web_url, headers = {'Referer':web_url}).content
-            
-            # read POST variables into data
-            data = {}
-            r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)"', html)
-            if not r: raise Exception('page structure changed')
-            for name, value in r: data[name] = value
-            
-            # get delay from hoster; actually this is not needed, but we are polite
-            delay = 5
-            r = re.search(r'var RequestWaiting = (\d+);', html)
-            if r: delay = r.groups(1)[0]
-            
-            # get video page using POST variables
-            html = self.net.http_POST(web_url, data, headers = ({'Referer':web_url, 'X-Requested-With':'XMLHttpRequest'})).content
-            
-            # search for content tag
-            r = re.search(r'class="stream-content" data-url', html)
-            if not r: raise Exception('page structure changed')
-            
-            # read the data-url
-            r = re.findall(r'data-url="?(.+?)"', html)
-            if not r: raise Exception('video not found')
-            
-            # return media URL
-            return r[0]
+        web_url = self.get_url(host, media_id)
         
-        except Exception, e:
-            common.addon.log('vivosx: general error occured: %s' % e)
-            return self.unresolvable(code=0, msg=e)
+        # get landing page
+        html = self.net.http_GET(web_url, headers = {'Referer':web_url}).content
+        
+        # read POST variables into data
+        data = {}
+        r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)"', html)
+        if not r: raise Exception('page structure changed')
+        for name, value in r: data[name] = value
+        
+        # get delay from hoster; actually this is not needed, but we are polite
+        delay = 5
+        r = re.search(r'var RequestWaiting = (\d+);', html)
+        if r: delay = r.groups(1)[0]
+        
+        # get video page using POST variables
+        html = self.net.http_POST(web_url, data, headers = ({'Referer':web_url, 'X-Requested-With':'XMLHttpRequest'})).content
+        
+        # search for content tag
+        r = re.search(r'class="stream-content" data-url', html)
+        if not r: raise UrlResolver.ResolverError('page structure changed')
+        
+        # read the data-url
+        r = re.findall(r'data-url="?(.+?)"', html)
+        if not r: raise UrlResolver.ResolverError('video not found')
+        
+        # return media URL
+        return r[0]
     
     def get_url(self, host, media_id):
         return 'http://vivo.sx/%s' % media_id 

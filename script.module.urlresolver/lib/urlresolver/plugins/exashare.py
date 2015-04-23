@@ -1,14 +1,17 @@
 """
 Exashare.com urlresolver XBMC Addon
 Copyright (C) 2014 JUL1EN094 
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
+
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
+
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
@@ -22,12 +25,12 @@ from urlresolver.plugnplay import Plugin
 from urlresolver import common
 
 class ExashareResolver(Plugin,UrlResolver,PluginSettings):
-    implements=[UrlResolver,SiteAuth,PluginSettings]
-    name="exashare"
-    domains = [ "exashare.com" ]
-    profile_path=common.profile_path    
-    cookie_file=os.path.join(profile_path,'%s.cookies'%name)
-    USER_AGENT='Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
+    implements   = [UrlResolver,SiteAuth,PluginSettings]
+    name         = "exashare"
+    domains      = [ "exashare.com" ]
+    profile_path = common.profile_path    
+    cookie_file  = os.path.join(profile_path,'%s.cookies'%name)
+    USER_AGENT   = 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
     
     def __init__(self):
         p=self.get_setting('priority') or 100
@@ -35,55 +38,38 @@ class ExashareResolver(Plugin,UrlResolver,PluginSettings):
         self.net=Net()
         
     #UrlResolver methods
-    def get_media_url(self,host,media_id):
-        base_url='http://www.'+host+'.com/'+media_id
-        headers={'User-Agent':self.USER_AGENT,'Referer':'http://www.'+host+'.com/'}
-        try:
-            try: html=self.net.http_GET(base_url).content
-            except: html=self.net.http_GET(base_url,headers=headers).content
-            POST_Url               = re.findall('form method="POST" action=\'(.*)\'',html)[0]
-            POST_Selected          = re.findall('form method="POST" action=(.*)</Form>',html,re.DOTALL)[0]
-            POST_Data              = {}
-            POST_Data['op']        = re.findall('input type="hidden" name="op" value="(.*)"',POST_Selected)[0]
-            POST_Data['usr_login'] = re.findall('input type="hidden" name="usr_login" value="(.*)"',POST_Selected)[0]
-            POST_Data['id']        = re.findall('input type="hidden" name="id" value="(.*)"',POST_Selected)[0]
-            POST_Data['fname']     = re.findall('input type="hidden" name="fname" value="(.*)"',POST_Selected)[0]
-            POST_Data['referer']   = re.findall('input type="hidden" name="referer" value="(.*)"',POST_Selected)[0]
-            POST_Data['hash']      = re.findall('input type="hidden" name="hash" value="(.*)"',POST_Selected)[0]
-            POST_Data['imhuman']   = 'Proceed to video'
-            html2 = self.net.http_POST(POST_Url,POST_Data).content
-            stream_url=re.findall('file:\s*"([^"]+)"',html2)[0]
-            if self.get_setting('login')=='true' :  
-                cookies={}
-                for cookie in self.net._cj:
-                    cookies[cookie.name]=cookie.value
-                if len(cookies)>0 : 
-                    stream_url=stream_url+'|'+urllib.urlencode({'Cookie':urllib.urlencode(cookies)})
-            common.addon.log('stream_url : '+stream_url)
-            xbmc.sleep(7000)
-            return stream_url
-        except urllib2.HTTPError,e:
-            e=e.code
-            common.addon.log_error(self.name+': got Http error %s fetching %s'%(e,base_url))
-            return self.unresolvable(code=3,msg=e)
-        except urllib2.URLError,e:
-            e=str(e.args)
-            common.addon.log_error(self.name + ': got Url error %s fetching %s' % (e, base_url))
-            return self.unresolvable(code=3, msg=e)
-        except IndexError,e:
-            if re.search("""File Not Found""",html):
-                e='File not found or removed'
-                common.addon.log('**** Exashare Error occured: %s'%e)
-                return self.unresolvable(code=1,msg=e)
-            else:
-                common.addon.log('**** Exashare Error occured: %s'%e)
-                return self.unresolvable(code=0,msg=e) 
-        except Exception,e:
-            common.addon.log('**** Exashare Error occured: %s'%e)
-            return self.unresolvable(code=0,msg=e)
+    def get_media_url(self, host, media_id):
+        base_url = 'http://www.' + host + '.com/' + media_id
+        headers = {'User-Agent': self.USER_AGENT, 'Referer': 'http://www.' + host + '.com/'}
+        try: html = self.net.http_GET(base_url).content
+        except: html = self.net.http_GET(base_url, headers=headers).content
+        if re.search("""File Not Found""", html):
+            raise UrlResolver.ResolverError('File not found or removed')
+        POST_Url               = re.findall('form method="POST" action=\'(.*)\'',html)[0]
+        POST_Selected          = re.findall('form method="POST" action=(.*)</Form>',html,re.DOTALL)[0]
+        POST_Data              = {}
+        POST_Data['op']        = re.findall('input type="hidden" name="op" value="(.*)"',POST_Selected)[0]
+        POST_Data['usr_login'] = re.findall('input type="hidden" name="usr_login" value="(.*)"',POST_Selected)[0]
+        POST_Data['id']        = re.findall('input type="hidden" name="id" value="(.*)"',POST_Selected)[0]
+        POST_Data['fname']     = re.findall('input type="hidden" name="fname" value="(.*)"',POST_Selected)[0]
+        POST_Data['referer']   = re.findall('input type="hidden" name="referer" value="(.*)"',POST_Selected)[0]
+        POST_Data['hash']      = re.findall('input type="hidden" name="hash" value="(.*)"',POST_Selected)[0]
+        POST_Data['imhuman']   = 'Proceed to video'
+        try : html2 = self.net.http_POST(POST_Url,POST_Data).content
+        except : html2 = self.net.http_POST(POST_Url,POST_Data,headers=headers).content
+        stream_url = re.findall('file:\s*"([^"]+)"', html2)[0]
+        if self.get_setting('login') == 'true':
+            cookies = {}
+            for cookie in self.net._cj:
+                cookies[cookie.name] = cookie.value
+            if len(cookies) > 0:
+                stream_url = stream_url + '|' + urllib.urlencode({'Cookie': urllib.urlencode(cookies)})
+        common.addon.log('stream_url : ' + stream_url)
+        xbmc.sleep(7000)
+        return stream_url
 
     def get_url(self,host,media_id):
-        return 'http://www.exashare.com/%s'%media_id
+        return 'http://www.exashare.com/%s' % media_id
 
     def get_host_and_id(self,url):
         r=re.search('http://(?:www.)?(.+?).com/(?:embed\-)?([0-9A-Za-z_]+)(?:\-[0-9]+x[0-9]+.html)?',url)
@@ -94,7 +80,7 @@ class ExashareResolver(Plugin,UrlResolver,PluginSettings):
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': 
+        if self.get_setting('enabled')=='false' or self.get_setting('login')=='false': 
             return False
         return re.match('http://(?:www.)?exashare.com/(?:embed\-)?[0-9A-Za-z]+(?:\-[0-9]+x[0-9]+.html)?',url) or 'exashare.com' in host
 
@@ -132,7 +118,7 @@ class ExashareResolver(Plugin,UrlResolver,PluginSettings):
                     return False
         else:
             if os.path.exists(self.cookie_file): os.remove(self.cookie_file)
-            return True
+            return False
                     
     #PluginSettings methods
     def get_settings_xml(self):

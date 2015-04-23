@@ -1,7 +1,3 @@
-[B]Version 2.8.0.001[/B]
-- Fixed Exashare plugin
-- Fixed Teramixer plugin
-
 [B]Version 2.8.0[/B]
 - Code Base Changes:
     - Speed enhancements - Further to changes made in 2.7.0 

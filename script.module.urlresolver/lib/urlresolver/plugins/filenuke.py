@@ -38,44 +38,33 @@ class FilenukeResolver(Plugin, UrlResolver, PluginSettings):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
+        headers = {
+            'User-Agent': USER_AGENT,
+            'Referer': web_url
+        }
+        # Otherwise just use the original url to get the content. For sharesix
+        html = self.net.http_GET(web_url).content
+        
+        data = {
+                "method_free": "Free",
+                "op": "download1",
+                "referer": web_url,
+                "usr_login": ""
+                }
+        r = re.findall(r'type="hidden"\s*name="(.+?)"\s*value="(.*?)"', html)
+        for name, value in r:
+            data[name] = value
 
-        try:
-            headers = {
-                'User-Agent': USER_AGENT,
-                'Referer': web_url
-            }
-            # Otherwise just use the original url to get the content. For sharesix
-            html = self.net.http_GET(web_url).content
-            
-            data = {
-                    "method_free": "Free",
-                    "op": "download1",
-                    "referer": web_url,
-                    "usr_login": ""
-                    }
-            r = re.findall(r'type="hidden"\s*name="(.+?)"\s*value="(.*?)"', html)
-            for name, value in r:
-                data[name] = value
-
-            html = self.net.http_POST(web_url, data, headers=headers).content
-            
-            r = re.search("var\s+lnk\d+\s*=\s*'(.*?)'", html)
-            if r:
-                stream_url = r.group(1) + '|User-Agent=%s' % (USER_AGENT)
-                return stream_url
-            else:
-                raise Exception('Unable to locate link')
-            
-            if 'file you were looking for could not be found' in html:
-                raise Exception('File Not Found or removed')
-
-        except urllib2.HTTPError, e:
-            common.addon.log_error(self.name + ': got http error %d fetching %s' %
-                                   (e.code, web_url))
-            return self.unresolvable(code=3, msg=e)
-        except Exception, e:
-            common.addon.log_error('**** Sharesix Error occured: %s' % e)
-            return self.unresolvable(code=0, msg=e)
+        html = self.net.http_POST(web_url, data, headers=headers).content
+        if 'file you were looking for could not be found' in html:
+            raise UrlResolver.ResolverError('File Not Found or removed')
+        
+        r = re.search("var\s+lnk\d+\s*=\s*'(.*?)'", html)
+        if r:
+            stream_url = r.group(1) + '|User-Agent=%s' % (USER_AGENT)
+            return stream_url
+        else:
+            raise UrlResolver.ResolverError('Unable to locate link')
 
     def get_url(self, host, media_id):
         return 'http://%s/%s' % (host, media_id)

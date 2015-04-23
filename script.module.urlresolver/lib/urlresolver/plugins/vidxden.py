@@ -23,7 +23,6 @@ vidxden hosts both avi and flv videos
 In testing there seems to be a timing issue with files coming up as not playable.
 This happens on both the addon and in a browser.
 """
-import urllib2
 import socket
 import re
 from t0mm0.common.net import Net
@@ -49,49 +48,36 @@ class VidxdenResolver(Plugin, UrlResolver, PluginSettings):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
+        resp = self.net.http_GET(web_url)
+        html = resp.content
+        if "No such file or the file has been removed due to copyright infringement issues." in html:
+            raise UrlResolver.ResolverError('File Not Found or removed')
 
-        try:
-            resp = self.net.http_GET(web_url)
-            html = resp.content
-            if "No such file or the file has been removed due to copyright infringement issues." in html:
-                raise Exception('File Not Found or removed')
+        filename = re.compile('<input name="fname" type="hidden" value="(.+?)">').findall(html)[0]
+        data = {'op': 'download1', 'method_free': '1', 'usr_login': '', 'id': media_id, 'fname': filename}
+        data.update(captcha_lib.do_captcha(html))
+        html = self.net.http_POST(resp.get_url(), data).content
 
-            filename = re.compile('<input name="fname" type="hidden" value="(.+?)">').findall(html)[0]
-            data = {'op': 'download1', 'method_free': '1', 'usr_login': '', 'id': media_id, 'fname': filename}
+        # find packed javascript embed code
+        r = re.search('(eval.*?)\s*</script>', html, re.DOTALL)
+        if r:
+            packed_data = r.group(1)
+        else:
+            raise UrlResolver.ResolverError('packed javascript embed code not found')
 
-            data.update(captcha_lib.do_captcha(html))
-            html = self.net.http_POST(resp.get_url(), data).content
+        try: decrypted_data = jsunpack.unpack(packed_data)
+        except: pass
+        decrypted_data = decrypted_data.replace('\\', '')
+        # First checks for a flv url, then the if statement is for the avi url
+        r = re.search('[\'"]file[\'"]\s*,\s*[\'"]([^\'"]+)', decrypted_data)
+        if not r:
+            r = re.search('src="(.+?)"', decrypted_data)
+        if r:
+            stream_url = r.group(1)
+        else:
+            raise UrlResolver.ResolverError('stream url not found')
 
-            # find packed javascript embed code
-            r = re.search('(eval.*?)\s*</script>', html, re.DOTALL)
-            if r:
-                packed_data = r.group(1)
-            else:
-                common.addon.log_error('vidxden: packed javascript embed code not found')
-                raise Exception('packed javascript embed code not found')
-
-            try: decrypted_data = jsunpack.unpack(packed_data)
-            except: pass
-            decrypted_data = decrypted_data.replace('\\', '')
-            # First checks for a flv url, then the if statement is for the avi url
-            r = re.search('[\'"]file[\'"]\s*,\s*[\'"]([^\'"]+)', decrypted_data)
-            if not r:
-                r = re.search('src="(.+?)"', decrypted_data)
-            if r:
-                stream_url = r.group(1)
-            else:
-                raise Exception('vidxden: stream url not found')
-
-            return "%s" % (stream_url)
-
-        except urllib2.HTTPError, e:
-            common.addon.log_error('Vidxden: got http error %d fetching %s' %
-                                  (e.code, web_url))
-            return self.unresolvable(code=3, msg=e)
-
-        except Exception, e:
-            common.addon.log_error('**** Vidxden Error occured: %s' % e)
-            return self.unresolvable(code=0, msg=e)
+        return stream_url
 
     def get_url(self, host, media_id):
         if 'vidbux' in host:
