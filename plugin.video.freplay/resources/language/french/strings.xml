@@ -11,10 +11,26 @@
   <string id="30201">Sélectionner le dossier de téléchargement</string>
   
   <string id="30300">Divers</string>
-  <string id="30301">Afficher les bonue de TF1</string>
-  <string id="30302">Afficher les bonue de TMC</string>
-  <string id="30303">Afficher les bonue de NT1</string>
-  <string id="30324">France 24 - Qualité Vidéo</string>
+  <string id="30301">TF1 : Afficher les bonus</string>
+  <string id="30302">TMC : Afficher les bonus</string>
+  <string id="30303">NT1 : Afficher les bonus</string>
+  <string id="30304">HD1 : Afficher les bonus</string>
+  <string id="30305">HD1/NT1/TF1/TMC : Forcer la qualité HD</string> 
+  
+  
+  <string id="30324">France 24 - Qualité Vidéo</string>  
+  
+  <string id="30325">ARTE - Qualité Vidéo</string>
+  <string id="30326">ARTE - Afficher seulement les replay complets</string>  
+  
+  <string id="30331">La 1ere - Qualité Vidéo</string>
+  <string id="30332">France 2 - Qualité Vidéo</string>
+  <string id="30333">France 3 - Qualité Vidéo</string>
+  <string id="30334">France 4 - Qualité Vidéo</string>
+  <string id="30335">France 5 - Qualité Vidéo</string>
+  <string id="30336">France O - Qualité Vidéo</string>
+  
+  <string id="30340">L'Equipe - Qualité Vidéo</string>
   
   <string id="30400">Avancé</string>
   <string id="30401">Supprimer le cache des catalogues</string>
@@ -34,7 +50,30 @@
   <!--------------------------------------------------->
   <!--COMMON STRINGS USED IN ADDONS(33000 thru 33999)-->
   <!--------------------------------------------------->
+    <!--favourites channel text below-->
   <string id="33000">Par émission</string>
   <string id="33001">Tous les épisodes non vus</string>
-
+  <string id="33002">Récupération de la liste des épisodes</string>
+  <string id="33003">Vérification des émissions: </string>
+  <string id="33004">Emission déjà dans la liste</string>
+  <string id="33005">Emission ajoutée aux favoris FReplay</string>
+  <string id="33006">Emission supprimée des favoris FReplay</string>
+  <string id="33007">[COLOR red]Favoris FReplay[/COLOR]</string>
+    <!--lcp channel text below-->
+  <string id="33010">Reportages</string>
+  <string id="33011">Emissions</string>
+    <!--default.py text below-->
+  <string id="33020">Télécharger</string>
+  <string id="33021">Ajouter aux favoris FReplay</string>
+  <string id="33022">Supprimer des favoris FReplay</string>
+  <string id="33023">Entrer le text à rechercher</string>
+  <string id="33024">Vous devez configurer votre répertoire de téléchargement en premier</string>
+  <string id="33025"> non supporté</string>
+  <string id="33026">Cocher/décocher "Masquer vue(s)" dans le panneau de gauche</string>
+    <!--Most Viewed channel text below-->         
+  <string id="33030">[COLOR blue]Les Plus Vus[/COLOR]</string>
+  <string id="33031">Dernier jour</string>
+  <string id="33032">7 derniers jours</string>
+  <string id="33033">30 derniers jours</string>
+  <string id="33039">Lectures</string>
 </strings>

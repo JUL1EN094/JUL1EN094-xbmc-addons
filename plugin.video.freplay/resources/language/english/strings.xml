@@ -11,10 +11,25 @@
   <string id="30201">Select Download Path</string>
   
   <string id="30300">Misc</string>
-  <string id="30301">Show TF1 Bonus</string>
-  <string id="30302">Show TMC Bonus</string>
-  <string id="30303">Show NT1 Bonus</string>   
-  <string id="30324">France 24 - Video Quality</string>
+  <string id="30301">TF1 : Show Bonus</string>
+  <string id="30302">TMC : Show Bonus</string>
+  <string id="30303">NT1 : Show Bonus</string> 
+  <string id="30304">HD1 : Show Bonus</string>
+  <string id="30305">HD1/NT1/TF1/TMC : Force HD quality</string>
+  
+  <string id="30324">France 24 - Video Quality</string> 
+  
+  <string id="30325">ARTE - Video Quality</string>  
+  <string id="30326">ARTE - Show only full replay</string>  
+  
+  <string id="30331">La 1ere - Video Quality</string>
+  <string id="30332">France 2 - Video Quality</string>
+  <string id="30333">France 3 - Video Quality</string>
+  <string id="30334">France 4 - Video Quality</string>
+  <string id="30335">France 5 - Video Quality</string>
+  <string id="30336">France O - Video Quality</string>
+  
+  <string id="30340">L'Equipe - Video Quality</string>
   
   <string id="30400">Advanced</string>
   <string id="30401">Delete catalog cache</string> 
@@ -34,7 +49,30 @@
   <!--------------------------------------------------->
   <!--COMMON STRINGS USED IN ADDONS(33000 thru 33999)-->
   <!--------------------------------------------------->
+    <!--favourites channel text below-->
   <string id="33000">By Show</string>
   <string id="33001">All Unseen Episodes</string>
-
+  <string id="33002">Getting list of episodes</string>
+  <string id="33003">Checking shows: </string>
+  <string id="33004">Show already in list</string>
+  <string id="33005">Show added to FReplay Favourites</string>
+  <string id="33006">Show removed from FReplay Favourites</string>
+  <string id="33007">[COLOR red]FReplay Favourites[/COLOR]</string>
+    <!--lcp channel text below-->
+  <string id="33010">Reportages</string>
+  <string id="33011">Shows</string>
+    <!--default.py text below-->
+  <string id="33020">Download</string>
+  <string id="33021">Add to FReplay Favourites</string>
+  <string id="33022">Remove from FReplay Favourites</string>
+  <string id="33023">Enter the search text</string>
+  <string id="33024">You need to set the download folder first</string>
+  <string id="33025"> not supported</string>
+  <string id="33026">Check/Uncheck "Hide Watched" in the left panel</string>
+    <!--Most Viewed channel text below-->      
+  <string id="33030">[COLOR blue]Most Viewed[/COLOR]</string>
+  <string id="33031">Last Day</string>
+  <string id="33032">Last 7 Days</string>
+  <string id="33033">Last 30 Days</string>
+  <string id="33039">Views</string>
 </strings>
