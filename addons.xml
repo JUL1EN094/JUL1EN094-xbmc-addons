@@ -123,7 +123,7 @@
 
 <addon id="plugin.video.freplay"
        name="FReplay"
-       version="0.5.5"
+       version="0.5.6"
        provider-name="SPM, JUL1EN094">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
