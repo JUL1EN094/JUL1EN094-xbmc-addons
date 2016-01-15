@@ -226,7 +226,7 @@ class GoogleSearch(object):
         return {'from': int(matches.group(1)), 'to': int(matches.group(2)), 'total': int(matches.group(3))}
 
     def _extract_results(self, soup):
-        results = soup.findAll('li', {'class': 'g'})
+        results = soup.findAll('div', {'class': 'g'})
         ret_res = []
         for result in results:
             eres = self._extract_result(result)
