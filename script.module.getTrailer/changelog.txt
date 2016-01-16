@@ -1,3 +1,6 @@
+﻿Version 0.0.4 (17-01-2016) par JUL1EN094 :
+- Ajout des liens https
+
 Version 0.0.3 (15-01-2016) par JUL1EN094 :
 - Modification du parsing Google
 

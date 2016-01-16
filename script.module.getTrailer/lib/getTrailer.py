@@ -54,13 +54,13 @@ class getTrailer():
         if manual:
             results = self.Search_YTonGoogle(search)
             for res in results:
-                if res.url.encode('utf8').startswith('http://www.youtube.com/watch'):
+                if 'www.youtube.com/watch' in res.url:
                     res_name.append(res.title.encode('utf8'))
                     res_url.append(res.url.encode('utf8'))
         else:
             results = self.Search_YTonGoogle(search+' bande annonce')
             for res in results:
-                if res.url.encode('utf8').startswith('http://www.youtube.com/watch'):
+                if 'www.youtube.com/watch' in res.url:
                     res_name.append(res.title.encode('utf8'))
                     res_url.append(res.url.encode('utf8'))    
         dialog = xbmcgui.Dialog()
