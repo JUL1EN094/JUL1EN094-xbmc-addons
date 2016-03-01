@@ -13,7 +13,7 @@ readyForUse=True
 def list_shows(channel,folder):
     shows=[]
     
-    filePath=utils.downloadCatalog('http://www.nrj12.fr/replay-4203/collectionvideo/','NRJ12.html',False)    
+    filePath=utils.downloadCatalog('http://www.nrj12.fr/replay-4203/collectionvideo/','NRJ12.html',False,{})    
     html=open(filePath).read().replace('\xe9', 'e').replace('\xe0', 'a')
 
     if folder=='none':      
@@ -46,14 +46,15 @@ def getVideoURL(channel,urlPage):
   if 'http://lesanges.nrj12.fr/' not in urlPage:
     urlPage='http://lesanges.nrj12.fr/' + urlPage
   html=urllib2.urlopen(urlPage).read().replace('\xe9', 'e').replace('\xe0', 'a')
-  match = re.compile(r'<img class="videoPlayerContainer" data-url="(.*?)=" id="',re.DOTALL).findall(html)
-  url=base64.b64decode(match[0] + '=')
+  print urlPage
+  match = re.compile(r'<link itemprop="contentUrl" href="(.*?)" />',re.DOTALL).findall(html)
+  url=match[0]
   return url
 
 def list_videos(channel,show): 
     
     videos=[]                  
-    filePath=utils.downloadCatalog('http://www.nrj12.fr/replay-4203/collectionvideo/','NRJ12.html',False)    
+    filePath=utils.downloadCatalog('http://www.nrj12.fr/replay-4203/collectionvideo/','NRJ12.html',False,{})    
     html=open(filePath).read().replace('\xe9', 'e').replace('\xe0', 'a')
         
     line_replay_s = common.parseDOM(html,"div",attrs={"class":"line replay"})

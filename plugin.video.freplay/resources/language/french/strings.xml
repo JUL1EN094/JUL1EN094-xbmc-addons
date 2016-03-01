@@ -5,7 +5,11 @@
   <!--------------------------------------------------->
   <string id="30000">FReplay</string>
   
-  <string id="30100">Chaînes 99 pour Cacher</string>
+  <string id="30100">Chaînes 99 pour Cacher</string>  
+  <string id="30101">Monter</string>
+  <string id="30102">Descendre</string>
+  <string id="30103">Masquer</string>
+  <string id="30104">Afficher</string>
   
   <string id="30200">Téléchargement</string>
   <string id="30201">Sélectionner le dossier de téléchargement</string>
@@ -38,7 +42,11 @@
   
   <string id="30400">Avancé</string>
   <string id="30401">Supprimer le cache des catalogues</string>
-  <string id="30402">Rafraichissement des catalogues (min)</string>
+  <string id="30402">Rafraichissement des catalogues (min)</string>  
+  
+  <string id="30500">Comptes</string>
+  <string id="30501">Login Wat.tv</string>
+  <string id="30502">Mot de passe Wat.tv</string>
   
   
   <!------------------------------------>

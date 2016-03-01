@@ -18,7 +18,7 @@ def list_shows(channel,folder):
     shows=[]
     d=dict()
     
-    filePath=utils.downloadCatalog('http://www.arte.tv/papi/tvguide-flow/sitemap/feeds/videos/F.xml','ARTE.XML',False)
+    filePath=utils.downloadCatalog('http://www.arte.tv/papi/tvguide-flow/sitemap/feeds/videos/F.xml','ARTE.XML',False,{})
     if folder=='none':
         xml = open(filePath).read()
         url=common.parseDOM(xml, "url")
@@ -71,14 +71,12 @@ def getVideoURL(channel,video_id):
       #SD RTMP   
       else:
           url=jsoncat['videoJsonPlayer']['VSR']['RTMP_MQ_1']['streamer'] + jsoncat['videoJsonPlayer']['VSR']['RTMP_MQ_1']['url']    
-
-    
-    url=jsoncat['videoJsonPlayer']['VSR']['HLS_SQ_1']['url']
+        
     return url
     
 def list_videos(channel,show_title):
     videos=[]                
-    filePath=utils.downloadCatalog('http://www.arte.tv/papi/tvguide-flow/sitemap/feeds/videos/F.xml','ARTE.XML',False)
+    filePath=utils.downloadCatalog('http://www.arte.tv/papi/tvguide-flow/sitemap/feeds/videos/F.xml','ARTE.XML',False,{})
     xml = open(filePath).read()	
     url=common.parseDOM(xml, "url")
     
