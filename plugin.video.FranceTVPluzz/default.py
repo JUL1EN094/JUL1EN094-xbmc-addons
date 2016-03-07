@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # xbmc modules
 import xbmc
 import xbmcplugin
@@ -9,43 +8,32 @@ import xbmcaddon
 import os
 import sys 
 import urllib
-import urllib2
 import re
-import time
-import cPickle as pickle
 import zipfile
 import simplejson as json
 import ast
 # print_exc
 from traceback import print_exc
-# parseDOM
-import CommonFunctions
-common = CommonFunctions
-common.plugin = "plugin.video.FranceTVPluzz"
-
+# requests
+import requests
+webSession = requests.Session()
 
 __addonID__         = "plugin.video.FranceTVPluzz"
 __author__          = "JUL1EN094"
-__date__            = "20-06-2014"
-__version__         = "1.1.0"
-__credits__         = ""
+__date__            = "04-03-2016"
 __addon__           = xbmcaddon.Addon( __addonID__ )
-__settings__        = __addon__
+__version__         = __addon__.getAddonInfo("version")
 __language__        = __addon__.getLocalizedString
-__addonDir__        = __settings__.getAddonInfo( "path" )
-
-   
+__addonDir__        = __addon__.getAddonInfo( "path" )   
 
 # Global Variable
-ROOTDIR             = __settings__.getAddonInfo('path')
+ROOTDIR             = __addonDir__
 BASE_RESOURCE_PATH  = os.path.join( ROOTDIR, "resources" )
 MEDIA_PATH          = os.path.join( BASE_RESOURCE_PATH, "media" )
 ADDON_DATA          = xbmc.translatePath( "special://profile/addon_data/%s/" % __addonID__ )
 CACHEDIR            = os.path.join( ADDON_DATA, "cache")
 THUMB_CACHE_PATH    = os.path.join( xbmc.translatePath( "special://profile/" ), "Thumbnails", "Video" )
 FANART_PATH         = os.path.join( ROOTDIR, "fanart.jpg" )
-# Web variable
-USERAGENT           = "Mozilla/5.0 (Windows NT 5.1; rv:15.0) Gecko/20100101 Firefox/15.0.1"
 # List of directories to check at startup
 dirCheckList        = (CACHEDIR,)
 # Catalogue
@@ -283,10 +271,13 @@ class FranceTVPluzz:
     def download_catalog(self):
         if os.path.exists(CATALOG_PATH):
             os.remove(CATALOG_PATH)
-        urllib.urlretrieve(jsonmobilecatalog,CATALOG_PATH)       
+        r = webSession.get(jsonmobilecatalog,stream=True)
+        with open(CATALOG_PATH, 'wb') as fd:
+            for chunk in r.iter_content(8):
+                fd.write(chunk)      
     
     def set_debug_mode(self):
-        self.debug_mode=__settings__.getSetting('debug')
+        self.debug_mode=__addon__.getSetting('debug')
         if self.debug_mode== 'true':
             self.debug_mode = True
         else:
@@ -334,17 +325,6 @@ class FranceTVPluzz:
                 if (len(splitparams))==2:
                     param[splitparams[0]]=splitparams[1]
         return param
-
-    def get_soup(self,url,referer):
-        req  = urllib2.Request(url)
-        req.add_header('User-Agent',USERAGENT)           
-        req.add_header('Referer',referer)
-        soup = urllib2.urlopen(req).read()
-        if (self.debug_mode):
-            print "get_soup : " + url
-            print "referer  : " + referer
-            print str(soup)
-        return soup
 
     def checkfolder(self,folder):
         try:
