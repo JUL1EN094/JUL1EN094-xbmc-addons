@@ -16,25 +16,19 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
-from urlresolver import common
-from lib import jsunpack
 import re
+import urllib
+from lib import jsunpack
+from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:36.0) Gecko/20100101 Firefox/36.0'
-
-class MightyuploadResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class MightyuploadResolver(UrlResolver):
     name = "mightyupload"
     domains = ["mightyupload.com"]
+    pattern = '(?://|\.)(mightyupload\.com)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
@@ -49,7 +43,7 @@ class MightyuploadResolver(Plugin, UrlResolver, PluginSettings):
             html = self.net.http_GET(r.group(1)).content
         r = re.search("<div id=\"player_code\">.*?<script type='text/javascript'>(.*?)</script>", html, re.DOTALL)
         if not r:
-            raise UrlResolver.ResolverError('Unable to resolve Mightyupload link. Player config not found.')
+            raise ResolverError('Unable to resolve Mightyupload link. Player config not found.')
         r_temp = re.search("file: '([^']+)'", r.group(1))
         if r_temp:
             stream_url = r_temp.group(1)
@@ -60,29 +54,24 @@ class MightyuploadResolver(Plugin, UrlResolver, PluginSettings):
                 r = re.search('"src"value="([^"]+)', js.replace('\\', ''))
 
             if not r:
-                raise UrlResolver.ResolverError('Unable to resolve Mightyupload link. Filelink not found.')
+                raise ResolverError('Unable to resolve Mightyupload link. Filelink not found.')
 
             stream_url = r.group(1)
 
         if stream_url:
-            return stream_url + '|User-Agent=%s' % (USER_AGENT)
+            return stream_url + '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
         else:
-            raise UrlResolver.ResolverError('Unable to resolve link')
+            raise ResolverError('Unable to resolve link')
 
     def get_url(self, host, media_id):
-            return 'http://www.mightyupload.com/embed-%s.html' % (media_id)
+        return 'http://www.mightyupload.com/embed-%s.html' % (media_id)
 
     def get_host_and_id(self, url):
-        r = re.search('http://(?:www.)?(.+?)/embed-([\w]+)-', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
-            r = re.search('//(.+?)/([\w]+)', url)
-            if r:
-                return r.groups()
-            else:
-                return False
-
+            return False
 
     def valid_url(self, url, host):
-        return re.match('http://(www.)?mightyupload.com/[0-9A-Za-z]+', url) or 'mightyupload' in host
+        return re.search(self.pattern, url) or self.name in host

@@ -17,64 +17,47 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import re
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+import urllib
 from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
-
-class SharesixResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class SharesixResolver(UrlResolver):
     name = "sharesix"
     domains = ["sharesix.com"]
+    pattern = '(?://|\.)(sharesix\.com)(?:/f)?/([0-9A-Za-z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {
-            'User-Agent': USER_AGENT,
-            'Referer': web_url
-        }
-        # Otherwise just use the original url to get the content. For sharesix
-        html = self.net.http_GET(web_url).content
-        
-        data = {}
-        r = re.findall(r'type="hidden"\s*name="(.+?)"\s*value="(.*?)"', html)
-        for name, value in r:
-            data[name] = value
-        #data[u"method_premium"] = "Premium"
-        data[u"method_free"] = "Free"
-        data[u"op"] = "download1"; data[u"referer"] = web_url; data[u"usr_login"] = ""
-        html = self.net.http_POST(web_url, data, headers=headers).content
-        
-        r = re.search("var\s+lnk1\s*=\s*'(.*?)'", html)
+        headers = {'User-Agent': common.IE_USER_AGENT}
+
+        html = self.net.http_GET(web_url, headers=headers).content
+        r = re.search('<a[^>]*id="go-next"[^>*]href="([^"]+)', html)
         if r:
-            stream_url = r.group(1) + '|User-Agent=%s' % (USER_AGENT)
+            next_url = 'http://' + host + r.group(1)
+            html = self.net.http_GET(next_url, headers=headers).content
+
+        if 'file you were looking for could not be found' in html:
+            raise ResolverError('File Not Found or removed')
+
+        r = re.search("var\s+lnk\d+\s*=\s*'(.*?)'", html)
+        if r:
+            stream_url = r.group(1) + '|' + urllib.urlencode(headers)
             return stream_url
         else:
-            raise UrlResolver.ResolverError('Unable to locate link')
-        
-        if 'file you were looking for could not be found' in html:
-            raise UrlResolver.ResolverError ('File Not Found or removed')
+            raise ResolverError('Unable to locate link')
 
     def get_url(self, host, media_id):
-        return 'http://%s/%s' % (host, media_id)
-        
+        return 'http://sharesix.com/f/%s' % media_id
+
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/([0-9a-zA-Z/]+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return (re.match('http://(www.)?sharesix.com/' +
-                         '[0-9A-Za-z]+', url) or
-                         'sharesix' in host)
+        return re.search(self.pattern, url) or self.name in host

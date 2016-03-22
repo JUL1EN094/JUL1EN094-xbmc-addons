@@ -14,32 +14,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import re
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
-from urlresolver import common
 from lib import jsunpack
+from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class LetwatchResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class LetwatchResolver(UrlResolver):
     name = "letwatch.us"
-    domains = ["letwatch.us"]
+    domains = ['letwatch.us', 'letwatch.to']
+    pattern = '(?://|\.)(letwatch\.(?:us|to))/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
         html = self.net.http_GET(web_url).content
 
         if html.find('404 Not Found') >= 0:
-            raise UrlResolver.ResolverError('File Removed')
-        
+            raise ResolverError('File Removed')
+
         if html.find('Video is processing') >= 0:
-            raise UrlResolver.ResolverError('File still being processed')
+            raise ResolverError('File still being processed')
 
         packed = re.search('(eval\(function.*?)\s*</script>', html, re.DOTALL)
         if packed:
@@ -49,18 +44,20 @@ class LetwatchResolver(Plugin, UrlResolver, PluginSettings):
 
         link = re.search('file\s*:\s*"([^"]+)', js)
         if link:
-            common.addon.log_debug('letwatch.us Link Found: %s' % link.group(1))
+            common.log_utils.log_debug('letwatch.us Link Found: %s' % link.group(1))
             return link.group(1)
 
-        raise UrlResolver.ResolverError('Unable to find letwatch.us video')
+        raise ResolverError('Unable to find letwatch.us video')
 
     def get_url(self, host, media_id):
-        return 'http://letwatch.us/embed-%s-640x400.html' % media_id
+        return 'http://%s/embed-%s-640x400.html' % (host,media_id)
 
     def get_host_and_id(self, url):
-        r = re.search('//(letwatch.us)/(?:embed-)?(\w+)', url)
-        return r.groups()
+        r = re.search(self.pattern, url)
+        if r:
+            return r.groups()
+        else:
+            return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match('http://letwatch.us/(?:embed-)?\w+', url) or self.name in host
+        return re.search(self.pattern, url) or self.name in host

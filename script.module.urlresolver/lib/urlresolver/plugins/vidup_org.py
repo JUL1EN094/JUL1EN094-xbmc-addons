@@ -17,44 +17,47 @@
 """
 
 import re
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+from lib import jsunpack
 from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class VidUpResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
-    name = "vidup.org"
-    domains = ["vidup.org"]
-    
+class VidUpResolver(UrlResolver):
+    name = "vidup"
+    domains = ["vidup.org", "vidup.me"]
+    pattern = '(?://|\.)(vidup.(?:me|org))/(?:embed-)?([0-9a-zA-Z]+)'
+
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
-        # http://vidup.org/embed.php?file=f50163b6&w=550&h=420&bg=http://www.animestatic.tv/images/animestatic.jpg
-        self.pattern = 'http://((?:www.)?vidup.org)/embed.php?.*?file=([0-9a-zA-Z\-_\.]+).*?'
-    
-    def get_url(self, host, media_id):
-            return 'http://vidup.org/embed.php?file=%s' % (media_id)
-    
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r: return r.groups()
-        else: return False
-    
-    def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match(self.pattern, url) or self.name in host
-    
+        self.net = common.Net()
+
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        common.addon.log_debug(web_url)
-        resp = self.net.http_GET(web_url)
-        html = resp.content
-        r = re.search('clip:\s*\n*\s*\{\s*\n*\s*\s*\n*\s*url\s*:\s*"(.+?)",\s*\n*\s*provider:', html)
+        html = self.net.http_GET(web_url).content
+        best_stream_url = ''
+        max_quality = 0
+        for match in re.finditer('(eval\(function.*?)</script>', html, re.DOTALL):
+            js_data = jsunpack.unpack(match.group(1))
+            js_data = js_data.replace("\\'", "'")
+            r = re.findall(r"label\s*:\s*'([^']+)p'\s*,\s*file\s*:\s*'([^']+)", js_data)
+            if r:
+                for quality, stream_url in r:
+                    if int(quality) >= max_quality:
+                        best_stream_url = stream_url
+                        max_quality = int(quality)
+
+            if best_stream_url:
+                return best_stream_url
+
+            raise ResolverError('File Not Found or removed')
+
+    def get_url(self, host, media_id):
+        return 'http://vidup.me/embed-%s.html' % media_id
+
+    def get_host_and_id(self, url):
+        r = re.search(self.pattern, url)
         if r:
-            stream_url = r.group(1)  # stream_url = urllib.unquote_plus(r.group(1))
+            return r.groups()
         else:
-            raise UrlResolver.ResolverError('no file located')
-        return stream_url
+            return False
+
+    def valid_url(self, url, host):
+        return re.search(self.pattern, url) or self.name in host

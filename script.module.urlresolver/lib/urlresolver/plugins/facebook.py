@@ -18,21 +18,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import re
 import urllib
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
 from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class FacebookResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class FacebookResolver(UrlResolver):
     name = "facebook"
-    domains = [ "facebook.com" ]
+    domains = ["facebook.com"]
+    pattern = '(?://|\.)(facebook\.com)/.+?video_id=([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
@@ -40,7 +35,7 @@ class FacebookResolver(Plugin, UrlResolver, PluginSettings):
 
         if link.find('Video Unavailable') >= 0:
             err_message = 'The requested video was not found.'
-            raise UrlResolver.ResolverError(err_message)
+            raise ResolverError(err_message)
 
         params = re.compile('"params","([\w\%\-\.\\\]+)').findall(link)[0]
         html = urllib.unquote(params.replace('\u0025', '%')).decode('utf-8')
@@ -62,23 +57,23 @@ class FacebookResolver(Plugin, UrlResolver, PluginSettings):
             return vUrl
 
         else:
-            raise UrlResolver.ResolverError('No playable video found.')
+            raise ResolverError('No playable video found.')
 
     def get_url(self, host, media_id):
         return 'https://www.facebook.com/video/embed?video_id=%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/video/embed?video_id=(\w+)', url)
-        return r.groups()
+        r = re.search(self.pattern, url)
+        if r:
+            return r.groups()
+        else:
+            return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match('https?://(www\.)?facebook.com/video/embed?video_id=(\w+)', url) or \
-               self.name in host
+        return re.search(self.pattern, url) or self.name in host
 
-    #PluginSettings methods
-    def get_settings_xml(self):
-        xml = PluginSettings.get_settings_xml(self)
-        xml += '<setting label="Video Quality" id="%s_quality" ' % self.__class__.__name__
-        xml += 'type="enum" values="High|Standard" default="0" />\n'
+    @classmethod
+    def get_settings_xml(cls):
+        xml = super(cls, cls).get_settings_xml()
+        xml.append('<setting label="Video Quality" id="%s_quality" type="enum" values="High|Standard" default="0" />' % (cls.__name__))
         return xml

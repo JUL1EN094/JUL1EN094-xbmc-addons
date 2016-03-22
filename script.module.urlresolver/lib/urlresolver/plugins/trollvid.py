@@ -16,44 +16,48 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import urllib
 import re
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+import base64
+import urllib
 from urlresolver import common
+from urlresolver.resolver import UrlResolver
 
-class TrollVidResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class TrollVidResolver(UrlResolver):
     name = "trollvid.net"
     domains = ["trollvid.net"]
-    
+    pattern = '(?://|\.)(trollvid\.net)/embed\.php.file=([0-9a-zA-Z]+)'
+
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
-        self.pattern = 'http://((?:sv\d*.)?trollvid.net)/embed.php.file=([0-9a-zA-Z]+)' # http://sv3.trollvid.net/embed.php?file=([0-9a-zA-Z]+)&
-    
-    def get_url(self, host, media_id):
-            return 'http://sv3.trollvid.net/embed.php?file=%s&w=800&h=600&bg=' % (media_id)
-    
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r: return r.groups()
-        else: return False
-    
-    def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match(self.pattern, url) or self.name in host
-    
+        self.net = common.Net()
+
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        resp = self.net.http_GET(web_url)
-        html = resp.content
-        r = re.search('clip\s*:\s*\n*\s*{\s*\n*\s*\n*\s*\n*\s*url\s*:\s*"(http.+?)"', html)
-        if r:
-            stream_url = urllib.unquote_plus(r.group(1))
-        else:
-            raise UrlResolver.ResolverError('No File located')
+
+        html = self.net.http_GET(web_url).content
+
+        try: stream_url = re.search('url\s*:\s*"(http.+?)"', html).group(1)
+        except: pass
+
+        try: stream_url = re.search('atob\(\'(.+?)\'', html).group(1)
+        except: pass
+
+        try: stream_url = base64.b64decode(stream_url)
+        except: pass
+
+        try: stream_url = urllib.unquote_plus(stream_url)
+        except: pass
+
         return stream_url
+
+    def get_url(self, host, media_id):
+        return 'http://trollvid.net/embed.php?file=%s' % media_id
+
+    def get_host_and_id(self, url):
+        r = re.search(self.pattern, url)
+        if r:
+            return r.groups()
+        else:
+            return False
+
+    def valid_url(self, url, host):
+        return re.search(self.pattern, url) or self.name in host

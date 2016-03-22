@@ -17,58 +17,42 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import re
-import xbmc
-from t0mm0.common.net import Net
-from urlresolver import common
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
-
-# from base64 import b64decode
 import base64
+from urlresolver import common
+from urlresolver.resolver import UrlResolver
 
-class SpeedVideoResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class SpeedVideoResolver(UrlResolver):
     name = "speedvideo"
     domains = ["speedvideo.net"]
     domain = "speedvideo.net"
-    USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
+    pattern = '(?://|\.)(speedvideo\.net)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
-    def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false':
-            return False
-        return re.match('http://(?:www.)?%s/(?:embed\-)?[0-9A-Za-z_]+(?:\-[0-9]+x[0-9]+.html)?' % self.domain, url) or 'speedvideo' in host
+    def get_media_url(self, host, media_id):
+        web_url = self.get_url(host, media_id)
+
+        html = self.net.http_GET(web_url).content
+
+        a = re.compile('var\s+linkfile *= *"(.+?)"').findall(html)[0]
+        b = re.compile('var\s+linkfile *= *base64_decode\(.+?\s+(.+?)\)').findall(html)[0]
+        c = re.compile('var\s+%s *= *(\d*)' % b).findall(html)[0]
+
+        stream_url = a[:int(c)] + a[(int(c) + 10):]
+        stream_url = base64.b64decode(stream_url)
+
+        return stream_url
 
     def get_url(self, host, media_id):
-        return 'http://%s/embed-%s-640x400.html' % (self.domain, media_id)
+        return 'http://speedvideo.net/embed-%s.html' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('http://(?:www\.)?(%s)\.net/(?:embed-)?([0-9A-Za-z_]+)(?:-\d+x\d+.html)?' % self.name, url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
 
-    def get_media_url(self, host, media_id):
-        base_url = self.get_url(host, media_id)
-        headers = {'User-Agent':self.USER_AGENT, 'Referer':'http://%s/' % self.domain}
-        html = self.net.http_GET(base_url, headers=headers).content
-        linkfile = re.compile('var linkfile\s*=\s*"([A-Za-z0-9]+)"').findall(html)[0]
-        common.addon.log_debug(linkfile)
-        linkfileb = re.compile('var linkfile\s*=\s*base64_decode\(linkfile,\s*([A-Za-z0-9]+)\);').findall(html)[0]
-        common.addon.log(linkfileb)
-        linkfilec = re.compile('var ' + linkfileb + '\s*=\s*(\d+);').findall(html)[0]
-        common.addon.log_debug(linkfilec)
-        linkfilec = int(linkfilec)
-        linkfilez = linkfile[:linkfilec] + linkfile[(linkfilec + 10):]
-        common.addon.log_debug(linkfilez)
-        stream_url = base64.b64decode(linkfilez)
-        common.addon.log_debug(stream_url)
-        xbmc.sleep(4000)
-        return stream_url
-
+    def valid_url(self, url, host):
+        return re.search(self.pattern, url) or self.name in host

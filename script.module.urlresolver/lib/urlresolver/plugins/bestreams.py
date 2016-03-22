@@ -15,78 +15,42 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import urllib
-import re
-import xbmc
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
-from urlresolver import common
 
-class BestreamsResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+import re
+from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
+
+class BestreamsResolver(UrlResolver):
     name = "bestreams"
     domains = ["bestreams.net"]
+    pattern = '(?://|\.)(bestreams\.net)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        html = self.net.http_GET(web_url).content
-        headers = {
-            'Referer': web_url
-        }
 
-        data = {}
-        r = re.findall(r'type="hidden"\s*name="(.+?)"\s*value="(.*?)"', html)
-        for name, value in r: data[name] = value
-        data.update({'referer': web_url})
-        data.update({'imhuman': 'Proceed to video'})
+        headers = {'User-Agent': common.IOS_USER_AGENT}
 
-        # parse cookies from file as they are only useful for this interaction
-        cookies = {}
-        for match in re.finditer("\$\.cookie\('([^']+)',\s*'([^']+)", html):
-            key, value = match.groups()
-            cookies[key] = value
-        headers['Cookie'] = urllib.urlencode(cookies)
+        html = self.net.http_GET(web_url, headers=headers).content
 
-        xbmc.sleep(2000)  # POST seems to fail is submitted too soon after GET. Page Timeout?
-        #sleep(2)
+        r = re.search('file\s*:\s*"(http.+?)"', html)
 
-        html = self.net.http_POST(web_url, data, headers=headers).content
-        ##print html #<< has character errors
-        #htmlA=html.splitlines() #<< to print as much as possible, skipping lines with unhandable characters.
-        #for htmlAa in htmlA:
-        #	try: print htmlAa
-        #	except: pass
-
-        #sleep(6)
-        r = re.search('file\s*:\s*"(http://.+?)"', html)  # Incase they start using this again.
         if r:
             return r.group(1)
-        r = re.search('streamer\s*:\s*"(\D+://.+?)"', html)
-        r2 = re.search('file\s*:\s*"([^"]+)', html)
-        if r and r2:
-            return r.group(1) + " Playpath=" + r2.group(1) + " swfUrl=http://bestreams.net/player/player.swf pageUrl=http://bestreams.net swfVfy=1"  # live=false timeout=30
-        if r:
-            return r.group(1)
-
-        raise UrlResolver.ResolverError("File Link Not Found")
+        else:
+            raise ResolverError("File Link Not Found")
 
     def get_url(self, host, media_id):
-        return 'http://bestreams.net/%s' % media_id
+        return 'http://bestreams.net/embed-%s.html' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/(?:embed-)?([A-Za-z0-9]+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match('http://(www.)?bestreams.net/(embed-)?[A-Za-z0-9]+', url) or "bestreams.net" in host
+        return re.search(self.pattern, url) or self.name in host

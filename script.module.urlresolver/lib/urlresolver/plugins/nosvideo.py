@@ -16,71 +16,62 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
 import re
+import base64
+import urllib
 from urlresolver import common
-from lib import jsunpack
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class NosvideoResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class NosvideoResolver(UrlResolver):
     name = "nosvideo"
-    domains = ["nosvideo.com"]
+    domains = ["nosvideo.com", "noslocker.com"]
+    pattern = '(?://|\.)(nosvideo.com|noslocker.com)/(?:\?v\=|embed/|.+?\u=)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
-        url = self.get_url(host, media_id)
-        html = self.net.http_GET(url).content
+        web_url = self.get_url(host, media_id)
+
+        html = self.net.http_GET(web_url).content
+
         if 'File Not Found' in html:
-            raise UrlResolver.ResolverError('File Not Found')
+            raise ResolverError('File Not Found')
 
-        headers = {
-            'Referer': url
-        }
+        r = re.search('class\s*=\s*[\'|\"]btn.+?[\'|\"]\s+href\s*=\s*[\'|\"](.+?)[\'|\"]', html)
+        if not r:
+            raise ResolverError('File Not Found')
 
-        data = {}
-        r = re.findall(r'type="hidden" name="(.+?)"\s* value="(.+?)"', html)
-        for name, value in r:
-            data[name] = value
-        data.update({'method_free': 'Free Download'})
+        headers = {'Referer': r.group(1)}
 
-        html = self.net.http_POST(url, data, headers=headers).content
+        web_url = 'http://nosvideo.com/vj/video.php?u=%s&w=&h=530' % media_id
 
-        r = re.search('(eval\(function\(p,a,c,k,e,[dr].*)', html)
-        if r:
-            js = jsunpack.unpack(r.group(1))
-            r = re.search('playlist=(.*)&config=', js)
-            if r:
-                html = self.net.http_GET(r.group(1)).content
-                r = re.search('<file>\s*(.*)\s*</file>', html)
-                if r:
-                    return r.group(1)
-                else:
-                    raise UrlResolver.ResolverError('Unable to locate video file')
-            else:
-                raise UrlResolver.ResolverError('Unable to locate playlist')
+        html = self.net.http_GET(web_url, headers=headers).content
+
+        stream_url = re.compile('var\stracker\s*=\s*[\'|\"](.+?)[\'|\"]').findall(html)
+        stream_url += re.compile("tracker *: *[\'|\"](.+?)[\'|\"]").findall(html)
+
+        if len(stream_url) > 0:
+            stream_url = stream_url[0]
         else:
-            raise UrlResolver.ResolverError('Unable to locate packed data')
+            raise ResolverError('Unable to locate video file')
+
+        try: stream_url = base64.b64decode(stream_url)
+        except: pass
+
+        stream_url += '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
+
+        return stream_url
 
     def get_url(self, host, media_id):
-        return 'http://nosvideo.com/?v=%s' % media_id
+        return 'http://nosvideo.com/%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/(?:\?v\=|embed/)?([0-9a-zA-Z]+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
-        return('host', 'media_id')
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return (re.match('http://(www.)?nosvideo.com/' +
-                         '(?:\?v\=|embed/)[0-9A-Za-z]+', url) or
-                         'nosvideo' in host)
+        return re.search(self.pattern, url) or self.name in host

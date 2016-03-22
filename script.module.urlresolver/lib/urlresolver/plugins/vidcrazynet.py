@@ -16,45 +16,38 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+import re
 import urllib
 from urlresolver import common
-import re
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class VidCrazyResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
-    name = "vidcrazy.net"
-    domains = ["vidcrazy.net"]
-    
+class VidCrazyResolver(UrlResolver):
+    name = 'vidcrazy.net'
+    domains = ['vidcrazy.net', 'uploadcrazy.net']
+    pattern = '(?://|\.)(vidcrazy.net|uploadcrazy.net)/\D+.php\?file=([0-9a-zA-Z\-_]+)'
+
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
-        self.pattern = 'http://((?:video.)?vidcrazy.net)/(\D+.php\?file=[0-9a-zA-Z\-_]+)[&]*'
-    
-    def get_url(self, host, media_id):
-        return 'http://video.vidcrazy.net/%s' % (media_id)
-    
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r: return r.groups()
-        else: return False
-    
-    def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match(self.pattern, url) or self.name in host
-    
+        self.net = common.Net()
+
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        common.addon.log(web_url)
-        resp = self.net.http_GET(web_url)
-        html = resp.content
+        html = self.net.http_GET(web_url).content
         r = re.search("'file'\s*:\s*'(.+?)'", html)
         if r:
             stream_url = urllib.unquote_plus(r.group(1))
         else:
-            raise UrlResolver.ResolverError('no file located')
+            raise ResolverError('no file located')
         return stream_url
+
+    def get_url(self, host, media_id):
+        return 'http://vidcrazy.net/embed.php?file=%s' % (media_id)
+
+    def get_host_and_id(self, url):
+        r = re.search(self.pattern, url)
+        if r:
+            return r.groups()
+        else:
+            return False
+
+    def valid_url(self, url, host):
+        return re.search(self.pattern, url) or self.name in host

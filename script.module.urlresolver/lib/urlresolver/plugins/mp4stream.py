@@ -18,49 +18,44 @@
 
 
 import re
-from t0mm0.common.net import Net
+import urllib
 from urlresolver import common
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class Mp4streamResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class Mp4streamResolver(UrlResolver):
     name = "mp4stream"
     domains = ["mp4stream.com"]
+    pattern = '(?://|\.)(mp4stream\.com)/embed/([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        link = self.net.http_GET(web_url).content
-        link = ''.join(link.splitlines()).replace('\t', '')
-        videoUrl = 'nope'
 
-        sPlayer = re.compile('show_player\((.+?)\)').findall(link)
-        for sPlayer_param in sPlayer:
-            param = re.compile('\'(.+?)\'').findall(sPlayer_param)
-            if len(param) > 2 and 'hd_button' in param[2]:
-                break
+        response = self.net.http_GET(web_url)
+        html = response.content
+        headers = dict(response._response.info().items())
 
-        match = re.compile('file\':(.+?),').findall(link)[0]
-        if len(match) > 5:
-            videoUrl = match.replace("'http:", 'http:').replace("'+cc+'", param[0]).replace("'+videourl+'", param[1]).replace("'+token", param[3]).strip()
+        r = re.search('sources\s*:\s*(\[.*?\])', html, re.DOTALL)
 
-        return videoUrl
+        if r:
+            html = r.group(1)
+            r = re.search("'file'\s*:\s*'(.+?)'", html)
+            if r:
+                return r.group(1) + '|' + urllib.urlencode({'Cookie': headers['set-cookie']})
+            else:
+                raise ResolverError('File Not Found or removed')
 
     def get_url(self, host, media_id):
-        return 'http://%s/embed/%s' % (host, media_id)
+        return 'http://mp4stream.com/embed/%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/embed/(.+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
 
     def valid_url(self, url, host):
-        return 'mp4stream' in url or self.name in host
+        return re.search(self.pattern, url) or self.name in host

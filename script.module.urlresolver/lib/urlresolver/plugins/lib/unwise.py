@@ -46,27 +46,27 @@ def unwise(w, i, s, e, wi, ii, si, ei):
     while True:
         if w != "":
             if int1 < wi:
-                string2 = string2 + w[int1:int1+1]
+                string2 = string2 + w[int1:int1 + 1]
             elif int1 < len(w):
-                string1 = string1 + w[int1:int1+1]
+                string1 = string1 + w[int1:int1 + 1]
             int1 += 1
         if i != "":
             if int2 < ii:
-                string2 = string2 + i[int2:int2+1]
+                string2 = string2 + i[int2:int2 + 1]
             elif int2 < len(i):
-                string1 = string1 + i[int2:int2+1]
+                string1 = string1 + i[int2:int2 + 1]
             int2 += 1
         if s != "":
             if int3 < si:
-                string2 = string2 + s[int3:int3+1]
+                string2 = string2 + s[int3:int3 + 1]
             elif int3 < len(s):
-                string1 = string1 + s[int3:int3+1]
+                string1 = string1 + s[int3:int3 + 1]
             int3 = int3 + 1
         if e != "":
             if int4 < ei:
-                string2 = string2 + e[int4:int4+1]
+                string2 = string2 + e[int4:int4 + 1]
             elif int4 < len(e):
-                string1 = string1 + e[int4:int4+1]
+                string1 = string1 + e[int4:int4 + 1]
             int4 = int4 + 1
         if len(w) + len(i) + len(s) + len(e) == len(string1) + len(string2):
             break
@@ -75,9 +75,9 @@ def unwise(w, i, s, e, wi, ii, si, ei):
     result = ""
     while int1 < len(string1):
         flag = -1
-        if ord(string2[int2:int2+1]) % 2:
+        if ord(string2[int2:int2 + 1]) % 2:
             flag = 1
-        result = result + chr(int(string1[int1:int1+2], 36) - flag)
+        result = result + chr(int(string1[int1:int1 + 2], 36) - flag)
         int2 += 1
         if int2 >= len(string2):
             int2 = 0
@@ -110,11 +110,11 @@ def unwise_process(result):
                 result = result.replace(a, unwise(wisestr[0], wisestr[1], wisestr[2], wisestr[3], wiseint[0], wiseint[1], wiseint[2], wiseint[3]))
     return result
 
-def resolve_var(HTML, key): #this should probably be located elsewhere
+def resolve_var(HTML, key):  # this should probably be located elsewhere
     key = re.escape(key)
     tmp1 = HTML.replace("\r", "")
     tmp1 = tmp1.replace("\n", ";")
-    tmp2 = re.compile(r'[^\w\.]' + key + '\s*=\s*([^\"\']*?)[;,]').search(tmp1) #expect var first, movshare
+    tmp2 = re.compile(r'[^\w\.]' + key + '\s*=\s*([^\"\']*?)[;,]').search(tmp1)  # expect var first, movshare
     if tmp2:
         tmp2 = resolve_var(HTML, tmp2.group(1))
     else:
@@ -122,7 +122,13 @@ def resolve_var(HTML, key): #this should probably be located elsewhere
         if tmp2:
             tmp2 = tmp2.group(1)
         else:
-            tmp2 = "" #oops, should not happen in the variable is valid
+            key = key.split("\\.")
+            if len(key) == 2:
+                tmp2 = re.compile(r'[^\w\.]' + key[0] + '\s*=\s*\{.*[^\w\.]' + key[1] + '\s*\:\s*[\"\'](.*?)[\"\']').search(tmp1)  # for 'vars = { key: "value" }', cloudy
+            if tmp2:
+                tmp2 = tmp2.group(1)
+            else:
+                tmp2 = ""  # oops, should not happen in the variable is valid
     return tmp2
 
 if __name__ == "__main__":

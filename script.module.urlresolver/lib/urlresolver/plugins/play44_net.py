@@ -16,39 +16,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+import re
 import urllib
 from urlresolver import common
-import re
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class Play44Resolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class Play44Resolver(UrlResolver):
     name = "play44.net"
     domains = ["play44.net"]
-    
+    pattern = '(?://|\.)(play44\.net)/embed\.php?.*?vid=([0-9a-zA-Z_\-\./]+)[\?&]*'
+
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
-        # http://play44.net/embed.php?w=718&h=438&vid=og/saint_seiya_omega_-_69.mp4
-        self.pattern = 'http://((?:www.)?play44.net)/embed\.php?.*?vid=([0-9a-zA-Z_\-\./]+)[\?&]*'
-        #self.pattern = 'http://((?:www.)?videofun.me)/embed/(.+?)'
-    
-    def get_url(self, host, media_id):
-            return 'http://play44.net/embed.php?&vid=%s' % (media_id)
-    
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r: return r.groups()
-        else: return False
-    
-    def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match(self.pattern, url) or self.name in host
-    
+        self.net = common.Net()
+
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
         resp = self.net.http_GET(web_url)
@@ -57,5 +37,18 @@ class Play44Resolver(Plugin, UrlResolver, PluginSettings):
         if r:
             stream_url = urllib.unquote_plus(r.group(1))
         else:
-            raise UrlResolver.ResolverError('no file located')
+            raise ResolverError('no file located')
         return stream_url
+
+    def get_url(self, host, media_id):
+        return 'http://play44.net/embed.php?&vid=%s' % (media_id)
+
+    def get_host_and_id(self, url):
+        r = re.search(self.pattern, url)
+        if r:
+            return r.groups()
+        else:
+            return False
+
+    def valid_url(self, url, host):
+        return re.search(self.pattern, url) or self.name in host

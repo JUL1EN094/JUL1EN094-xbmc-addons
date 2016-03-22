@@ -16,25 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
 import re
+import urllib
+import xbmc
+from lib import captcha_lib
 from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
 MAX_TRIES = 3
 
-class ClickNUploadResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class ClickNUploadResolver(UrlResolver):
     name = "clicknupload"
-    domains = ["clicknupload.com"]
+    domains = ["clicknupload.com", "clicknupload.me", 'clicknupload.link']
+    pattern = '(?://|\.)(clicknupload\.(?:com|me|link))/(?:f/)?([0-9A-Za-z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
@@ -46,28 +43,32 @@ class ClickNUploadResolver(Plugin, UrlResolver, PluginSettings):
             for name, value in r:
                 data[name] = value
             data['method_free'] = 'Free Download'
-             
-            html = self.net.http_POST(web_url, data).content
-            
+            data.update(captcha_lib.do_captcha(html))
+            headers = {
+                'Referer': web_url
+            }
+            html = self.net.http_POST(web_url, data, headers=headers).content
+            if tries > 0:
+                xbmc.sleep(6000)
+
             if '>File Download Link Generated<' in html:
                 r = re.search("onClick\s*=\s*\"window\.open\('([^']+)", html)
                 if r:
-                    return  r.group(1) + '|User-Agent=%s' % (USER_AGENT)
-            
+                    return r.group(1) + '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
+
             tries = tries + 1
-            
-        raise UrlResolver.ResolverError('Unable to locate link')
+
+        raise ResolverError('Unable to locate link')
 
     def get_url(self, host, media_id):
         return 'http://%s/%s' % (host, media_id)
-        
+
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/([0-9a-zA-Z/]+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match('http://((?:www.)?clicknupload.com)/(?:f/)?([0-9A-Za-z]+)', url) or 'clicknupload' in host
+        return re.search(self.pattern, url) or self.name in host

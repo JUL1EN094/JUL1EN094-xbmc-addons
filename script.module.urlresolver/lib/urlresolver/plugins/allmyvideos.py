@@ -16,75 +16,73 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
-import re, os, xbmc, json
+import re
+import json
+import urllib
+import urlparse
 from urlresolver import common
-#SET ERROR_LOGO# THANKS TO VOINAGE, BSTRDMKR, ELDORADO
-error_logo=os.path.join(common.addon_path,'resources','images','redx.png')
-net=Net()
-USER_AGENT='Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
-class AllmyvideosResolver(Plugin,UrlResolver,PluginSettings):
-    implements=[UrlResolver,PluginSettings]
-    name="allmyvideos"
-    domains=[ "allmyvideos.net" ]
+from urlresolver.resolver import UrlResolver, ResolverError
+import xbmc
 
+class AllmyvideosResolver(UrlResolver):
+    name = "allmyvideos"
+    domains = ["allmyvideos.net"]
+    pattern = '(?://|\.)(allmyvideos\.net)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p=self.get_setting('priority') or 100
-        self.priority=int(p)
-        self.net=Net()
+        self.net = common.Net()
 
-    def get_media_url(self,host,media_id):
-        url=self.get_url1st(host,media_id)
-        headers={'User-Agent':USER_AGENT,'Referer':url}
-        html=self.net.http_GET(url,headers=headers).content
-        stream_url = self.__get_best_source(html) 
+    def get_media_url(self, host, media_id):
+        url = self.get_url1st(host, media_id)
+        headers = {'User-Agent': common.IE_USER_AGENT, 'Referer': url}
+        html = self.net.http_GET(url, headers=headers).content
+        stream_url = self.__get_best_source(html)
         if stream_url:
             xbmc.sleep(2000)
             return stream_url
-        
-        url=self.get_url(host,media_id)
-        headers={'User-Agent':USER_AGENT,'Referer':url}
-        html=self.net.http_GET(url,headers=headers).content
-        
-        data={}; r=re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">',html)
-        for name,value in r: data[name]=value
-        html=net.http_POST(url,data,headers=headers).content
-        
-        stream_url = self.__get_best_source(html) 
+
+        url = self.get_url(host, media_id)
+        headers = {'User-Agent': common.IE_USER_AGENT, 'Referer': url}
+        html = self.net.http_GET(url, headers=headers).content
+
+        data = {}
+        r = re.findall(r'type="hidden"\s+name="(.+?)"\s+value="(.*?)"', html)
+        for name, value in r: data[name] = value
+        html = self.net.http_POST(url, data, headers=headers).content
+
+        stream_url = self.__get_best_source(html)
         if stream_url:
             xbmc.sleep(2000)
             return stream_url
-        
-        raise UrlResolver.ResolverError('could not find video')
+
+        raise ResolverError('could not find video')
 
     def __get_best_source(self, html):
-        r=re.search('"sources"\s*:\s*(\[.*?\])',html, re.DOTALL)
+        r = re.search('"sources"\s*:\s*(\[.*?\])', html, re.DOTALL)
         if r:
             sources = json.loads(r.group(1))
             max_label = 0
             stream_url = ''
             for source in sources:
-                if 'label' in source and int(source['label'])>max_label:
+                if 'label' in source and int(re.sub('[^0-9]', '', source['label'])) > max_label:
                     stream_url = source['file']
-                    max_label = int(source['label'])
-            if stream_url: return stream_url+'|User-Agent=%s'%(USER_AGENT)
-        
-    def get_url(self,host,media_id):
-        return 'http://allmyvideos.net/%s'%media_id 
+                    max_label = int(re.sub('[^0-9]', '', source['label']))
+            if stream_url:
+                stream_url = '%s?%s&direct=false&ua=false' % (stream_url.split('?')[0], urlparse.urlparse(stream_url).query)
+                return stream_url + '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
 
-    def get_url1st(self,host,media_id):
-        return 'http://allmyvideos.net/embed-%s.html'%media_id
-     
+    def get_url(self, host, media_id):
+        return 'http://allmyvideos.net/%s' % media_id
+
+    def get_url1st(self, host, media_id):
+        return 'http://allmyvideos.net/embed-%s.html' % media_id
+
     def get_host_and_id(self, url):
-        r=re.search('//(?:www.)?(allmyvideos.net)/(?:embed-)?([0-9a-zA-Z]+)',url)
-        if r: return r.groups()
-        else: return False
-        return('host','media_id')
-    
-    def valid_url(self,url,host):
-        if self.get_setting('enabled')=='false': return False
-        return (re.match('http://(?:www.)?(allmyvideos.net)/(?:embed-)?([0-9A-Za-z]+)',url) or re.match('http://(www.)?(allmyvideos.net)/embed-([0-9A-Za-z]+)[\-]*\d*[x]*\d*.*[html]*',url) or 'allmyvideos' in host)
+        r = re.search(self.pattern, url)
+        if r:
+            return r.groups()
+        else:
+            return False
+
+    def valid_url(self, url, host):
+        return re.search(self.pattern, url) or self.name in host

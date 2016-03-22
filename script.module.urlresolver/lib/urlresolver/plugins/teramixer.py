@@ -20,57 +20,46 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import re
 import base64
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+import urllib
 from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class TeramixerResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
-    name       = "teramixer"
-    domains    = [ 'teramixer.com' ]
-    useragent  = 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'    
-
+class TeramixerResolver(UrlResolver):
+    name = "teramixer"
+    domains = ['teramixer.com']
+    pattern = '(?://|\.)(teramixer\.com)/(?:embed/|)?([0-9A-Za-z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
-        base_url = 'http://www.' + host + '.com/' + media_id
         try:
-            html = self.net.http_GET(base_url).content
-            encodedUrl = re.findall("""filepath = '(.*)';""", html)[0]
-            encodedUrl = encodedUrl[9:]
-            encodedUrl = base64.b64decode(encodedUrl)
-            if not encodedUrl.startswith('aws'): encodedUrl = encodedUrl[1:]
-            stream_url = 'http://%s|User-Agent=%s' %(encodedUrl,self.useragent)
+            web_url = self.get_url(host, media_id)
+
+            html = self.net.http_GET(web_url).content
+
+            url = re.findall("""filepath = '(.*)';""", html)[0]
+            url = url[9:]
+            url = base64.b64decode(url)
+            if not url.startswith('aws'): url = url[1:]
+
+            stream_url = 'http://%s' % url + '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
             return stream_url
         except IndexError as e:
-            if re.search("""<title>File not found or deleted - Teramixer</title>""", html) :
-                raise UrlResolver.ResolverError('File not found or removed')
+            if re.search("""<title>File not found or deleted - Teramixer</title>""", html):
+                raise ResolverError('File not found or removed')
             else:
-                raise UrlResolver.ResolverError(e)
+                raise ResolverError(e)
 
     def get_url(self, host, media_id):
         return 'http://www.teramixer.com/%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('http://(www.)?(.+?).com/(embed/)?(.+)', url)
-        if r :
-            ls = r.groups()
-            ls = (ls[1], ls[3])
-            return ls
-        else :
+        r = re.search(self.pattern, url)
+        if r:
+            return r.groups()
+        else:
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false':
-            return False
-        return re.match('http://(www.)?teramixer.com/(embed/)?[0-9A-Za-z]+', url) or 'teramixer.com' in host
-
-    def get_settings_xml(self):
-        xml = PluginSettings.get_settings_xml(self)
-        return xml
+        return re.search(self.pattern, url) or self.name in host

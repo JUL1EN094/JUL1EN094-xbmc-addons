@@ -17,46 +17,60 @@
 """
 
 import re
-from t0mm0.common.net import Net
+import json
 from urlresolver import common
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class VimeoResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class VimeoResolver(UrlResolver):
     name = "vimeo"
     domains = ["vimeo.com"]
+    pattern = '(?://|\.)(vimeo\.com)/(?:video/)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
-        #just call vimeo addon
-        plugin = 'plugin://plugin.video.vimeo/?action=play_video&videoid=' + media_id
-        return plugin
+        web_url = self.get_url(host, media_id)
+
+        data = self.net.http_GET(web_url).content
+        data = json.loads(data)
+
+        vids = data['request']['files']['progressive']
+        vids = [i['url'] for i in vids if 'url' in i]
+
+        if vids:
+            vUrlsCount = len(vids)
+
+            if (vUrlsCount > 0):
+                q = self.get_setting('quality')
+                # Lowest Quality
+                i = 0
+
+                if q == '1':
+                    # Medium Quality
+                    i = (int)(vUrlsCount / 2)
+                elif q == '2':
+                    # Highest Quality
+                    i = vUrlsCount - 1
+
+                vUrl = vids[i]
+                return vUrl
 
     def get_url(self, host, media_id):
-        return 'http://vimeo.com/%s' % media_id
+        return 'http://player.vimeo.com/video/%s/config' % media_id
 
     def get_host_and_id(self, url):
-        r = re.findall('/([0-9]+)', url)
+        r = re.search(self.pattern, url)
         if r:
-            video_id = r[-1]
-        if video_id:
-            return ('vimeo.com', video_id)
+            return r.groups()
         else:
-            common.addon.log_error('vimeo: video id not found')
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match('http://(.+)?vimeo.com/(video\/)?[0-9]+',
-                        url) or 'vimeo' in host
+        return re.search(self.pattern, url) or self.name in host
 
-    def get_settings_xml(self):
-        xml = PluginSettings.get_settings_xml(self)
-        xml += '<setting label="This plugin calls the vimeo addon - '
-        xml += 'change settings there." type="lsep" />\n'
+    @classmethod
+    def get_settings_xml(cls):
+        xml = super(cls, cls).get_settings_xml()
+        xml.append('<setting label="Video Quality" id="%s_quality" type="enum" values="High|Medium|Low" default="0" />' % (cls.__name__))
         return xml

@@ -17,29 +17,23 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import re
+import urllib
 import urllib2
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
 from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:30.0) Gecko/20100101 Firefox/30.0'
-
-class SharerepoResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class SharerepoResolver(UrlResolver):
     name = "sharerepo"
     domains = ["sharerepo.com"]
+    pattern = '(?://|\.)(sharerepo\.com)(?:/f)?/([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
         headers = {
-            'User-Agent': USER_AGENT,
+            'User-Agent': common.IE_USER_AGENT,
             'Referer': web_url
         }
 
@@ -47,33 +41,27 @@ class SharerepoResolver(Plugin, UrlResolver, PluginSettings):
             html = self.net.http_GET(web_url, headers=headers).content
         except urllib2.HTTPError as e:
             if e.code == 404:
-                # sharerepo supports two different styles of links/media_ids
-                # if the first fails, try the second kind
                 web_url = 'http://sharerepo.com/%s' % media_id
                 html = self.net.http_GET(web_url, headers=headers).content
             else:
                 raise
-            
+
         link = re.search("file\s*:\s*'([^']+)", html)
         if link:
-            common.addon.log_debug('ShareRepo Link Found: %s' % link.group(1))
-            return link.group(1) + '|User-Agent=%s' % (USER_AGENT)
+            common.log_utils.log_debug('ShareRepo Link Found: %s' % link.group(1))
+            return link.group(1) + '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
         else:
-            raise UrlResolver.ResolverError('Unable to resolve ShareRepo Link')
+            raise ResolverError('Unable to resolve ShareRepo Link')
 
     def get_url(self, host, media_id):
         return 'http://sharerepo.com/f/%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)(?:/f)?/([0-9a-zA-Z]+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
-        return('host', 'media_id')
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return (re.match('http://(www.)?sharerepo.com/(f/)?' +
-                         '[0-9A-Za-z]+', url) or
-                         'sharerepo' in host)
+        return re.search(self.pattern, url) or self.name in host

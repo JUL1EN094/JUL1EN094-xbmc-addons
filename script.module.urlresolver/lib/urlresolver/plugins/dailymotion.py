@@ -15,68 +15,56 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
-import xbmc
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
-import re
-import urllib2, urllib
-from urlresolver import common
 
-class DailymotionResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+import re
+import json
+import urllib2
+from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
+
+class DailymotionResolver(UrlResolver):
     name = "dailymotion"
-    domains = [ "dailymotion.com" ]
+    domains = ["dailymotion.com"]
+    pattern = '(?://|\.)(dailymotion\.com)/(?:video|embed|sequence|swf)(?:/video)?/([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        link = self.net.http_GET(web_url).content
-        if link.find('"error":') >= 0:
-            err_title = re.compile('"title":"(.+?)"').findall(link)[0]
-            if not err_title:
+        html = self.net.http_GET(web_url).content
+
+        html = re.search('({"context".+?)\);\n', html, re.DOTALL)
+        if html:
+            html = json.loads(html.group(1))
+            if 'metadata' in html: html = html['metadata']
+            else: return
+
+        if 'error' in html:
+            err_title = html['error']
+            if 'title' in err_title:
+                err_title = err_title['title']
+            else:
                 err_title = 'Content not available.'
-            
-            err_message = re.compile('"message":"(.+?)"').findall(link)[0]
-            if not err_message:
-                err_message = 'No such video or the video has been removed due to copyright infringement issues.'
-            
-            raise UrlResolver.ResolverError(err_message)
-        
-        imgSrc = re.compile('"thumbnail_url":"(.+?)"').findall(link)[0]
-        common.addon.log('img:' + imgSrc)
-        
-        dm_live = re.compile('live_rtsp_url":"(.+?)"', re.DOTALL).findall(link)
-        dm_1080p = re.compile('"stream_h264_hd1080_url":"(.+?)"', re.DOTALL).findall(link)
-        dm_720p = re.compile('"stream_h264_hd_url":"(.+?)"', re.DOTALL).findall(link)
-        dm_high = re.compile('"stream_h264_hq_url":"(.+?)"', re.DOTALL).findall(link)
-        dm_low = re.compile('"stream_h264_url":"(.+?)"', re.DOTALL).findall(link)
-        dm_low2 = re.compile('"stream_h264_ld_url":"(.+?)"', re.DOTALL).findall(link)
-        
+            raise ResolverError(err_title)
+
+        if 'qualities' in html:
+            html = html['qualities']
+
         videoUrl = []
-        
-        if dm_live:
-            liveVideoUrl = urllib.unquote_plus(dm_live[0]).replace("\\/", "/")
-            liveVideoUrl = liveVideoUrl.replace("protocol=rtsp", "protocol=rtmp")
-            liveVideoUrl = self.net.http_GET(liveVideoUrl).content
-            videoUrl.append(liveVideoUrl)
-        else:
-            if dm_1080p:
-                videoUrl.append(urllib.unquote_plus(dm_1080p[0]).replace("\\/", "/"))
-            if dm_720p:
-                videoUrl.append(urllib.unquote_plus(dm_720p[0]).replace("\\/", "/"))
-            if dm_high:
-                videoUrl.append(urllib.unquote_plus(dm_high[0]).replace("\\/", "/"))
-            if dm_low:
-                videoUrl.append(urllib.unquote_plus(dm_low[0]).replace("\\/", "/"))
-            if dm_low2:
-                videoUrl.append(urllib.unquote_plus(dm_low2[0]).replace("\\/", "/"))
-        
+        try: videoUrl.append(html['1080'][0]['url'])
+        except: pass
+        try: videoUrl.append(html['720'][0]['url'])
+        except: pass
+        try: videoUrl.append(html['480'][0]['url'])
+        except: pass
+        try: videoUrl.append(html['380'][0]['url'])
+        except: pass
+        try: videoUrl.append(html['240'][0]['url'])
+        except: pass
+        try: videoUrl.append(html['auto'][0]['url'])
+        except: pass
+
         vUrl = ''
         vUrlsCount = len(videoUrl)
         if vUrlsCount > 0:
@@ -90,48 +78,25 @@ class DailymotionResolver(Plugin, UrlResolver, PluginSettings):
             elif q == '2':
                 # Lowest Quality
                 vUrl = videoUrl[vUrlsCount - 1]
-        
-        common.addon.log('url:' + vUrl)
+
+        vUrl = urllib2.urlopen(urllib2.Request(vUrl)).geturl()
         return vUrl
 
     def get_url(self, host, media_id):
         return 'http://www.dailymotion.com/embed/video/%s' % media_id
-        
+
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/embed/video/([0-9A-Za-z]+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
-            r = re.search('//(.+?)/swf/video/([0-9A-Za-z]+)', url)
-            if r:
-                return r.groups()
-            else:
-                r = re.search('//(.+?)/video/([0-9A-Za-z]+)', url)
-                if r:
-                    return r.groups()
-                else:
-                    r = re.search('//(.+?)/swf/([0-9A-Za-z]+)', url)
-                    if r:
-                        return r.groups()
-                    else:
-                        r = re.search('//(.+?)/sequence/([0-9A-Za-z]+)', url)
-                        if r:
-                            return r.groups()
-                        else:
-                            return False
-
+            return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.match('http://(www.)?dailymotion.com/sequence/[0-9A-Za-z]+', url) or \
-                re.match('http://(www.)?dailymotion.com/video/[0-9A-Za-z]+', url) or \
-                re.match('http://(www.)?dailymotion.com/swf/[0-9A-Za-z]+', url) or \
-                re.match('http://(www.)?dailymotion.com/embed/[0-9A-Za-z]+', url) or \
-                self.name in host
+        return re.search(self.pattern, url) or self.name in host
 
-    #PluginSettings methods
-    def get_settings_xml(self):
-        xml = PluginSettings.get_settings_xml(self)
-        xml += '<setting label="Video Quality" id="%s_quality" ' % self.__class__.__name__
-        xml += 'type="enum" values="High|Medium|Low" default="0" />\n'
+    @classmethod
+    def get_settings_xml(cls):
+        xml = super(cls, cls).get_settings_xml()
+        xml.append('<setting label="Video Quality" id="%s_quality" type="enum" values="High|Medium|Low" default="0" />' % (cls.__name__))
         return xml

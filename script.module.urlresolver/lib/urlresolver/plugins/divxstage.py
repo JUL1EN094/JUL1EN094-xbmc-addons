@@ -17,57 +17,51 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import re
-from t0mm0.common.net import Net
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
 from urlresolver import common
-from lib import unwise
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class DivxstageResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
-    name = "divxstage"
-    domains = ["divxstage.eu", "divxstage.net", "divxstage.to", "cloudtime.to"]
+class DivxstageResolver(UrlResolver):
+    name = 'divxstage'
+    domains = ['divxstage.eu', 'divxstage.net', 'divxstage.to', 'cloudtime.to']
+    pattern = '(?://|\.)(divxstage.eu|divxstage.net|divxstage.to|cloudtime.to)/(?:video/|embed/\?v=)([A-Za-z0-9]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
+
         html = self.net.http_GET(web_url).content
-        r = re.search('<param name="src" value="(.+?)"', html)
+
+        r = re.search('flashvars.filekey=(.+?);', html)
         if r:
-            stream_url = r.group(1)
-        else:
-            html = unwise.unwise_process(html)
-            filekey = unwise.resolve_var(html, "flashvars.filekey")
-            
-            player_url = 'http://www.cloudtime.to/api/player.api.php?user=undefined&key=' + filekey + '&pass=undefined&codes=1&file=' + media_id
+            r = r.group(1)
+
+            try: filekey = re.compile('\s+%s="(.+?)"' % r).findall(html)[-1]
+            except: filekey = r
+
+            player_url = 'http://www.cloudtime.to/api/player.api.php?key=%s&file=%s' % (filekey, media_id)
+
             html = self.net.http_GET(player_url).content
+
             r = re.search('url=(.+?)&', html)
+
             if r:
                 stream_url = r.group(1)
             else:
-                raise UrlResolver.ResolverError('File Not Found or removed')
-            
+                raise ResolverError('File Not Found or removed')
+
         return stream_url
 
     def get_url(self, host, media_id):
-        return 'http://www.cloudtime.to/video/%s' % media_id
+        return 'http://www.cloudtime.to/embed/?v=%s' % media_id
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/(?:video/([0-9a-z]+)|embed.php\?v=([^\?&]+))', url)
+        r = re.search(self.pattern, url)
         if r:
-            if 'embed' in r.group(1):
-                return r.group(1),r.group(3)
-            else:
-                return r.group(1),r.group(2)
+            return r.groups()
         else:
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        #http://embed.divxstage.eu/embed.php?v=8da26363e05fd&width=746&height=388&c=000
-        return (re.match('http://(?:www.|embed.)?(?:divxstage\.(?:eu|net|to)|cloudtime\.to)/', url) or 'divxstage' in host)
+        return re.search(self.pattern, url) or self.name in host

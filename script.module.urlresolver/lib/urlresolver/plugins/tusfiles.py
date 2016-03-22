@@ -16,22 +16,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-from t0mm0.common.net import Net
-from urlresolver import common
-from urlresolver.plugnplay.interfaces import UrlResolver
-from urlresolver.plugnplay.interfaces import PluginSettings
-from urlresolver.plugnplay import Plugin
 from lib import jsunpack
+from urlresolver import common
+from urlresolver.resolver import UrlResolver, ResolverError
 
-class TusfilesResolver(Plugin, UrlResolver, PluginSettings):
-    implements = [UrlResolver, PluginSettings]
+class TusfilesResolver(UrlResolver):
     name = "tusfiles"
     domains = ['tusfiles.net']
+    pattern = '(?://|\.)(tusfiles\.net)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
-        p = self.get_setting('priority') or 100
-        self.priority = int(p)
-        self.net = Net()
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         direct_url = 'http://%s/%s' % (host, media_id)
@@ -39,22 +34,25 @@ class TusfilesResolver(Plugin, UrlResolver, PluginSettings):
             html = self.net.http_GET(web_url).content
             for match in re.finditer('(eval\(function.*?)</script>', html, re.DOTALL):
                 js_data = jsunpack.unpack(match.group(1))
-                match2 = re.search('<param\s+name="src"\s*value="([^"]+)', js_data)
-                if match2:
-                    return match2.group(1)
 
-        raise UrlResolver.ResolverError('Unable to locate link')
+                stream_url = re.findall('<param\s+name="src"\s*value="([^"]+)', js_data)
+                stream_url += re.findall('file\s*:\s*[\'|\"](.+?)[\'|\"]', js_data)
+                stream_url = [i for i in stream_url if not i.endswith('.srt')]
+
+                if stream_url:
+                    return stream_url[0]
+
+        raise ResolverError('Unable to locate link')
 
     def get_url(self, host, media_id):
         return 'http://%s/embed-%s.html' % (host, media_id)
 
     def get_host_and_id(self, url):
-        r = re.search('//(.+?)/(?:embed-)?([0-9a-z]+)', url)
+        r = re.search(self.pattern, url)
         if r:
             return r.groups()
         else:
             return False
 
     def valid_url(self, url, host):
-        if self.get_setting('enabled') == 'false': return False
-        return re.search('//(?:www.)?tusfiles.net/(embed-)?[0-9a-z]+', url) or 'tusfiles' in host
+        return re.search(self.pattern, url) or self.name in host
