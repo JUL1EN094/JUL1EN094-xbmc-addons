@@ -23,7 +23,7 @@ from urlresolver.resolver import UrlResolver, ResolverError
 class MovshareResolver(UrlResolver):
     name = "movshare"
     domains = ["movshare.net", 'wholecloud.net']
-    pattern = '(?://|\.)(movshare.net|wholecloud.net)/(?:video/|embed/\?v=)([A-Za-z0-9]+)'
+    pattern = '(?://|\.)(movshare.net|wholecloud.net)/(?:video/|embed(?:/|\.php)\?v=)([A-Za-z0-9]+)'
 
     def __init__(self):
         self.net = common.Net()

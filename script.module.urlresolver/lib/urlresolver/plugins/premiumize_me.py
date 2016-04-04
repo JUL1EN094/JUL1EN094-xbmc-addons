@@ -58,9 +58,9 @@ class PremiumizeMeResolver(UrlResolver):
     def get_host_and_id(self, url):
         return 'premiumize.me', url
 
+    @common.cache.cache_method(cache_limit=8)
     def get_all_hosters(self):
         try:
-            if not self.patterns or not self.hosts:
                 username = self.get_setting('username')
                 password = self.get_setting('password')
                 url = '%s://api.premiumize.me/pm-api/v1.php?' % (self.scheme)
@@ -71,13 +71,15 @@ class PremiumizeMeResolver(UrlResolver):
                 result = response['result']
                 log_msg = 'Premiumize.me patterns: %s hosts: %s' % (result['regexlist'], result['tldlist'])
                 common.log_utils.log_debug(log_msg)
-                self.hosts = result['tldlist']
-                self.patterns = [re.compile(regex) for regex in result['regexlist']]
+                return result['tldlist'], [re.compile(regex) for regex in result['regexlist']]
         except Exception as e:
             common.log_utils.log_error('Error getting Premiumize hosts: %s' % (e))
+        return [], []
 
     def valid_url(self, url, host):
-        self.get_all_hosters()
+        if not self.patterns or not self.hosts:
+            self.hosts, self.patterns = self.get_all_hosters()
+
         if url:
             if not url.endswith('/'): url += '/'
             for pattern in self.patterns:

@@ -162,29 +162,29 @@ class RealDebridResolver(UrlResolver):
     def get_host_and_id(self, url):
         return 'www.real-debrid.com', url
 
+    @common.cache.cache_method(cache_limit=8)
     def get_all_hosters(self):
-        if self.hosters is None:
-            try:
-                url = 'https://api.real-debrid.com/rest/1.0/hosts/regex'
-                self.hosters = []
-                js_result = json.loads(self.net.http_GET(url, headers=self.headers).content)
-                regexes = [regex.lstrip('/').rstrip('/').replace('\/', '/') for regex in js_result]
-                self.hosters = [re.compile(regex) for regex in regexes]
-            except Exception as e:
-                common.log_utils.log_error('Error getting RD regexes: %s' % (e))
-                self.hosters = []
-        # common.log_utils.log_debug('RealDebrid hosters : %s' % self.hosters)
-        return self.hosters
+        try:
+            hosters = []
+            url = 'https://api.real-debrid.com/rest/1.0/hosts/regex'
+            js_result = json.loads(self.net.http_GET(url, headers=self.headers).content)
+            regexes = [regex.lstrip('/').rstrip('/').replace('\/', '/') for regex in js_result]
+            common.log_utils.log_debug('RealDebrid hosters : %s' % (regexes))
+            hosters = [re.compile(regex) for regex in regexes]
+        except Exception as e:
+            common.log_utils.log_error('Error getting RD regexes: %s' % (e))
+        return hosters
 
+    @common.cache.cache_method(cache_limit=8)
     def get_hosts(self):
-        if self.hosts is None:
-            try:
-                url = 'https://api.real-debrid.com/rest/1.0/hosts/domains'
-                self.hosts = json.loads(self.net.http_GET(url, headers=self.headers).content)
-            except Exception as e:
-                common.log_utils.log_error('Error getting RD hosts: %s' % (e))
-                self.hosts = []
-        common.log_utils.log_debug('RealDebrid hosts : %s' % self.hosts)
+        try:
+            hosts = []
+            url = 'https://api.real-debrid.com/rest/1.0/hosts/domains'
+            hosts = json.loads(self.net.http_GET(url, headers=self.headers).content)
+        except Exception as e:
+            common.log_utils.log_error('Error getting RD hosts: %s' % (e))
+        common.log_utils.log_debug('RealDebrid hosts : %s' % (hosts))
+        return hosts
 
     @classmethod
     def _is_enabled(cls):
@@ -193,14 +193,18 @@ class RealDebridResolver(UrlResolver):
     def valid_url(self, url, host):
         common.log_utils.log_debug('in valid_url %s : %s' % (url, host))
         if url:
-            self.get_all_hosters()
+            if self.hosters is None:
+                self.hosters = self.get_all_hosters()
+                
             for host in self.hosters:
                 # common.log_utils.log_debug('RealDebrid checking host : %s' %str(host))
                 if re.search(host, url):
                     common.log_utils.log_debug('RealDebrid Match found')
                     return True
         elif host:
-            self.get_hosts()
+            if self.hosts is None:
+                self.hosts = self.get_hosts()
+                
             if host.startswith('www.'): host = host.replace('www.', '')
             if any(host in item for item in self.hosts):
                 return True

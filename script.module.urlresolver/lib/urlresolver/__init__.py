@@ -188,7 +188,7 @@ def display_settings():
         affect any addon that uses :mod:`urlresolver` and its plugins.
     '''
     _update_settings_xml()
-    common.addon.openSettings()
+    common.open_settings()
 
 def _update_settings_xml():
     '''
@@ -205,6 +205,8 @@ def _update_settings_xml():
         '<settings>',
         '<category label="URLResolver">',
         '<setting default="true" id="allow_universal" label="Enable Universal Resolvers" type="bool"/>',
+        '<setting default="true" id="use_cache" label="Use Function Cache" type="bool"/>',
+        '<setting id="reset_cache" type="action" label="Reset Function Cache" action="RunPlugin(plugin://script.module.urlresolver/?mode=reset_cache)"/>',
         '<setting id="personal_nid" label="Your NID" type="text" visible="false"/>',
         '</category>',
         '<category label="Universal Resolvers">']

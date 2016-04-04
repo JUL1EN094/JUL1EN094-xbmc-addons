@@ -18,17 +18,17 @@
 import os
 from lib import log_utils  # @UnusedImport
 from lib.net import Net  # @UnusedImport
-import xbmcaddon
-import xbmc
+from lib import cache  # @UnusedImport
+from lib import kodi
 
-addon = xbmcaddon.Addon('script.module.urlresolver')
-addon_path = addon.getAddonInfo('path')
+addon_path = kodi.get_path()
 plugins_path = os.path.join(addon_path, 'lib', 'urlresolver', 'plugins')
-profile_path = xbmc.translatePath(addon.getAddonInfo('profile'))
+profile_path = kodi.translate_path(kodi.get_profile())
 settings_file = os.path.join(addon_path, 'resources', 'settings.xml')
-addon_version = addon.getAddonInfo('version')
-get_setting = addon.getSetting
-set_setting = addon.setSetting
+addon_version = kodi.get_version()
+get_setting = kodi.get_setting
+set_setting = kodi.set_setting
+open_settings = kodi.open_settings
 
 IE_USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko'
 FF_USER_AGENT = 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0'

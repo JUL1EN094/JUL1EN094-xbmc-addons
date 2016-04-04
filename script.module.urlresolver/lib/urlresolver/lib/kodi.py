@@ -54,6 +54,9 @@ def get_id():
 def get_name():
     return addon.getAddonInfo('name')
 
+def open_settings():
+    return addon.openSettings()
+
 def get_plugin_url(queries):
     try:
         query = urllib.urlencode(queries)

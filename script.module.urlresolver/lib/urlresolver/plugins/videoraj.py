@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
 """
-    Copyright (C) 2014  smokdpi
+    urlresolver Kodi Addon
+    Copyright (C) 2016 Gujal
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,45 +17,45 @@
 """
 
 import re
-from lib import jsunpack
+import urllib
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class AllVidResolver(UrlResolver):
-    name = "allvid"
-    domains = ["allvid.ch"]
-    pattern = '(?://|\.)(allvid\.ch)/(?:embed-)?([0-9a-zA-Z]+)'
+class VideoRajResolver(UrlResolver):
+    name = 'videoraj.to'
+    domains = ['videoraj.ec', 'videoraj.eu', 'videoraj.sx', 'videoraj.ch', 'videoraj.com', 'videoraj.to', 'videoraj.co']
+    pattern = '(?://|\.)(videoraj\.(?:ec|eu|sx|ch|com|co|to))/(?:v(?:ideo)*/|embed\.php\?id=)([0-9a-z]+)'
 
     def __init__(self):
         self.net = common.Net()
-        self.user_agent = common.IE_USER_AGENT
-        self.net.set_user_agent(self.user_agent)
-        self.headers = {'User-Agent': self.user_agent}
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        self.headers['Referer'] = web_url
-        html = self.net.http_GET(web_url, headers=self.headers).content
 
-        r = re.search('<iframe\s+src\s*=\s*"([^"]+)', html, re.DOTALL)
+        html = self.net.http_GET(web_url).content
 
+        r = re.search('key: "(.+?)"', html)
         if r:
-            web_url = r.group(1)
-            html = self.net.http_GET(web_url, headers=self.headers).content
+            r = r.group(1)
 
-        for match in re.finditer('(eval\(function.*?)</script>', html, re.DOTALL):
-            js_data = jsunpack.unpack(match.group(1))
-            js_data = js_data.replace('\\\'', '\'')
+            try: filekey = re.compile('\s+%s="(.+?)"' % r).findall(html)[-1]
+            except: filekey = r
 
-            r = re.search('sources\s*:\s*\[\s*\{\s*file\s*:\s*["\'](.+?)["\']', js_data)
+            player_url = 'http://www.videoraj.to/api/player.api.php?pass=&numOfErrors=0&cid=1&cid3=&key=%s&user=&cid2=&file=%s' % (filekey, media_id)
+
+            html = self.net.http_GET(player_url).content
+
+            r = re.search('url=(.+?)&', html)
 
             if r:
-                return r.group(1)
-        else:
-            raise ResolverError('File not found')
+                stream_url = r.group(1)
+            else:
+                raise ResolverError('File Not Found or removed')
+
+        return urllib.unquote(stream_url)
 
     def get_url(self, host, media_id):
-        return 'http://%s/embed-%s.html' % (host, media_id)
+        return 'http://www.videoraj.to/embed.php?id=%s' % media_id
 
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)

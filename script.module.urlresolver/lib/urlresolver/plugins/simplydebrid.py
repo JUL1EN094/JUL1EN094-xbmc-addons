@@ -72,19 +72,23 @@ class SimplyDebridResolver(UrlResolver):
     def get_host_and_id(self, url):
         return 'simply-debrid.com', url
 
+    @common.cache.cache_method(cache_limit=8)
     def get_all_hosters(self):
         try:
-            if not self.hosts:
-                query = urllib.urlencode({'action': 'filehosting'})
-                url = self.base_url + query
-                response = self.net.http_GET(url).content
-                self.hosts = [i['domain'] for i in json.loads(response)]
-            common.log_utils.log_debug('SD Hosts: %s' % (self.hosts))
+            query = urllib.urlencode({'action': 'filehosting'})
+            url = self.base_url + query
+            response = self.net.http_GET(url).content
+            hosts = [i['domain'] for i in json.loads(response)]
+            common.log_utils.log_debug('SD Hosts: %s' % (hosts))
         except Exception as e:
             common.log_utils.log_error('Error getting Simply-Debrid hosts: %s' % (e))
+            hosts = []
+        return hosts
 
     def valid_url(self, url, host):
-        self.get_all_hosters()
+        if not self.hosts:
+            self.hosts = self.get_all_hosters()
+            
         if url:
             try: host = urlparse.urlparse(url).hostname
             except: host = 'unknown'

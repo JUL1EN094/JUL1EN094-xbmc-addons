@@ -31,9 +31,9 @@ class AllDebridResolver(UrlResolver):
     profile_path = common.profile_path
     cookie_file = os.path.join(profile_path, '%s.cookies' % name)
     media_url = None
-    allHosters = None
 
     def __init__(self):
+        self.allHosters = None
         self.net = common.Net()
         try:
             os.makedirs(os.path.dirname(self.cookie_file))
@@ -88,15 +88,17 @@ class AllDebridResolver(UrlResolver):
     def get_host_and_id(self, url):
         return 'www.alldebrid.com', url
 
+    @common.cache.cache_method(cache_limit=8)
     def get_all_hosters(self):
-        if self.allHosters is None:
-            url = 'http://alldebrid.com/api.php?action=get_host'
-            html = self.net.http_GET(url).content
-            html = html.replace('"', '')
-            self.allHosters = html.split(',')
-        return self.allHosters
+        url = 'http://alldebrid.com/api.php?action=get_host'
+        html = self.net.http_GET(url).content
+        html = html.replace('"', '')
+        return html.split(',')
 
     def valid_url(self, url, host):
+        if self.allHosters is None:
+            self.allHosters = self.get_all_hosters()
+            
         common.log_utils.log_debug('in valid_url %s : %s' % (url, host))
         if url:
             match = re.search('//(.*?)/', url)
@@ -106,7 +108,7 @@ class AllDebridResolver(UrlResolver):
                 return False
 
         if host.startswith('www.'): host = host.replace('www.', '')
-        if host and any(host in item for item in self.get_all_hosters()):
+        if host and any(host in item for item in self.allHosters):
             return True
 
         return False

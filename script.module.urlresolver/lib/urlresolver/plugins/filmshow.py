@@ -21,11 +21,11 @@ from lib import jsunpack
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
+
 class FilmShowResolver(UrlResolver):
     name = "www.filmshowonline.net"
     domains = ["www.filmshowonline.net"]
     pattern = '(?://|\.)(filmshowonline\.net)/(?:videos/)?([0-9A-Za-z]+)'
-
 
     def __init__(self):
         self.net = common.Net()
@@ -36,7 +36,8 @@ class FilmShowResolver(UrlResolver):
         r = re.search('data-config="(.*?)"', html)
         if r:
             rid = re.search('com/(\d*)/.*/(\d*)/', r.group(1))
-            rurl = 'https://cdn.video.playwire.com/' + str(rid.group(1)) + '/videos/' + str(rid.group(2)) + '/video-sd.mp4?hosting_id=' + str(rid.group(1))
+            rurl = 'https://cdn.video.playwire.com/%s/videos/%s/video-sd.mp4?hosting_id=%s' % \
+                   (str(rid.group(1)), str(rid.group(2)), str(rid.group(1)))
             return rurl
 
         raise ResolverError('File Not Found or removed')

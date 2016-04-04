@@ -26,13 +26,14 @@ sys.path.insert(0, os.path.join(addon_path, 'lib'))
 
 from urlresolver.lib import kodi
 from urlresolver.lib import log_utils
+from urlresolver.lib import cache
 from urlresolver.lib.url_dispatcher import URL_Dispatcher
 url_dispatcher = URL_Dispatcher()
 
 def __enum(**enums):
     return type('Enum', (), enums)
 
-MODES = __enum(AUTH_RD='auth_rd', RESET_RD='reset_rd')
+MODES = __enum(AUTH_RD='auth_rd', RESET_RD='reset_rd', RESET_CACHE='reset_cache')
 
 @url_dispatcher.register(MODES.AUTH_RD)
 def auth_rd():
@@ -48,6 +49,13 @@ def reset_rd():
     rd = realdebrid.RealDebridResolver()
     rd.reset_authorization()
     kodi.notify(msg='Real-Debrid Authorization Reset', duration=5000)
+    
+@url_dispatcher.register(MODES.RESET_CACHE)
+def reset_cache():
+    if cache.reset_cache():
+        kodi.notify(msg='Cache Reset')
+    else:
+        kodi.notify(msg='Cache Reset Failed')
     
 def main(argv=None):
     if sys.argv: argv = sys.argv
