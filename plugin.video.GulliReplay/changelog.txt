@@ -1,4 +1,7 @@
-﻿3.0.0 (01-04-2016) par JUL1EN094
+﻿3.0.1 (19-04-2016) par JUL1EN094
++ Correction de bug lorsque plusieurs épisodes disponibles (Thank's rollet)
+
+3.0.0 (01-04-2016) par JUL1EN094
 + Refonte totale suite aux modification du site web
 
 2.0.1 (24-11-2014) par JUL1EN094

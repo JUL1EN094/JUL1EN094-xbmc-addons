@@ -108,26 +108,24 @@ def play_video(url):
 # ------------------------------------
 def get_video_url(video_id):
     plugin.log.debug('get_video_url(%s)'%(video_id))
-    url = URL_VIDEO %(video_id)
+    url  = URL_VIDEO %(video_id)
     html = requests.get(url).text.encode('utf-8')
     plugin.log.debug(url)
     plugin.log.debug(html)
-    
-    video_index_string=re.findall("""jwplayer\(idplayer\)\.playlistItem\((.+?)\)""", html)
-    plugin.log.debug('video_index:%s'%video_index_string[0])
+    video_index        = 0
+    video_index_string = re.findall("""jwplayer\(idplayer\)\.playlistItem\((.+?)\)""", html)
     if video_index_string :
-	    video_index=int(video_index_string[0])
-    else :
-	    return False
-	      
-    video_url = re.findall("""file: \"(.+?)\"""", html)
-    if video_url :
-	    if video_index<len(video_url) :
-	        return video_url[video_index]
-            else :
-                return False
-	      
-    plugin.log.debug('video_url -> %s'%(video_url[video_index]))
+        plugin.log.debug('video_index:%s'%video_index_string[0])
+        video_index = int(video_index_string[0])
+    video_urls = re.findall("""file: \"(.+?)\"""", html)
+    if video_urls :
+        if video_index<len(video_urls) :
+            video_url = video_urls[video_index]
+        else :
+            video_url = video_urls[0]
+    else:
+         video_url = False
+    plugin.log.debug('video_url -> %s'%video_url)
     return video_url            
 
 #------------------------------------    
