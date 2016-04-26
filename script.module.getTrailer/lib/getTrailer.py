@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v0.0.2 par JUL1EN094
+# v0.0.5 par JUL1EN094
 #---------------------------------------------------------------------
 '''
     getTrailer XBMC Module
@@ -53,16 +53,18 @@ class getTrailer():
         res_name.append('Rechercher manuellement')
         if manual:
             results = self.Search_YTonGoogle(search)
-            for res in results:
-                if 'www.youtube.com/watch' in res.url:
-                    res_name.append(res.title.encode('utf8'))
-                    res_url.append(res.url.encode('utf8'))
+            if results :
+                for res in results:
+                    if 'www.youtube.com/watch' in res.url.encode('utf8'):
+                        res_name.append(res.title.encode('utf8'))
+                        res_url.append(res.url.encode('utf8'))
         else:
             results = self.Search_YTonGoogle(search+' bande annonce')
-            for res in results:
-                if 'www.youtube.com/watch' in res.url:
-                    res_name.append(res.title.encode('utf8'))
-                    res_url.append(res.url.encode('utf8'))    
+            if results :
+                for res in results:
+                    if 'www.youtube.com/watch' in res.url.encode('utf8'):
+                        res_name.append(res.title.encode('utf8'))
+                        res_url.append(res.url.encode('utf8'))    
         dialog = xbmcgui.Dialog()
         ret = dialog.select('Recherche de bande annonce : '+search,res_name)    
         # Manual search for trailer

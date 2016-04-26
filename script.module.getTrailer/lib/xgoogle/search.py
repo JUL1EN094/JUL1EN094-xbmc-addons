@@ -50,9 +50,9 @@ class SearchResult:
         return 'Google Search Result: "%s"' % self.title
 
 class GoogleSearch(object):
-    SEARCH_URL_0 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&btnG=Google+Search"
+    SEARCH_URL_0 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s"#&btnG=Google+Search"
     NEXT_PAGE_0 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&start=%(start)d"
-    SEARCH_URL_1 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&num=%(num)d&btnG=Google+Search"
+    SEARCH_URL_1 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&num=%(num)d"#&btnG=Google+Search"
     NEXT_PAGE_1 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&num=%(num)d&start=%(start)d"
 
     def __init__(self, query, random_agent=False, debug=False, lang="en", tld="com", re_search_strings=None):
@@ -376,4 +376,3 @@ class BlogSearch(GoogleSearch):
 
         desc = ''.join(s for s in desc_strs if s)
         return self._html_unescape(desc)
-        
