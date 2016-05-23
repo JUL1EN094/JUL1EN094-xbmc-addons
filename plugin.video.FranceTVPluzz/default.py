@@ -277,7 +277,7 @@ class FranceTVPluzz:
         elif original_name == "guadeloupe":
             return "Guadeloupe 1ère"
         elif original_name == "reunion":
-            return "Reunion 1ère"
+            return "Réunion 1ère"
         elif original_name == "martinique":
             return "Martinique 1ère"
         elif original_name == "mayotte":
