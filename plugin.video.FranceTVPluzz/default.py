@@ -252,12 +252,46 @@ class FranceTVPluzz:
                 infos          = {}
                 infos['Title'] ='Direct :'+direct_name
                 infos['Plot']  = ''
-                self.addLink(direct_name,direct_video,5,direct_image,'',infos)
+                self.addLink(self.change_to_nicer_name(direct_name) ,direct_video,5,direct_image,'',infos)
             xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=__language__ ( 30000 ) )
             xbmcplugin.endOfDirectory(int(sys.argv[1]))
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED)
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_DATE )
+
+    def change_to_nicer_name(self, original_name):
+        if original_name == "france2":
+            return "France 2"
+        elif original_name == "france3":
+            return "France 3"
+        elif original_name == "france3":
+            return "France 3"
+        elif original_name == "france4":
+            return "France 4"
+        elif original_name == "france5":
+            return "France 5"
+        elif original_name == "franceo":
+            return "France Ô"
+        elif original_name == "guyane":
+            return "Guyane 1ère"
+        elif original_name == "guadeloupe":
+            return "Guadeloupe 1ère"
+        elif original_name == "reunion":
+            return "Reunion 1ère"
+        elif original_name == "martinique":
+            return "Martinique 1ère"
+        elif original_name == "mayotte":
+            return "Mayotte 1ère"
+        elif original_name == "nouvellecaledonie":
+            return "Nouvelle Calédonie 1ère"
+        elif original_name == "polynesie":
+            return "Ploynésie 1ère"
+        elif original_name == "saintpierreetmiquelon":
+            return "St-Pierre et Miquelon 1ère"
+        elif original_name == "wallisetfutuna":
+            return "Wallis et Futuna 1ère"
+        else:
+            return original_name
         
     def get_catalog_configuration(self,filename) :
         zf              = zipfile.ZipFile(CATALOG_PATH)
