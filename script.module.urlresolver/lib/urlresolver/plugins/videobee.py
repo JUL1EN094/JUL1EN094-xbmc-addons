@@ -32,7 +32,7 @@ class VideoBeeResolver(UrlResolver):
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
         html = self.net.http_GET(web_url).content
-        r = re.search('source src="(.*?)"', html)
+        r = re.search('sources:.*file:"(.*?)"', html)
         if r:
             return r.group(1)
 

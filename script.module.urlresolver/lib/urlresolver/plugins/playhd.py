@@ -1,6 +1,6 @@
 """
     urlresolver XBMC Addon
-    Copyright (C) 2011 t0mm0
+    Copyright (C) 2016 Gujal
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ class PlayHDResolver(UrlResolver):
         resp = self.net.http_GET(web_url)
         html = resp.content
         headers = dict(self.net.get_cookies())
-        encoded_headers = urllib.urlencode({'Cookie': headers['www.playhd.video']['/']['AVS'],
+        encoded_headers = urllib.urlencode({'Cookie': headers['www.playhd.video']['/']['AVS'], 
                                             'Referer': 'http://www.playhd.video/embed.php'})
         r = re.search('"content_video".*\n.*?src="(.*?)"', html)
         if r:

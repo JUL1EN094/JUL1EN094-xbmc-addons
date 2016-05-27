@@ -1,4 +1,7 @@
 """
+    OVERALL CREDIT TO:
+        t0mm0, Eldorado, VOINAGE, BSTRDMKR, tknorris, smokdpi, TheHighway
+
     urlresolver XBMC Addon
     Copyright (C) 2011 t0mm0
 
@@ -17,48 +20,47 @@
 """
 
 import re
-import json
+import urllib
+import HTMLParser
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class VimeoResolver(UrlResolver):
-    name = "vimeo"
-    domains = ["vimeo.com"]
-    pattern = '(?://|\.)(vimeo\.com)/(?:video/)?([0-9a-zA-Z]+)'
+class RuTubeResolver(UrlResolver):
+    name = "rutube.ru"
+    domains = ['rutube.ru']
+    pattern = '(?://|\.)(rutube\.ru)/play/embed/(\d*)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'Referer': 'https://vimeo.com/',
-                   'Origin': 'https://vimeo.com'}
-        data = self.net.http_GET(web_url,headers).content
-        data = json.loads(data)
 
-        vids = data['request']['files']['progressive']
-        vids = [i['url'] for i in vids if 'url' in i]
+        response = self.net.http_GET(web_url)
 
-        if vids:
-            vUrlsCount = len(vids)
+        html = response.content
 
-            if (vUrlsCount > 0):
-                q = self.get_setting('quality')
-                # Lowest Quality
-                i = 0
+        if html:
+            m3u8 = re.compile('video_balancer&quot;:\s*{.*?&quot;m3u8&quot;:\s*&quot;(.*?)&quot;}').findall(html)[0]
+            m3u8 = HTMLParser.HTMLParser().unescape(m3u8)
+            response = self.net.http_GET(m3u8)
+            m3u8 = response.content
+            
+            sources = re.compile('\n(.+?i=(.+?))\n').findall(m3u8)
+            sources = sources[::-1]
+            sources = [sublist[::-1] for sublist in sources]
+            
+            source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
+            source = source.encode('utf-8')
 
-                if q == '1':
-                    # Medium Quality
-                    i = (int)(vUrlsCount / 2)
-                elif q == '2':
-                    # Highest Quality
-                    i = vUrlsCount - 1
+            if source:
+                return source
 
-                vUrl = vids[i]
-                return vUrl
+        raise ResolverError('No playable video found.')
 
     def get_url(self, host, media_id):
-        return 'https://player.vimeo.com/video/%s/config' % media_id
+        return 'http://rutube.ru/play/embed/%s' % media_id
 
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)
@@ -69,9 +71,9 @@ class VimeoResolver(UrlResolver):
 
     def valid_url(self, url, host):
         return re.search(self.pattern, url) or self.name in host
-
+        
     @classmethod
     def get_settings_xml(cls):
         xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting label="Video Quality" id="%s_quality" type="enum" values="High|Medium|Low" default="0" />' % (cls.__name__))
+        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
         return xml

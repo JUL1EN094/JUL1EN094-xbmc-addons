@@ -15,15 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-# this is to add urlresolver's own lib to sys path because (sometimes) kodi
-# crashes on update when an addon is dependent on itself
-import os
 import sys
-import xbmcaddon
-addon_path = xbmcaddon.Addon().getAddonInfo('path')
-sys.path.insert(0, os.path.join(addon_path, 'lib'))
-
 from urlresolver.lib import kodi
 from urlresolver.lib import log_utils
 from urlresolver.lib import cache
@@ -45,6 +37,7 @@ def auth_rd():
 @url_dispatcher.register(MODES.RESET_RD)
 def reset_rd():
     kodi.close_all()
+    kodi.sleep(500)  # sleep or reset won't work for some reason
     from urlresolver.plugins import realdebrid
     rd = realdebrid.RealDebridResolver()
     rd.reset_authorization()

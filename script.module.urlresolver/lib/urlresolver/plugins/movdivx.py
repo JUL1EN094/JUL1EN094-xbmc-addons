@@ -18,6 +18,7 @@
 
 import re
 from lib import jsunpack
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -32,13 +33,8 @@ class MovDivxResolver(UrlResolver):
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
         html = self.net.http_GET(web_url).content
-
-        data = {}
-        for match in re.finditer('type="hidden"\s*name="([^"]+)"\s*value="([^"]+)', html):
-            key, value = match.groups()
-            data[key] = value
+        data = helpers.get_hidden(html)
         data['method_free'] = 'Continue to Stream >>'
-
         html = self.net.http_POST(web_url, data).content
 
         # get url from packed javascript

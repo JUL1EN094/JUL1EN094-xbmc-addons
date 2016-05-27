@@ -17,6 +17,7 @@
 """
 
 import re
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -34,10 +35,7 @@ class MovpodResolver(UrlResolver):
         html = resp.content
         post_url = resp.get_url()
 
-        form_values = {}
-        for i in re.finditer('<input type="hidden" name="(.+?)" value="(.+?)">', html):
-            form_values[i.group(1)] = i.group(2)
-
+        form_values = helpers.get_hidden(html)
         html = self.net.http_POST(post_url, form_data=form_values).content
         r = re.search('file: "http(.+?)"', html)
         if r:

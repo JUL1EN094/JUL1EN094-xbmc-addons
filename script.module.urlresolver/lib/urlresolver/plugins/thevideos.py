@@ -15,16 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import re
-from lib import aa_decoder
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class VideowoodResolver(UrlResolver):
-    name = "videowood"
-    domains = ['videowood.tv']
-    pattern = '(?://|\.)(videowood\.tv)/(?:embed/|video/)([0-9a-z]+)'
+class TheVideosResolver(UrlResolver):
+    name = "thevideos"
+    domains = ['thevideos.tv']
+    pattern = '(?://|\.)(thevideos\.tv)/(?:embed-)?([0-9A-Za-z]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -33,23 +32,20 @@ class VideowoodResolver(UrlResolver):
         web_url = self.get_url(host, media_id)
         headers = {'Referer': web_url, 'User-Agent': common.FF_USER_AGENT}
         html = self.net.http_GET(web_url, headers=headers).content
-        try: html = html.encode('utf-8')
-        except: pass
-        if "This video doesn't exist." in html:
-            raise ResolverError('The requested video was not found.')
-        
-        match = re.search("split\('\|'\)\)\)\s*(.*?)</script>", html)
+        sources = []
+        match = re.search('sources\s*:\s*\[(.*?)\]', html, re.DOTALL)
         if match:
-            aa_text = aa_decoder.AADecoder(match.group(1)).decode()
-            match = re.search("'([^']+)", aa_text)
-            if match:
-                stream_url = match.group(1)
-                return stream_url + '|User-Agent=%s' % (common.FF_USER_AGENT)
+            for match in re.finditer('''['"]?file['"]?\s*:\s*['"]([^'"]+)['"][^}]*['"]?label['"]?\s*:\s*['"]([^'"]*)''', match.group(1), re.DOTALL):
+                stream_url, label = match.groups()
+                sources.append((label, stream_url))
         
-        raise ResolverError('Video Link Not Found')
+        try: sources.sort(key=lambda x: int(x[0][:-1]), reverse=True)
+        except: pass
+        source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
+        return source + '|User-Agent=%s' % (common.FF_USER_AGENT)
 
     def get_url(self, host, media_id):
-        return 'http://videowood.tv/embed/%s' % media_id
+        return 'http://thevideos.tv/embed-%s.html' % media_id
 
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)
@@ -60,3 +56,9 @@ class VideowoodResolver(UrlResolver):
 
     def valid_url(self, url, host):
         return re.search(self.pattern, url) or self.name in host
+
+    @classmethod
+    def get_settings_xml(cls):
+        xml = super(cls, cls).get_settings_xml()
+        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
+        return xml

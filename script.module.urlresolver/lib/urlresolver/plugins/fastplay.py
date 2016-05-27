@@ -1,6 +1,6 @@
 '''
-Allmyvideos urlresolver plugin
-Copyright (C) 2013 Vinnydude
+    urlresolver XBMC Addon
+    Copyright (C) 2016 Gujal
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,43 +17,44 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import re
-import urllib
-import urlparse
-from lib import helpers
+from lib import jsunpack
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class VidSpotResolver(UrlResolver):
-    name = "vidspot"
-    domains = ["vidspot.net"]
-    pattern = '(?://|\.)(vidspot\.net)/(?:embed-)?([0-9a-zA-Z]+)'
+
+class FastplayResolver(UrlResolver):
+    name = 'fastplay.sx'
+    domains = ['fastplay.sx']
+    pattern = '(?://|\.)(fastplay\.sx)/(?:flash-|embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
-        url = self.get_url(host, media_id)
-        html = self.net.http_GET(url).content
+        web_url = self.get_url(host, media_id)
+        html = self.net.http_GET(web_url).content
 
-        data = helpers.get_hidden(html)
-        html = self.net.http_POST(url, data).content
-        r = re.search('"sources"\s*:\s*\[(.*?)\]', html, re.DOTALL)
-        if r:
-            fragment = r.group(1)
-            stream_url = None
-            for match in re.finditer('"file"\s*:\s*"([^"]+)', fragment):
-                stream_url = match.group(1)
+        if '404 Not Found' in html:
+            raise ResolverError('File Removed')
 
-            if stream_url:
-                stream_url = '%s?%s&direct=false' % (stream_url.split('?')[0], urlparse.urlparse(stream_url).query)
-                return stream_url + '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
-            else:
-                raise ResolverError('could not find file')
+        if 'Video is processing' in html:
+            raise ResolverError('File still being processed')
+
+        packed = re.search('(eval\(function.*?)\s*</script>', html, re.DOTALL)
+        if packed:
+            js = jsunpack.unpack(packed.group(1))
         else:
-            raise ResolverError('could not find sources')
+            js = html
+
+        link = re.search('sources[\d\D]+(http.*?)",label', js)
+        if link:
+            common.log_utils.log_debug('fastplay.sx Link Found: %s' % link.group(1))
+            return link.group(1)
+
+        raise ResolverError('Unable to find fastplay.sx video')
 
     def get_url(self, host, media_id):
-        return 'http://vidspot.net/%s' % media_id
+        return 'http://%s/embed-%s.html' % (host, media_id)
 
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)

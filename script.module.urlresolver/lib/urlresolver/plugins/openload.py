@@ -51,8 +51,8 @@ class OpenLoadResolver(UrlResolver):
                     return baseN(int(ival), int(eval(b)))
                 elif 'myfunc' in s:
                     b, ival = s.split('myfunc(')[1].split(',')
-                    ival = ival.replace(')', '').replace('(', '')
-                    b = b.replace(')', '').replace('(', '')
+                    ival = ival.replace(')', '').replace('(', '').replace(';', '')
+                    b = b.replace(')', '').replace('(', '').replace(';', '')
                     b = eval(addfactor.replace('a', b))
                     return baseN(int(ival), int(b))
                 else:
@@ -66,14 +66,18 @@ class OpenLoadResolver(UrlResolver):
             web_url = self.get_url(host, media_id)
             headers = {'User-Agent': common.FF_USER_AGENT}
             html = self.net.http_GET(web_url, headers=headers).content.encode('utf-8')
-            aaencoded = re.findall('id=\"olvideo\".*\n.*?text/javascript\">(.*)</script>', html)[0]
+            aaencoded = re.findall('id="olvideo".*?text/javascript\">(.*?)</script>', html, re.DOTALL)[0]
             dtext = AADecoder(aaencoded).decode()
-            dtext = re.findall('window.vs=(.*?);', dtext)[0]
-            dtext = conv(dtext)
+            #print dtext
+            dtext1 = re.findall('window\..+?=(.*?);', dtext)
+            if len(dtext1)==0:
+                dtext1=re.findall('.*attr\(\"href\",\((.*)',dtext)
+            dtext = conv(dtext1[0])
             return dtext.replace("https", "http") + '|User-Agent=%s' % common.FF_USER_AGENT
 
         except Exception as e:
             common.log_utils.log_debug('Exception during openload resolve parse: %s' % e)
+            raise
 
         # Commented out because, by default, all openload videos no longer work with their API so it's a waste
         #         try:

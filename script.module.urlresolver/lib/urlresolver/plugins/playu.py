@@ -1,6 +1,6 @@
 """
-    Kodi urlresolver plugin
-    Copyright (C) 2014  smokdpi
+    urlresolver Kodi Addon
+    Copyright (C) 2016 Gujal
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,33 +16,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 import re
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class Mp4EdgeResolver(UrlResolver):
-    name = "mp4edge.com"
-    domains = ["mp4edge.com"]
-    pattern = '(?://|\.)(mp4edge\.com)/stream/([0-9a-zA-Z]+)'
+class PlayUResolver(UrlResolver):
+    name = "playu"
+    domains = ["playu.net", "playu.me"]
+    pattern = '(?://|\.)(playu\.(?:net|me))/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
-        self.user_agent = common.IE_USER_AGENT
-        self.net.set_user_agent(self.user_agent)
-        self.headers = {'User-Agent': self.user_agent}
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        self.headers['Referer'] = web_url
-        html = self.net.http_GET(web_url, headers=self.headers).content
-        r = re.search('file\s*:\s*["\'](.+?)["\']', html)
+        link = self.net.http_GET(web_url).content
+        if 'was deleted' in link :
+            raise ResolverError('File Removed')
+            
+        r = re.search('file\s*:\s*"(http[^"]+)', link)
         if r:
             return r.group(1)
-        else:
-            raise ResolverError('File not found')
+        
+        raise ResolverError('Unable to find playu.net video')
 
     def get_url(self, host, media_id):
-        return 'http://%s/stream/%s' % (host, media_id)
+        return 'http://playu.me/embed-%s.html' % media_id
 
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url)

@@ -17,11 +17,10 @@
 """
 
 import os
-import sys
 import re
 import urllib
 import json
-import xbmcgui
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -33,54 +32,35 @@ class AllDebridResolver(UrlResolver):
     media_url = None
 
     def __init__(self):
-        self.allHosters = None
+        self.hosts = None
         self.net = common.Net()
         try:
             os.makedirs(os.path.dirname(self.cookie_file))
         except OSError:
             pass
 
-    # UrlResolver methods
     def get_media_url(self, host, media_id):
         common.log_utils.log('in get_media_url %s : %s' % (host, media_id))
+        url = 'http://www.alldebrid.com/service.php?link=%s' % (media_id)
+        html = self.net.http_GET(url).content
+        if html == 'login':
+            raise ResolverError('alldebrid: Authentication Error')
+        
         try:
-            url = 'http://www.alldebrid.com/service.php?link=%s' % media_id
-            source = self.net.http_GET(url).content
-            source = source.decode('utf-8')
-        except Exception, e:
-            raise ResolverError('alldebrid : error contacting the site')
-
-        if re.search('login', source):
-            raise ResolverError('alldebrid : Your account may have expired')
-        if re.search('Hoster unsupported or under maintenance', source):
-            raise ResolverError('alldebrid : unsupported hoster')
-        # Go
-        finallink = ''
-        # try json return
-        try:
-            link = json.loads(source)
-            streaming = link['streaming']
-            line = []
-            for item in streaming:
-                line.append(item.encode('utf-8'))
-            result = xbmcgui.Dialog().select('Choose the link', line)
-            if result != -1:
-                finallink = streaming[str(line[result])].encode('utf-8')
-        # classic method
+            js_data = json.loads(html)
+            if 'error' in js_data and js_data['error']:
+                raise ResolverError('alldebrid: %s' % (js_data['error']))
+            
+            if 'streaming' in js_data:
+                return helpers.pick_source(js_data['streaming'].items())
+        except ResolverError:
+            raise
         except:
-            link = re.compile("href='(.+?)'").findall(source)
-            if len(link) != 0:
-                finallink = link[0].encode('utf-8')
-        # end
-        common.log_utils.log('finallink is %s' % finallink)
-        if finallink != '':
-            self.media_url = finallink
-            return finallink
-        # false/errors
-        elif 'Invalid link' in source:
-            raise ResolverError('Invalid link')
-        else:
-            raise ResolverError('No generated_link')
+            match = re.search('''<a\s+class=["']link_dl['"]\s+href=["']([^'"]+)''', html)
+            if match:
+                return match.group(1)
+        
+        raise ResolverError('alldebrid: no stream returned')
 
     def get_url(self, host, media_id):
         return media_id
@@ -96,8 +76,8 @@ class AllDebridResolver(UrlResolver):
         return html.split(',')
 
     def valid_url(self, url, host):
-        if self.allHosters is None:
-            self.allHosters = self.get_all_hosters()
+        if self.hosts is None:
+            self.hosts = self.get_all_hosters()
             
         common.log_utils.log_debug('in valid_url %s : %s' % (url, host))
         if url:
@@ -108,44 +88,23 @@ class AllDebridResolver(UrlResolver):
                 return False
 
         if host.startswith('www.'): host = host.replace('www.', '')
-        if host and any(host in item for item in self.allHosters):
+        if host and any(host in item for item in self.hosts):
             return True
 
         return False
 
-    def checkLogin(self):
-        url = 'http://alldebrid.com/service.php'
-        if not os.path.exists(self.cookie_file):
-            return True
-        self.net.set_cookies(self.cookie_file)
-        source = self.net.http_GET(url).content
-        common.log_utils.log(source)
-        if re.search('login', source):
-            common.log_utils.log('checkLogin returning False')
-            return False
-        else:
-            common.log_utils.log('checkLogin returning True')
-            return True
-
-    # SiteAuth methods
     def login(self):
-        if self.checkLogin():
-            try:
-                common.log_utils.log('Need to login since session is invalid')
-                login_data = urllib.urlencode({'action': 'login', 'login_login': self.get_setting('username'), 'login_password': self.get_setting('password')})
-                url = 'http://alldebrid.com/register/?' + login_data
-                source = self.net.http_GET(url).content
-                if re.search('Control panel', source):
-                    self.net.save_cookies(self.cookie_file)
-                    self.net.set_cookies(self.cookie_file)
-                    return True
-            except:
-                common.log_utils.log('error with http_GET')
-                raise ResolverError('Unexpected Error during login')
-            else:
-                return False
-        else:
+        username = self.get_setting('username')
+        password = self.get_setting('password')
+        login_data = urllib.urlencode({'action': 'login', 'login_login': username, 'login_password': password})
+        url = 'http://alldebrid.com/register/?%s' % (login_data)
+        html = self.net.http_GET(url).content
+        if '>Control panel<' in html:
+            self.net.save_cookies(self.cookie_file)
+            self.net.set_cookies(self.cookie_file)
             return True
+        else:
+            return False
 
     @classmethod
     def get_settings_xml(cls):
