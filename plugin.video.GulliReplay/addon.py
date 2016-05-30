@@ -109,7 +109,7 @@ def play_video(url):
 def get_video_url(video_id):
     plugin.log.debug('get_video_url(%s)'%(video_id))
     url  = URL_VIDEO %(video_id)
-    html = requests.get(url).text.encode('utf-8')
+    html = requests.get(url).text.encode('utf-8').replace('\n','')
     plugin.log.debug(url)
     plugin.log.debug(html)
     video_index        = 0
@@ -117,14 +117,17 @@ def get_video_url(video_id):
     if video_index_string :
         plugin.log.debug('video_index:%s'%video_index_string[0])
         video_index = int(video_index_string[0])
-    video_urls = re.findall("""file: \"(.+?)\"""", html)
-    if video_urls :
-        if video_index<len(video_urls) :
-            video_url = video_urls[video_index]
+    sources_s = re.findall("""sources\:.*?\[(.*?)\]""",html)
+    if sources_s :
+        if video_index<len(sources_s) :
+            sources = sources_s[video_index]
         else :
+            sources = sources_s[0]
+        video_urls = re.findall('file:.*\"(.*?)\"', sources)
+        if video_urls :
             video_url = video_urls[0]
     else:
-         video_url = False
+        video_url = False
     plugin.log.debug('video_url -> %s'%video_url)
     return video_url            
 
