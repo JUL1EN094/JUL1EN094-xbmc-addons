@@ -1,3 +1,8 @@
+﻿1.1.2 (31-05-2016) par JUL1EN094
++ Modification du fanart (thank's sy6sy2)
++ Modification des icônes (thank's sy6sy2)
++ Optimisation des labels (thank's sy6sy2)
+
 1.1.0 (20-06-2014) par JUL1EN094
 + Nettoyage du code
 

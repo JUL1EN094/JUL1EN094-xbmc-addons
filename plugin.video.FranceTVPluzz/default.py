@@ -20,7 +20,7 @@ webSession = requests.Session()
 
 __addonID__         = "plugin.video.FranceTVPluzz"
 __author__          = "JUL1EN094"
-__date__            = "04-03-2016"
+__date__            = "31-05-2016"
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __version__         = __addon__.getAddonInfo("version")
 __language__        = __addon__.getLocalizedString
@@ -172,7 +172,7 @@ class FranceTVPluzz:
                             print 'Programme video URL  : '+video_url
                             print 'Programme image_url  : '+video_image
                             print '------------------------------------------'
-                        self.addDir(video_name,video_url,4,video_image,video_image,video_infos,cat)
+                        self.addDir(video_name,video_url,4,video_image,FANART_PATH,video_infos,cat)
                         prog_list.append(video_name)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=__language__ ( 30000 ) )
@@ -223,7 +223,7 @@ class FranceTVPluzz:
                             print 'Programme video URL  : '+video_url
                             print 'Programme image_url  : '+video_image
                             print '------------------------------------------'
-                        self.addLink(video_name,video_url,5,video_image,video_image,video_infos)
+                        self.addLink(video_name,video_url,5,video_image,FANART_PATH,video_infos)
                         print "ADDLINK"
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=__language__ ( 30000 ) )
@@ -252,73 +252,13 @@ class FranceTVPluzz:
                 infos          = {}
                 infos['Title'] ='Direct :'+direct_name
                 infos['Plot']  = ''
-                self.addLink(self.change_to_nicer_name(direct_name) ,direct_video,5,direct_image,'',infos)
+                self.addLink(self.change_to_nicer_name(direct_name) ,direct_video,5,direct_image,FANART_PATH,infos)
             xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=__language__ ( 30000 ) )
             xbmcplugin.endOfDirectory(int(sys.argv[1]))
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED)
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_DATE )
 
-    def change_to_nicer_name(self, original_name):
-        if original_name == "france2":
-            return "France 2"
-        elif original_name == "france3":
-            return "France 3"
-        elif original_name == "france3":
-            return "France 3"
-        elif original_name == "france4":
-            return "France 4"
-        elif original_name == "france5":
-            return "France 5"
-        elif original_name == "franceo":
-            return "France Ô"
-        elif original_name == "guyane":
-            return "Guyane 1ère"
-        elif original_name == "guadeloupe":
-            return "Guadeloupe 1ère"
-        elif original_name == "reunion":
-            return "Réunion 1ère"
-        elif original_name == "martinique":
-            return "Martinique 1ère"
-        elif original_name == "mayotte":
-            return "Mayotte 1ère"
-        elif original_name == "nouvellecaledonie":
-            return "Nouvelle Calédonie 1ère"
-        elif original_name == "polynesie":
-            return "Ploynésie 1ère"
-        elif original_name == "saintpierreetmiquelon":
-            return "St-Pierre et Miquelon 1ère"
-        elif original_name == "wallisetfutuna":
-            return "Wallis et Futuna 1ère"
-        else:
-            return original_name
-        
-    def get_catalog_configuration(self,filename) :
-        zf              = zipfile.ZipFile(CATALOG_PATH)
-        data            = zf.read(filename)
-        catalog         = ast.literal_eval(data)
-        configuration   = catalog['configuration']
-        url_base_videos = configuration['url_base_videos']
-        url_base_images = configuration['url_base_images']
-        return url_base_videos, url_base_images        
-    
-    def download_catalog(self):
-        if os.path.exists(CATALOG_PATH):
-            os.remove(CATALOG_PATH)
-        r = webSession.get(jsonmobilecatalog,stream=True)
-        with open(CATALOG_PATH, 'wb') as fd:
-            for chunk in r.iter_content(8):
-                fd.write(chunk)      
-    
-    def set_debug_mode(self):
-        self.debug_mode=__addon__.getSetting('debug')
-        if self.debug_mode== 'true':
-            self.debug_mode = True
-        else:
-            self.debug_mode = False
-        print "FranceTV Pluzz:self.debug_mode Mode:"
-        print self.debug_mode        
-        
     def addLink(self,name,url,mode,iconimage,fanart,infos={}):
         u  =sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)
         ok =True
@@ -343,23 +283,26 @@ class FranceTVPluzz:
         ok =xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
         return ok
     
-    def get_params(self):
-        param      =[]
-        paramstring=sys.argv[2]
-        if len(paramstring)>=2:
-            params         =sys.argv[2]
-            cleanedparams  =params.replace('?','')
-            if (params[len(params)-1]=='/'):
-                params     =params[0:len(params)-2]
-            pairsofparams  =cleanedparams.split('&')
-            param={}
-            for i in range(len(pairsofparams)):
-                splitparams={}
-                splitparams=pairsofparams[i].split('=')
-                if (len(splitparams))==2:
-                    param[splitparams[0]]=splitparams[1]
-        return param
-
+    def change_to_nicer_name(self, original_name):
+        Dic = {"france2"              :"France 2",
+               "france3"              :"France 3",
+               "france4"              :"France 4",
+               "france5"              :"France 5",
+               "franceo"              :"France Ô",
+               "guadeloupe"           :"Guadeloupe 1ère",
+               "guyane"               :"Guyane 1ère",
+               "martinique"           :"Martinique 1ère",
+               "mayotte"              :"Mayotte 1ère",
+               "nouvellecaledonie"    :"Nouvelle Calédonie 1ère",
+               "polynesie"            :"Polynésie 1ère",
+               "reunion"              :"Réunion 1ère",
+               "saintpierreetmiquelon":"St-Pierre et Miquelon 1ère",
+               "wallisetfutuna"       :"Wallis et Futuna 1ère",
+               }
+        for key,value in Dic.iteritems():
+            if original_name==key : return value
+        return original_name
+        
     def checkfolder(self,folder):
         try:
             if not os.path.exists(folder):
@@ -385,6 +328,50 @@ class FranceTVPluzz:
             print_exc()
             return False  
 
+    def download_catalog(self):
+        if os.path.exists(CATALOG_PATH):
+            os.remove(CATALOG_PATH)
+        r = webSession.get(jsonmobilecatalog,stream=True)
+        with open(CATALOG_PATH, 'wb') as fd:
+            for chunk in r.iter_content(8):
+                fd.write(chunk)      
+    
+    def get_catalog_configuration(self,filename) :
+        zf              = zipfile.ZipFile(CATALOG_PATH)
+        data            = zf.read(filename)
+        catalog         = ast.literal_eval(data)
+        configuration   = catalog['configuration']
+        url_base_videos = configuration['url_base_videos']
+        url_base_images = configuration['url_base_images']
+        return url_base_videos, url_base_images        
+    
+    def get_params(self):
+        param      =[]
+        paramstring=sys.argv[2]
+        if len(paramstring)>=2:
+            params         =sys.argv[2]
+            cleanedparams  =params.replace('?','')
+            if (params[len(params)-1]=='/'):
+                params     =params[0:len(params)-2]
+            pairsofparams  =cleanedparams.split('&')
+            param={}
+            for i in range(len(pairsofparams)):
+                splitparams={}
+                splitparams=pairsofparams[i].split('=')
+                if (len(splitparams))==2:
+                    param[splitparams[0]]=splitparams[1]
+        return param
+
+    def set_debug_mode(self):
+        self.debug_mode=__addon__.getSetting('debug')
+        if self.debug_mode== 'true':
+            self.debug_mode = True
+        else:
+            self.debug_mode = False
+        print "FranceTV Pluzz:self.debug_mode Mode:"
+        print self.debug_mode        
+        
+    
 #######################################################################################################################    
 # BEGIN !
 #######################################################################################################################
