@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import urllib
+import urllib, urllib2
 import datetime
 import random
 import re
@@ -256,6 +256,8 @@ class TheTVDB(object):
         get_args = {"seriesname": show_name}
         if language is not None:
             get_args['language'] = language
+        else:
+            get_args['language'] = self.language
         get_args = urllib.urlencode(get_args, doseq=True)
         url = "%s/GetSeries.php?%s" % (self.base_url, get_args)
         if want_raw:
@@ -298,13 +300,13 @@ class TheTVDB(object):
         """Get the episode object matching this episode_id."""
         #url = "%s/series/%s/default/%s/%s" % (self.base_key_url, show_id, season_num, ep_num)
         '''http://www.thetvdb.com/api/GetEpisodeByAirDate.php?apikey=1D62F2F90030C444&seriesid=71256&airdate=2010-03-29'''
-        url = "%s/GetEpisodeByAirDate.php?apikey=1D62F2F90030C444&seriesid=%s&airdate=%s" % (self.base_url, show_id, aired)
+        url = "%s/GetEpisodeByAirDate.php?apikey=%s&seriesid=%s&airdate=%s&language=%s" % (self.base_url, self.api_key, show_id, aired, self.language)
         return self._get_episode_by_url(url)
 
 
     def get_episode_by_season_ep(self, show_id, season_num, ep_num):
         """Get the episode object matching this episode_id."""
-        url = "%s/series/%s/default/%s/%s" % (self.base_xml_url, show_id, season_num, ep_num)
+        url = "%s/series/%s/default/%s/%s/%s.xml" % (self.base_xml_url, show_id, season_num, ep_num, self.language)
         return self._get_episode_by_url(url)
 
 
@@ -371,7 +373,7 @@ class TheTVDB(object):
 
 
     def _get_xml_data(self, url, filter_func = None, zip_name = None, callback = None):
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         if zip_name:
             zipfile = ZipFile(StringIO(data.read()))
             data = zipfile.open(zip_name)
