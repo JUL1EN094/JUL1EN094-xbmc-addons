@@ -93,7 +93,7 @@ class MetaData:
     '''  
 
      
-    def __init__(self, prepack_images=False, preparezip=False, tmdb_api_key='f7f51775877e0bb6703520952b3c7840'):
+    def __init__(self, prepack_images=False, preparezip=False, tmdb_api_key='af95ef8a4fe1e697f86b8c194f2e5e11'):
 
         #Check if a path has been set in the addon settings
         settings_path = common.addon.get_setting('meta_folder_location')
@@ -1386,8 +1386,7 @@ class MetaData:
         meta['tagline'] = md.get('tagline', '')
         meta['rating'] = float(md.get('rating', 0))
         meta['votes'] = str(md.get('votes', ''))
-        try: meta['duration'] = int(str(md.get('runtime', 0))) * 60
-        except: meta['duration'] = 0
+        meta['duration'] = int(str(md.get('runtime', 0))) * 60
         meta['plot'] = md.get('overview', '')
         meta['mpaa'] = md.get('certification', '')       
         meta['premiered'] = md.get('released', '')
@@ -1553,8 +1552,7 @@ class MetaData:
                 meta['title'] = name
                 if str(show.rating) != '' and show.rating != None:
                     meta['rating'] = float(show.rating)
-                try: meta['duration'] = int(show.runtime) * 60
-                except: meta['duration'] = 0
+                meta['duration'] = int(show.runtime) * 60
                 meta['plot'] = show.overview
                 meta['mpaa'] = show.content_rating
                 meta['premiered'] = str(show.first_aired)
@@ -1590,8 +1588,7 @@ class MetaData:
                         if imdb_meta.has_key('rating'):
                             meta['rating'] = float(imdb_meta['rating'])
                         if imdb_meta.has_key('runtime'):
-                            try: meta['duration'] = int(imdb_meta['runtime']) * 60
-                            except: meta['duration'] = 0
+                            meta['duration'] = int(imdb_meta['runtime']) * 60
                         if imdb_meta.has_key('cast'):
                             meta['cast'] = imdb_meta['cast']
                         if imdb_meta.has_key('cover_url'):
@@ -2091,7 +2088,6 @@ class MetaData:
                     common.addon.log('Episode matched row found, deleting table entry', 0)
                     common.addon.log('SQL Delete: %s' % sql_delete, 0)
                     self.dbcur.execute(sql_delete) 
-                    self.dbcon.commit()
         except Exception, e:
             common.addon.log('************* Error attempting to delete from cache table: %s ' % e, 4)
             common.addon.log('Meta data: %' % meta, 4)
