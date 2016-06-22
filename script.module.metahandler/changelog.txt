@@ -1,6 +1,3 @@
-[B]Version 2.9.0.001[/B]
-- Fix tmdb APIKey -> take KODI api key
-
 [B]Version 2.9.0[/B]
 - Fix cache work path bug
 - Change log msgs to minimize what is printed out when not in debug mode

@@ -93,7 +93,7 @@ class MetaData:
     '''  
 
      
-    def __init__(self, prepack_images=False, preparezip=False, tmdb_api_key='57983e31fb435df4df77afb854740ea9'):
+    def __init__(self, prepack_images=False, preparezip=False, tmdb_api_key='f7f51775877e0bb6703520952b3c7840'):
 
         #Check if a path has been set in the addon settings
         settings_path = common.addon.get_setting('meta_folder_location')
