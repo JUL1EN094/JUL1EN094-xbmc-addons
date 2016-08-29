@@ -41,14 +41,14 @@ def get_media_url(url):
         hiddenurl = HTMLParser().unescape(re.search('hiddenurl">(.+?)<\/span>', html, re.IGNORECASE).group(1))
     
         s = []
-        for i in hiddenurl:
+        for idx, i in enumerate(hiddenurl):
             j = ord(i)
             if (j >= 33 & j <= 126):
-                s.append(chr(33 + ((j + 14) % 94)))
-            else:
-                s.append(chr(j))
+                j = 33 + ((j + 14) % 94)
+            if idx == len(hiddenurl) - 1:
+                j += 1
+            s.append(chr(j))
         res = ''.join(s)
-        res = res[0:-1] + chr(ord(res[-1]) + 2)
         videoUrl = 'https://openload.co/stream/{0}?mime=true'.format(res)
         dtext = videoUrl.replace('https', 'http')
         headers = {'User-Agent': HTTP_HEADER['User-Agent']}
