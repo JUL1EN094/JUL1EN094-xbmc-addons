@@ -37,17 +37,18 @@ class PlayWireResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-
         response = self.net.http_GET(web_url)
-
         html = response.content
 
         if html:
             try:
                 if 'config.playwire.com' in host:
                     response = json.loads(html)['content']['media']['f4m']
+                elif not 'v2' in host:
+                    response = re.findall(r'<src>(.+?)</src>', html)[0]
                 else:
-                    response = re.findall(r'<src>(.*)</src>', html)[0]
+                    response = json.loads(html)['src']
+                    return response    
                     
                 response = self.net.http_GET(response).content
                 baseURL = re.findall(r'<baseURL>\s*(.+)\s*</baseURL>', response)[0]

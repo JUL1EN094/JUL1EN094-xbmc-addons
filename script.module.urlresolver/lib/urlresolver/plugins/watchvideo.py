@@ -23,7 +23,9 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class WatchVideoResolver(UrlResolver):
     name = "watchvideo"
-    domains = ["watchvideo.us", "watchvideo2.us", "watchvideo4.us"]
+    domains = ["watchvideo.us", "watchvideo2.us", "watchvideo3.us", 
+               "watchvideo4.us", "watchvideo5.us", "watchvideo6.us", 
+               "watchvideo7.us", "watchvideo8.us", "watchvideo9.us"]
     pattern = '(?://|\.)(watchvideo[0-9]?\.us)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
@@ -54,13 +56,3 @@ class WatchVideoResolver(UrlResolver):
 
     def get_url(self, host, media_id):
         return 'http://%s/%s.html' % (host, media_id)
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host

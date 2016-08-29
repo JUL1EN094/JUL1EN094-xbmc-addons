@@ -17,6 +17,8 @@
 """
 
 import re
+from lib import helpers
+from lib import jsunpack
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -34,21 +36,20 @@ class VshareEuResolver(UrlResolver):
         if '404 Not Found' in html or 'Has Been Removed' in html:
             raise ResolverError('The requested video was not found.')
 
+        data = helpers.get_hidden(html)
+        html = self.net.http_POST(web_url, data).content
+        
         match = re.search('file\s*:\s*"([^"]+)', html)
         if match:
             return match.group(1)
+        else:
+            for match in re.finditer('(eval\(function.*?)</script>', html, re.DOTALL):
+                js_data = jsunpack.unpack(match.group(1))
+                match = re.search('''file\s*:\s*['"]([^"']+)''', js_data)
+                if match:
+                    return match.group(1)
 
         raise ResolverError('No playable video found.')
 
     def get_url(self, host, media_id):
         return 'http://vshare.eu/embed-%s.html' % media_id
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host

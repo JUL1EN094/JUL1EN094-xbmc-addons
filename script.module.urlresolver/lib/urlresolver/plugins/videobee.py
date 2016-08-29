@@ -31,7 +31,15 @@ class VideoBeeResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
+
         html = self.net.http_GET(web_url).content
+
+        js_data = re.findall('(eval\(function.*?)</script>', html.replace('\n', ''))
+
+        for i in js_data:
+            try: html += jsunpack.unpack(i)
+            except: pass
+
         r = re.search('sources:.*file:"(.*?)"', html)
         if r:
             return r.group(1)
@@ -39,14 +47,5 @@ class VideoBeeResolver(UrlResolver):
         raise ResolverError('File Not Found or removed')
 
     def get_url(self, host, media_id):
-        return 'http://thevideobee.to/embed-%s.html' % media_id
+        return 'https://thevideobee.to/embed-%s.html' % media_id
 
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host

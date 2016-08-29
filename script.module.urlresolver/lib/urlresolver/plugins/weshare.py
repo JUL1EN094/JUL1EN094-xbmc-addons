@@ -32,6 +32,10 @@ class WeShareResolver(UrlResolver):
         web_url = self.get_url(host, media_id)
         headers = {'User-Agent': common.FF_USER_AGENT}
         html = self.net.http_GET(web_url, headers=headers).content
+        match = re.search('''<source[^>]+src=["']([^'"]+)[^>]+type=['"]video''', html)
+        if match:
+            return match.group(1) + '|User-Agent=%s&Referer=%s' % (common.FF_USER_AGENT, web_url)
+        
         match = re.search('''{\s*file\s*:\s*['"]([^'"]+)''', html, re.DOTALL)
         if not match:
             match = re.search('''href="([^"]+)[^>]+>\(download\)''', html, re.DOTALL)
@@ -39,17 +43,7 @@ class WeShareResolver(UrlResolver):
         if match:
             return match.group(1) + '|User-Agent=%s&Referer=%s' % (common.FF_USER_AGENT, web_url)
 
-        raise ResolverError('Unable to resolve vidio link. Filelink not found.')
+        raise ResolverError('Unable to resolve weshare link. Filelink not found.')
 
     def get_url(self, host, media_id):
-        return 'https://weshare.me/%s' % (media_id)
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host
+        return 'https://weshare.me/services/mediaplayer/site/_embed.max.php?u=%s' % (media_id)

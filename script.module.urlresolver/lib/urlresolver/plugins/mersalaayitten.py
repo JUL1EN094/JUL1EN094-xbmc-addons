@@ -22,8 +22,8 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class MersalaResolver(UrlResolver):
     name = "mersalaayitten.com"
-    domains = ["mersalaayitten.com"]
-    pattern = '(?://|\.)(mersalaayitten\.com)/embed/([0-9]+)'
+    domains = ["mersalaayitten.com", "mersalaayitten.co"]
+    pattern = '(?://|\.)(mersalaayitten\.(?:com|co))/embed/([0-9]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -36,7 +36,7 @@ class MersalaResolver(UrlResolver):
         r = re.search("config: '(.*?)'", html)
         if r:
             stream_xml = r.group(1)
-            referer = {'Referer': 'http://mersalaayitten.com/media/nuevo/player.swf'}
+            referer = {'Referer': 'http://mersalaayitten.co/media/nuevo/player.swf'}
             response = self.net.http_GET(stream_xml, headers=referer)
             xmlhtml = response.content
             r2 = re.search('<file>(.*?)</file>', xmlhtml)
@@ -48,14 +48,5 @@ class MersalaResolver(UrlResolver):
         return stream_url
 
     def get_url(self, host, media_id):
-        return 'http://mersalaayitten.com/embed/%s' % (media_id)
+        return 'http://mersalaayitten.co/embed/%s' % (media_id)
 
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host

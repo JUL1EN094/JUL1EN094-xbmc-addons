@@ -31,20 +31,9 @@ class Mp4uploadResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        link = self.net.http_GET(web_url).content
-        link = ''.join(link.splitlines()).replace('\t', '')
-        videoUrl = re.compile('\'file\': \'(.+?)\'').findall(link)[0]
-        return videoUrl
+        html = self.net.http_GET(web_url).content
+        url = re.findall('(?:\"|\')file(?:\"|\')\s*:\s*(?:\"|\')(.+?)(?:\"|\')', html)[0]
+        return url
 
     def get_url(self, host, media_id):
         return 'http://www.mp4upload.com/embed-%s.html' % media_id
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host

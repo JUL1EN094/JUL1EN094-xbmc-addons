@@ -30,7 +30,7 @@ class TheVideosResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'Referer': web_url, 'User-Agent': common.FF_USER_AGENT}
+        headers = {'User-Agent': common.FF_USER_AGENT}
         html = self.net.http_GET(web_url, headers=headers).content
         sources = []
         match = re.search('sources\s*:\s*\[(.*?)\]', html, re.DOTALL)
@@ -46,16 +46,6 @@ class TheVideosResolver(UrlResolver):
 
     def get_url(self, host, media_id):
         return 'http://thevideos.tv/embed-%s.html' % media_id
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host
 
     @classmethod
     def get_settings_xml(cls):

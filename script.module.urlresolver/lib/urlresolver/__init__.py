@@ -62,6 +62,9 @@ def load_external_plugins():
 def relevant_resolvers(domain=None, include_universal=None, include_external=False, include_disabled=False, order_matters=False):
     if include_external:
         load_external_plugins()
+    
+    if isinstance(domain, basestring):
+        domain = domain.lower()
 
     if include_universal is None:
         include_universal = common.get_setting('allow_universal') == "true"
@@ -71,7 +74,7 @@ def relevant_resolvers(domain=None, include_universal=None, include_external=Fal
     for resolver in classes:
         if include_disabled or resolver._is_enabled():
             if include_universal or not resolver.isUniversal():
-                if domain is None or (any(domain in res_domain for res_domain in resolver.domains) or '*' in resolver.domains):
+                if domain is None or (any(domain in res_domain.lower() for res_domain in resolver.domains) or '*' in resolver.domains):
                     relevant.append(resolver)
 
     if order_matters:
@@ -203,39 +206,38 @@ def _update_settings_xml():
     new_xml = [
         '<?xml version="1.0" encoding="utf-8" standalone="yes"?>',
         '<settings>',
-        '<category label="URLResolver">',
-        '<setting default="true" id="allow_universal" label="Enable Universal Resolvers" type="bool"/>',
-        '<setting default="true" id="use_cache" label="Use Function Cache" type="bool"/>',
-        '<setting id="reset_cache" type="action" label="Reset Function Cache" action="RunPlugin(plugin://script.module.urlresolver/?mode=reset_cache)"/>',
-        '<setting id="personal_nid" label="Your NID" type="text" visible="false"/>',
-        '</category>',
-        '<category label="Universal Resolvers">']
+        '\t<category label="URLResolver">',
+        '\t\t<setting default="true" id="allow_universal" label="Enable Universal Resolvers" type="bool"/>',
+        '\t\t<setting default="true" id="use_cache" label="Use Function Cache" type="bool"/>',
+        '\t\t<setting id="reset_cache" type="action" label="Reset Function Cache" action="RunPlugin(plugin://script.module.urlresolver/?mode=reset_cache)"/>',
+        '\t\t<setting id="personal_nid" label="Your NID" type="text" visible="false"/>',
+        '\t</category>',
+        '\t<category label="Universal Resolvers">']
 
     resolvers = relevant_resolvers(include_universal=True, include_disabled=True)
     resolvers = sorted(resolvers, key=lambda x: x.name.upper())
     for resolver in resolvers:
         if resolver.isUniversal():
-            new_xml.append('<setting label="%s" type="lsep"/>' % (resolver.name))
-            new_xml += resolver.get_settings_xml()
-    new_xml.append('</category>')
-    new_xml.append('<category label="Resolvers 1">')
+            new_xml.append('\t\t<setting label="%s" type="lsep"/>' % (resolver.name))
+            new_xml += ['\t\t' + line for line in resolver.get_settings_xml()]
+    new_xml.append('\t</category>')
+    new_xml.append('\t<category label="Resolvers 1">')
 
     i = 0
     cat_count = 2
     for resolver in resolvers:
         if not resolver.isUniversal():
-            if i <= MAX_SETTINGS:
-                new_xml.append('<setting label="%s" type="lsep"/>' % (resolver.name))
-                res_xml = resolver.get_settings_xml()
-                new_xml += res_xml
-                i += len(res_xml) + 1
-            else:
-                new_xml.append('</category>')
-                new_xml.append('<category label="Resolvers %s">' % (cat_count))
+            if i > MAX_SETTINGS:
+                new_xml.append('\t</category>')
+                new_xml.append('\t<category label="Resolvers %s">' % (cat_count))
                 cat_count += 1
                 i = 0
+            new_xml.append('\t\t<setting label="%s" type="lsep"/>' % (resolver.name))
+            res_xml = resolver.get_settings_xml()
+            new_xml += ['\t\t' + line for line in res_xml]
+            i += len(res_xml) + 1
 
-    new_xml.append('</category>')
+    new_xml.append('\t</category>')
     new_xml.append('</settings>')
 
     try:
@@ -244,9 +246,7 @@ def _update_settings_xml():
     except:
         old_xml = ''
 
-    new_xml = ''.join(new_xml)
-    new_xml = xml.dom.minidom.parseString(new_xml)
-    new_xml = new_xml.toprettyxml()
+    new_xml = '\n'.join(new_xml)
     if old_xml != new_xml:
         common.log_utils.log_debug('Updating Settings XML')
         try:

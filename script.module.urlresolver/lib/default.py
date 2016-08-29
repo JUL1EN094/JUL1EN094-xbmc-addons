@@ -30,6 +30,7 @@ MODES = __enum(AUTH_RD='auth_rd', RESET_RD='reset_rd', RESET_CACHE='reset_cache'
 @url_dispatcher.register(MODES.AUTH_RD)
 def auth_rd():
     kodi.close_all()
+    kodi.sleep(500)  # sleep or authorize won't work for some reason
     from urlresolver.plugins import realdebrid
     if realdebrid.RealDebridResolver().authorize_resolver():
         kodi.notify(msg='Real-Debrid Resolver Authorized', duration=5000)

@@ -22,6 +22,7 @@
 import re
 import json
 import urllib
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -35,29 +36,28 @@ class MailRuResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-
         response = self.net.http_GET(web_url)
-
         html = response.content
 
         if html:
-            js_data = json.loads(html)
-            headers = dict(response._response.info().items())
+            try:
+                js_data = json.loads(html)
+                headers = dict(response._response.info().items())
+                cookie = ''
+                if 'set-cookie' in headers: cookie = '|' + urllib.urlencode({'Cookie': headers['set-cookie']})
 
-            stream_url = ''
-            best_quality = 0
-            for video in js_data['videos']:
-                if int(video['key'][:-1]) > best_quality:
-                    stream_url = video['url']
-                    best_quality = int(video['key'][:-1])
+                sources = [('%s' % video['key'], '%s%s' % (video['url'], cookie)) for video in js_data['videos']]
+                sources = sources[::-1]
+                source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
+                source = source.encode('utf-8')
 
-                if 'set-cookie' in headers:
-                    stream_url += '|' + urllib.urlencode({'Cookie': headers['set-cookie']})
+                return source
+                
+            except:
+                raise ResolverError('No playable video found.')
 
-            if stream_url:
-                return stream_url
-
-        raise ResolverError('No playable video found.')
+        else: 
+            raise ResolverError('No playable video found.')
 
     def get_url(self, host, media_id):
         location, user, media_id = media_id.split('|')
@@ -70,5 +70,8 @@ class MailRuResolver(UrlResolver):
         else:
             return False
 
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host
+    @classmethod
+    def get_settings_xml(cls):
+        xml = super(cls, cls).get_settings_xml()
+        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
+        return xml

@@ -40,7 +40,7 @@ class UploadXResolver(UrlResolver):
         tries = 0
         while tries < MAX_TRIES:
             data = helpers.get_hidden(html)
-            data['method_free'] = 'Free Download+>>'
+            data['method_free'] = 'Free+Download+>>'
             data.update(captcha_lib.do_captcha(html))
             headers = {
                 'Referer': web_url
@@ -51,7 +51,7 @@ class UploadXResolver(UrlResolver):
                 xbmc.sleep(6000)
 
             if 'File Download Link Generated' in html:
-                r = re.search('href="([^"]+)[^>]+id="downloadbtn"', html)
+                r = re.search('href="([^"]+)[^>]>Download<', html, re.I)
                 if r:
                     return r.group(1) + '|' + urllib.urlencode({'User-Agent': common.IE_USER_AGENT})
 
@@ -61,13 +61,3 @@ class UploadXResolver(UrlResolver):
 
     def get_url(self, host, media_id):
         return 'http://uploadx.org/%s' % media_id
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host
