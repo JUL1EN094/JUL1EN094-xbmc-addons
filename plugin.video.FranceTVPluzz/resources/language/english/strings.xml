@@ -8,6 +8,9 @@
   <!--SETTINGS STRINGS -->
   <string id="30010">Advanced</string>
   <string id="30011">Enable debug mode</string>
+  <string id="30020">Replays navigation mode</string>
+  <string id="30021">Channels first</string>
+  <string id="30022">Categories first</string>
   
   
   <!--DIALOG STRINGS -->
