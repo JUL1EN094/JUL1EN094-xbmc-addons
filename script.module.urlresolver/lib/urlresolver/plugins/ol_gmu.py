@@ -20,6 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import re
 import urllib2
+from lib.aa_decoder import AADecoder
 from HTMLParser import HTMLParser
 from urlresolver import common
 from urlresolver.resolver import ResolverError
@@ -37,18 +38,31 @@ def get_media_url(url):
             'Referer': url}  # 'Connection': 'keep-alive'
 
         html = net.http_GET(url, headers=HTTP_HEADER).content
-
+        try: html = html.encode('utf-8')
+        except: pass
         hiddenurl = HTMLParser().unescape(re.search('hiddenurl">(.+?)<\/span>', html, re.IGNORECASE).group(1))
-    
+        decodes = [AADecoder(match.group(1)).decode() for match in re.finditer('<script[^>]+>(ﾟωﾟﾉ[^<]+)<', html, re.DOTALL)]
+        if not decodes:
+            raise ResolverError('No Encoded Section Found. Deleted?')
+        
+        magic_number = 0
+        for decode in decodes:
+            match = re.search('charCodeAt\(\d+\)\s*\+\s*(\d+)\)', decode, re.DOTALL | re.I)
+            if match:
+                magic_number = match.group(1)
+                break
+
         s = []
         for idx, i in enumerate(hiddenurl):
             j = ord(i)
             if (j >= 33 & j <= 126):
                 j = 33 + ((j + 14) % 94)
+                
             if idx == len(hiddenurl) - 1:
-                j += 1
+                j += int(magic_number)
             s.append(chr(j))
         res = ''.join(s)
+        
         videoUrl = 'https://openload.co/stream/{0}?mime=true'.format(res)
         dtext = videoUrl.replace('https', 'http')
         headers = {'User-Agent': HTTP_HEADER['User-Agent']}
@@ -56,6 +70,9 @@ def get_media_url(url):
         res = urllib2.urlopen(req)
         videourl = res.geturl()
         res.close()
+        if 'pigeons.mp4' in videourl.lower():
+            raise ResolverError('Openload.co resolve failed')
+        
         return videourl
     except Exception as e:
         common.log_utils.log_debug('Exception during openload resolve parse: %s' % e)
