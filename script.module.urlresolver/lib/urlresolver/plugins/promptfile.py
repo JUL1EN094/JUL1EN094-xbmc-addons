@@ -33,17 +33,19 @@ class PromptfileResolver(UrlResolver):
         web_url = self.get_url(host, media_id)
         headers = {'User-Agent': common.FF_USER_AGENT}
         html = self.net.http_GET(web_url, headers=headers).content
-        match = re.search('''val\(\)\s*\+\s*['"]([^"']+)''', html)
-        suffix = match.group(1) if match else ''
+        match = re.search('''val\(['"]([^"']+)''', html)
+        prefix = match.group(1) if match else ''
         data = helpers.get_hidden(html)
         for name in data:
-            data[name] = data[name] + suffix
+            data[name] = prefix + data[name]
         
+        common.log_utils.log(data)
         headers['Referer'] = web_url
         html = self.net.http_POST(web_url, form_data=data, headers=headers).content
-        html = re.compile(r'clip\s*:\s*\{.*?url\s*:\s*[\"\'](.+?)[\"\']', re.DOTALL).search(html)
+        html = re.search(r'clip\s*:\s*\{.*?(?:url|src)\s*:\s*[\"\'](.+?)[\"\']', html, re.DOTALL)
         if not html:
             raise ResolverError('File Not Found or removed')
+        
         stream_url = html.group(1)
         req = urllib2.Request(stream_url)
         for key in headers:
@@ -53,13 +55,3 @@ class PromptfileResolver(UrlResolver):
 
     def get_url(self, host, media_id):
         return 'http://www.promptfile.com/l/%s' % (media_id)
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host

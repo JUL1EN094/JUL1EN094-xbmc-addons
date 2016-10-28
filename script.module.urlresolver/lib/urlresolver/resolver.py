@@ -94,12 +94,16 @@ class UrlResolver(object):
         implement this method.
 
         Returns:
-            True if this plugin thinks it can hangle the web_url or host
+            True if this plugin thinks it can handle the web_url or host
             otherwise False.
         '''
         if isinstance(host, basestring):
             host = host.lower()
-        return (url and re.search(self.pattern, url, re.I)) or any(host in domain.lower() for domain in self.domains)
+        
+        if url:
+            return re.search(self.pattern, url, re.I) is not None
+        else:
+            return any(host in domain.lower() for domain in self.domains)
 
     @classmethod
     def isUniversal(cls):
@@ -155,3 +159,16 @@ class UrlResolver(object):
     def _is_enabled(cls):
         # default behaviour is enabled is True if resolver is enabled, or has login set to "true", or doesn't have the setting
         return cls.get_setting('enabled') == 'true' and cls.get_setting('login') in ['', 'true']
+
+    def _get_host(self, host):
+        if '.' not in host:
+            for domain in self.domains:
+                if host in domain:
+                    return domain
+        
+        return host
+    
+    def _default_get_url(self, host, media_id, template=None):
+        if template is None: template = 'http://{host}/embed-{media_id}.html'
+        host = self._get_host(host)
+        return template.format(host=host, media_id=media_id)

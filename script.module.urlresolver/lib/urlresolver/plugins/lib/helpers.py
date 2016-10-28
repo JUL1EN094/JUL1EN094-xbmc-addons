@@ -16,23 +16,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
+import urllib
 import xbmcgui
 from urlresolver import common
 from urlresolver.resolver import ResolverError
 
-def get_hidden(html, form_id=None):
+def get_hidden(html, form_id=None, index=None):
     hidden = {}
     if form_id:
-        pattern = '''<form [^>]*id\s*=\s*['"]?%s['"]?[^>]*>(.*?)</form>'''
+        pattern = '''<form [^>]*id\s*=\s*['"]?%s['"]?[^>]*>(.*?)</form>''' % (form_id)
     else:
         pattern = '''<form[^>]*>(.*?)</form>'''
         
-    for form in re.finditer(pattern, html, re.DOTALL | re.I):
-        for field in re.finditer('''<input [^>]*type=['"]?hidden['"]?[^>]*>''', form.group(1)):
-            match = re.search('''name\s*=\s*['"]([^'"]+)''', field.group(0))
-            match1 = re.search('''value\s*=\s*['"]([^'"]*)''', field.group(0))
-            if match and match1:
-                hidden[match.group(1)] = match1.group(1)
+    for i, form in enumerate(re.finditer(pattern, html, re.DOTALL | re.I)):
+        if index is None or i == index:
+            for field in re.finditer('''<input [^>]*type=['"]?hidden['"]?[^>]*>''', form.group(1)):
+                match = re.search('''name\s*=\s*['"]([^'"]+)''', field.group(0))
+                match1 = re.search('''value\s*=\s*['"]([^'"]*)''', field.group(0))
+                if match and match1:
+                    hidden[match.group(1)] = match1.group(1)
             
     common.log_utils.log_debug('Hidden fields are: %s' % (hidden))
     return hidden
@@ -51,3 +53,6 @@ def pick_source(sources, auto_pick=False):
                 return sources[result][1]
     else:
         raise ResolverError('No Video Link Found')
+
+def append_headers(headers):
+    return '|%s' % '&'.join(['%s=%s' % (key, urllib.quote_plus(headers[key])) for key in headers])

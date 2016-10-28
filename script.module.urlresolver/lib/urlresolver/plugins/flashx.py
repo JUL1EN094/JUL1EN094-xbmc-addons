@@ -17,8 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re, time
+import re
 from lib import jsunpack
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -32,38 +33,54 @@ class FlashxResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        resp = self.net.http_GET(web_url)
-        html = resp.content
-        cfdcookie = resp._response.info()['set-cookie']
-        cfduid = re.search('cfduid=(.*?);', cfdcookie).group(1)
-        file_id = re.search("'file_id', '(.*?)'", html).group(1)
-        aff = re.search("'aff', '(.*?)'", html).group(1)
-        headers = { 'Referer': web_url,
-                    'Cookie': '__cfduid=' + cfduid + '; lang=1'}
-        surl = re.search('src="(.*?' + file_id + ')',html).group(1)
-        dummy = self.net.http_GET(url=surl, headers=headers).content
-        headers = { 'Referer': web_url,
-                    'Cookie': '__cfduid=' + cfduid + '; lang=1; file_id=' + file_id + '; aff=' + aff }
-        html = self.net.http_GET(url=web_url, headers=headers).content
-        fname = re.search('name="fname" value="(.*?)"', html).group(1)
-        hash = re.search('name="hash" value="(.*?)"', html).group(1)
-        fdata = { 'op': 'download1',
-                  'usr_login': '',
-                  'id': media_id,
-                  'fname': fname,
-                  'referer': '',
-                  'hash': hash,
-                  'imhuman': 'Proceed to video' }
-        furl = 'http://www.flashx.tv/dl?' + media_id
-        time.sleep(5)
-        html = self.net.http_POST(url=furl, form_data=fdata, headers=headers).content
-        strhtml = jsunpack.unpack(re.search('(eval\(function.*?)</script>', html, re.DOTALL).group(1))
-        stream = re.search('file:"([^"]*)",label', strhtml).group(1)
+        headers = {'User-Agent': common.FF_USER_AGENT}
+        html = self.net.http_GET(web_url, headers=headers).content
+        if 'File Not Found' in html:
+            raise ResolverError('File got deleted?')
+        cookies = self.__get_cookies(html)
 
-        if stream:
-            return stream
-        else:
-            raise ResolverError('Filelink not found.')
+        match = re.search('"([^"]+counter(?:\d+|)\.cgi[^"]+)".*?<span id="cxc(?:\d+|)">(\d+)<', html, re.DOTALL)
+        match2 = re.search('action=[\'"]([^\'"]+)', html, re.IGNORECASE)
+
+        if not match or not match2:
+            raise ResolverError('Site structure changed!')
+
+        self.net.http_GET(match.group(1), headers=headers)
+        data = helpers.get_hidden(html)
+        data['imhuman'] = 'Proceed to this video'
+        common.kodi.sleep(int(match.group(2))*1000+500)
+        headers.update({'Referer': web_url, 'Cookie': '; '.join(cookies)})
+
+        html = self.net.http_POST(match2.group(1), data, headers=headers).content
+        sources = []
+        for match in re.finditer('(eval\(function.*?)</script>', html, re.DOTALL):
+            packed_data = jsunpack.unpack(match.group(1))
+            sources += self.__parse_sources_list(packed_data)
+        source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
+        return source
+
+    def __get_cookies(self, html):
+        cookies = {'ref_url': 'http://www.flashx.tv/'}
+        for match in re.finditer("\$\.cookie\(\s*'([^']+)'\s*,\s*'([^']+)", html):
+            key, value = match.groups()
+            cookies[key] = value
+        return cookies
+
+    def __parse_sources_list(self, html):
+        sources = []
+        match = re.search('sources\s*:\s*\[(.*?)\]', html, re.DOTALL)
+        if match:
+            for match in re.finditer('''['"]?file['"]?\s*:\s*['"]([^'"]+)['"][^}]*['"]?label['"]?\s*:\s*['"]([^'"]*)''', match.group(1), re.DOTALL):
+                stream_url, label = match.groups()
+                stream_url = stream_url.replace('\/', '/')
+                sources.append((label, stream_url))
+        return sources
 
     def get_url(self, host, media_id):
-        return 'http://www.flashx.tv/%s.html' % media_id
+        return self._default_get_url(host, media_id, 'http://{host}/{media_id}')
+
+    @classmethod
+    def get_settings_xml(cls):
+        xml = super(cls, cls).get_settings_xml()
+        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
+        return xml

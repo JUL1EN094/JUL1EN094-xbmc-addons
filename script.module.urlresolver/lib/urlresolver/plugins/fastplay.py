@@ -24,8 +24,8 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class FastplayResolver(UrlResolver):
     name = 'fastplay.sx'
-    domains = ['fastplay.sx']
-    pattern = '(?://|\.)(fastplay\.sx)/(?:flash-|embed-)?([0-9a-zA-Z]+)'
+    domains = ['fastplay.sx', 'fastplay.cc']
+    pattern = '(?://|\.)(fastplay\.(?:sx|cc))/(?:flash-|embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -54,4 +54,4 @@ class FastplayResolver(UrlResolver):
         raise ResolverError('Unable to find fastplay.sx video')
 
     def get_url(self, host, media_id):
-        return 'http://%s/embed-%s.html' % (host, media_id)
+        return self._default_get_url(host, media_id)

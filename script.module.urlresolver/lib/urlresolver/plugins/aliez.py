@@ -20,45 +20,41 @@
 """
 
 import re
-import urllib
-import urllib2
-from lib import jsunpack
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class VideoMegaResolver(UrlResolver):
-    name = "videomega"
-    domains = ["videomega.tv"]
-    pattern = '(?://|\.)(videomega\.tv)/(?:(?:iframe|cdn|validatehash|view)\.php)?\?(?:ref|hashkey)=([a-zA-Z0-9]+)'
+class AliezResolver(UrlResolver):
+    name = "aliez"
+    domains = ['aliez.me']
+    pattern = '(?://|\.)(aliez\.me)/(?:(?:player/video\.php\?id=([0-9]+)&s=([A-Za-z0-9]+))|(?:video/([0-9]+)/([A-Za-z0-9]+)))'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {
-            'User-Agent': common.IOS_USER_AGENT,
-            'Referer': web_url
-        }
+        response = self.net.http_GET(web_url)
+        html = response.content
 
-        html = self.net.http_GET(web_url, headers=headers).content
-        if jsunpack.detect(html):
-            js_data = jsunpack.unpack(html)
-            match = re.search('"src"\s*,\s*"([^"]+)', js_data)
-
-        try:
-            stream_url = match.group(1)
-
-            r = urllib2.Request(stream_url, headers=headers)
-            r = int(urllib2.urlopen(r, timeout=15).headers['Content-Length'])
-
-            if r > 1048576:
-                stream_url += '|' + urllib.urlencode(headers)
+        if html:
+            try:
+                stream_url = re.search(r"file:\s'(.+?)'", html).groups()[0]
                 return stream_url
-        except:
-            ResolverError("File Not Playable")
+                
+            except:
+                pass
 
         raise ResolverError('No playable video found.')
 
+    def get_host_and_id(self, url):
+        r = re.search(self.pattern, url, re.I)
+        if r:
+            r = filter(None, r.groups())
+            r = [r[0], '%s|%s' % (r[1], r[2])]
+            return r
+        else:
+            return False
+    
     def get_url(self, host, media_id):
-        return 'http://videomega.tv/cdn.php?ref=%s' % media_id
+        media_id = media_id.split("|")
+        return self._default_get_url(host, media_id, 'http://emb.%s/player/video.php?id=%s&s=%s&w=590&h=332' % (host, media_id[0], media_id[1]))

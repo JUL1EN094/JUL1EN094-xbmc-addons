@@ -1,6 +1,6 @@
 """
-urlresolver XBMC Addon
-Copyright (C) 2016 lambda
+grifthost urlresolver plugin
+Copyright (C) 2015 tknorris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,41 +15,40 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
-
+import urllib
 import re
-from lib import jsunpack
+from lib import captcha_lib
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class IsharedResolver(UrlResolver):
-    name = 'ishared.eu'
-    domains = ['ishared.eu']
-    pattern = '(?://|\.)(ishared\.eu)/(?:video|embed)/(.*?)(?:/|$)'
+MAX_TRIES = 3
+
+class UploadzResolver(UrlResolver):
+    name = "uploadz.co"
+    domains = ["uploadz.co"]
+    pattern = '(?://|\.)(uploadz\.co)/([0-9a-zA-Z/]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-
         html = self.net.http_GET(web_url).content
 
-        unpacked = ''
-        packed = html.split('\n')
-        for i in packed:
-            try: unpacked += jsunpack.unpack(i).replace('\\\'', '\'')
-            except: pass
-        html += unpacked
-        html = html
+        tries = 0
+        while tries < MAX_TRIES:
+            data = helpers.get_hidden(html, index=0)
+            data['method_free'] = urllib.quote_plus('Free Download >>')
+            data.update(captcha_lib.do_captcha(html))
 
-        match = re.findall('sources\s*:\s*\[.+?file\s*:\s*(.+?)\s*\,', html)
+            html = self.net.http_POST(web_url, form_data=data).content
+            match = re.search('href="([^"]+)[^>]*>Download<', html, re.DOTALL)
+            if match:
+                return match.group(1)
+            tries += 1
 
-        if match:
-            stream_url = re.findall('var\s+%s\s*=\s*\'(.+?)\'' % match[0], html)
-            if stream_url:
-                return stream_url[0]
-
-        raise ResolverError('File Not Found or removed')
+        raise ResolverError('Unable to resolve uploadz.co link. Filelink not found.')
 
     def get_url(self, host, media_id):
-        return 'http://ishared.eu/embed/%s' % media_id
+        return 'https://uploadz.co/%s' % (media_id)

@@ -41,4 +41,4 @@ class Toltsd_felResolver(UrlResolver):
             ResolverError('File not found')
 
     def get_url(self, host, media_id):
-        return 'http://%s/embed/%s' % (host, media_id)
+        return self._default_get_url(host, media_id, 'http://{host}/embed/{media_id}')

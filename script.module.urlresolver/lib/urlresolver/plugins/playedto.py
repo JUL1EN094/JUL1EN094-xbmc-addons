@@ -23,7 +23,7 @@ from urlresolver.resolver import UrlResolver, ResolverError
 class PlayedtoResolver(UrlResolver):
     name = "playedto"
     domains = ["playedto.me"]
-    pattern = '(?://|\.)(playedto\.me)/?([0-9A-Za-z]+)'
+    pattern = '(?://|\.)(playedto\.me)/(?:embed-|)?([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -41,5 +41,4 @@ class PlayedtoResolver(UrlResolver):
         raise ResolverError('File Not Found or removed')
     
     def get_url(self, host, media_id):
-        return 'http://playedto.me/%s' % media_id
-        # return 'http://playedto.me/embed-%s.html' % media_id
+        return 'http://playedto.me/embed-%s.html' % media_id

@@ -51,7 +51,7 @@ class BriskfileResolver(UrlResolver):
         for key in headers:
             req.add_header(key, headers[key])
         stream_url = urllib2.urlopen(req).geturl()
-        return stream_url + '|User-Agent=%s&Referer=%s' % (common.FF_USER_AGENT, web_url)
+        return stream_url + helpers.append_headers(headers)
 
     def get_url(self, host, media_id):
         return 'http://www.briskfile.com/l/%s' % (media_id)

@@ -23,10 +23,11 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class WatchVideoResolver(UrlResolver):
     name = "watchvideo"
-    domains = ["watchvideo.us", "watchvideo2.us", "watchvideo3.us", 
-               "watchvideo4.us", "watchvideo5.us", "watchvideo6.us", 
-               "watchvideo7.us", "watchvideo8.us", "watchvideo9.us"]
-    pattern = '(?://|\.)(watchvideo[0-9]?\.us)/(?:embed-)?([0-9a-zA-Z]+)'
+    domains = ["watchvideo.us", "watchvideo2.us", "watchvideo3.us",
+               "watchvideo4.us", "watchvideo5.us", "watchvideo6.us",
+               "watchvideo7.us", "watchvideo8.us", "watchvideo9.us",
+               "watchvideo10.us"]
+    pattern = '(?://|\.)(watchvideo[0-9]?[0-9]?\.us)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -47,7 +48,8 @@ class WatchVideoResolver(UrlResolver):
         else:
             js = html
 
-        link = re.search('(?:m3u8").*?"(.*?)"', js)
+        link = re.search('file:"(.*?m3u8)"', js)
+        #link = re.search('(?:m3u8").*?"(.*?)"', js)
         if link:
             common.log_utils.log_debug('watchvideo.us Link Found: %s' % link.group(1))
             return link.group(1)
@@ -55,4 +57,4 @@ class WatchVideoResolver(UrlResolver):
         raise ResolverError('Unable to find watchvideo.us video')
 
     def get_url(self, host, media_id):
-        return 'http://%s/%s.html' % (host, media_id)
+        return self._default_get_url(host, media_id, 'http://{host}/{media_id}.html')

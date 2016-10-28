@@ -1,6 +1,6 @@
+# -*- coding: UTF-8 -*-
 """
-    urlresolver XBMC Addon
-    Copyright (C) 2014 tknorris
+    Copyright (C) 2016 alifrezser
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 """
 
 import re
+from lib import jsunpack
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class BestreamsResolver(UrlResolver):
-    name = "bestreams"
-    domains = ["bestreams.net"]
-    pattern = '(?://|\.)(bestreams\.net)/(?:embed-)?([0-9a-zA-Z]+)'
+class StreamplayResolver(UrlResolver):
+    name = "streamplay"
+    domains = ["streamplay.to"]
+    pattern = '(?://|\.)(streamplay\.to)/(?:embed-|)?([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -31,26 +32,22 @@ class BestreamsResolver(UrlResolver):
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
 
-        headers = {'User-Agent': common.IOS_USER_AGENT}
+        html = self.net.http_GET(web_url).content
 
-        html = self.net.http_GET(web_url, headers=headers).content
-
-        r = re.search('file\s*:\s*"(http.+?)"', html)
-
-        if r:
-            return r.group(1)
+        encoded = re.search('(eval\(function.*?)</script>', html, re.DOTALL)
+        if not encoded:
+            raise ResolverError('File not found')
+        
         else:
-            raise ResolverError("File Link Not Found")
+            js_data = jsunpack.unpack(encoded.group(1))
+            
+        match = re.findall('[\'"]?file[\'"]?\s*:\s*[\'"]([^\'"]+)', js_data)
+        if match:
+            stream_url = [i for i in match if i.endswith('.mp4')]
+            if stream_url:
+                return stream_url[0]
+
+        raise ResolverError('File not found')
 
     def get_url(self, host, media_id):
-        return 'http://bestreams.net/embed-%s.html' % media_id
-
-    def get_host_and_id(self, url):
-        r = re.search(self.pattern, url)
-        if r:
-            return r.groups()
-        else:
-            return False
-
-    def valid_url(self, url, host):
-        return re.search(self.pattern, url) or self.name in host
+        return 'http://%s/embed-%s.html' % (host, media_id)

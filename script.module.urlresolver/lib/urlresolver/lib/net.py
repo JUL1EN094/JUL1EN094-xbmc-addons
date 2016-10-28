@@ -25,7 +25,7 @@ import urllib2
 import socket
 
 # Set Global timeout - Useful for slow connections and Putlocker.
-socket.setdefaulttimeout(60)
+socket.setdefaulttimeout(10)
 
 class HeadRequest(urllib2.Request):
     '''A Request class that sends HEAD requests'''
@@ -294,9 +294,13 @@ class HttpResponse:
         
         self.content = html
 
-    def get_headers(self):
-        '''Returns a List of headers returned by the server.'''
-        return self._response.info().headers
+    def get_headers(self, as_dict=False):
+        '''Returns headers returned by the server.
+        If as_dict is True, headers are returned as a dictionary otherwise a list'''
+        if as_dict:
+            return dict([(item[0].title(), item[1]) for item in self._response.info().items()])
+        else:
+            return self._response.info().headers
 
     def get_url(self):
         '''
