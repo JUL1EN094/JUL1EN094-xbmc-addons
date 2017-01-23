@@ -6,7 +6,7 @@ import json
 
 title = ['M6', 'W9', '6ter']
 img = ['m6', 'w9', '6ter']
-readyForUse = True
+readyForUse = False
 
 urlRoot = 'http://pc.middleware.6play.fr/6play/v1/platforms/' \
           'm6group_web/folders?serviceCode=%sreplay'

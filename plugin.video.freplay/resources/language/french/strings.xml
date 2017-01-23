@@ -5,11 +5,19 @@
   <!--------------------------------------------------->
   <string id="30000">FReplay</string>
   
-  <string id="30100">Chaînes 99 pour Cacher</string>  
+  <string id="30100">Chaînes</string>  
   <string id="30101">Monter</string>
   <string id="30102">Descendre</string>
   <string id="30103">Masquer</string>
   <string id="30104">Afficher</string>
+
+  <string id="30110">Chaînes françaises</string>
+  <string id="30111">Chaînes suisses</string>
+  <string id="30112">Chaînes canadiennes</string>
+  <string id="30113">Chaînes internationales</string>
+  <string id="30114">Sites internet</string>
+  <string id="30115">Chaînes Belges</string>
+  <string id="30119">___ Numéro 99 pour cacher ___</string>
   
   <string id="30200">Téléchargement</string>
   <string id="30201">Sélectionner le dossier de téléchargement</string>
@@ -25,9 +33,12 @@
   
   <string id="30324">France 24 - Qualité Vidéo</string>  
   
+  <string id="30310">Allocine - Qualité Vidéo</string> 
+
   <string id="30325">ARTE - Qualité Vidéo</string>
   <string id="30326">ARTE - Afficher seulement les replay complets</string>  
-  
+  <string id="30327">6play - Qualité Vidéo</string>
+
   <string id="30331">La 1ere - Qualité Vidéo</string>
   <string id="30332">France 2 - Qualité Vidéo</string>
   <string id="30333">France 3 - Qualité Vidéo</string>
@@ -90,6 +101,7 @@
   <string id="33033">30 derniers jours</string>
   <string id="33039">Lectures</string> 
     <!--wat.tv below-->         
+  
   <string id="33040">Chaines les plus suivies</string>
   <string id="33041">Chaines recommandées</string>
   <string id="33042">Chaines populaires</string>
