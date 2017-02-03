@@ -50,6 +50,10 @@ class FranceTVPluzz:
     main plugin class
     """
     debug_mode = False #self.debug_mode
+
+    replay_mode = 1
+    channel_mode = 2
+    categ_mode = 3
     
     def __init__( self, *args, **kwargs ):
         print "==============================="
@@ -90,7 +94,9 @@ class FranceTVPluzz:
             cat=urllib.unquote_plus(params["cat"])
         except:
             pass
-                               
+        
+        self.set_navigation_mode()
+                       
         if self.debug_mode:
             print "Mode: "+str(mode)
             print "URL: "+str(url)
@@ -104,7 +110,7 @@ class FranceTVPluzz:
     
         if mode==None or url==None or len(url)<1:
             self.download_catalog()
-            self.addDir("Replays", "message_FT.json",1,os.path.join(MEDIA_PATH,'replay.png'),'')
+            self.addDir("Replays", "message_FT.json",self.replay_mode,os.path.join(MEDIA_PATH,'replay.png'),'')
             self.addDir("Directs", "message_FT.json",100,os.path.join(MEDIA_PATH,'live.png'),'')
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=__language__ ( 30000 ) )
@@ -113,12 +119,12 @@ class FranceTVPluzz:
             xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
         
         elif mode==1:
-            self.addDir("France 1ère", "catch_up_france1.json",2,os.path.join(MEDIA_PATH,'france1.png'),'')
-            self.addDir("France 2", "catch_up_france2.json",2,os.path.join(MEDIA_PATH,'france2.png'),'')
-            self.addDir("France 3", "catch_up_france3.json",2,os.path.join(MEDIA_PATH,'france3.png'),'')
-            self.addDir("France 4", "catch_up_france4.json",2,os.path.join(MEDIA_PATH,'france4.png'),'')
-            self.addDir("France 5", "catch_up_france5.json",2,os.path.join(MEDIA_PATH,'france5.png'),'')
-            self.addDir("France Ô", "catch_up_franceo.json",2,os.path.join(MEDIA_PATH,'franceO.png'),'')
+            self.addDir("France 1ère", "catch_up_france1.json",self.channel_mode,os.path.join(MEDIA_PATH,'france1.png'),'',{},cat)
+            self.addDir("France 2", "catch_up_france2.json",self.channel_mode,os.path.join(MEDIA_PATH,'france2.png'),'',{},cat)
+            self.addDir("France 3", "catch_up_france3.json",self.channel_mode,os.path.join(MEDIA_PATH,'france3.png'),'',{},cat)
+            self.addDir("France 4", "catch_up_france4.json",self.channel_mode,os.path.join(MEDIA_PATH,'france4.png'),'',{},cat)
+            self.addDir("France 5", "catch_up_france5.json",self.channel_mode,os.path.join(MEDIA_PATH,'france5.png'),'',{},cat)
+            self.addDir("France Ô", "catch_up_franceo.json",self.channel_mode,os.path.join(MEDIA_PATH,'franceO.png'),'',{},cat)
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=__language__ ( 30000 ) )
             xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -134,7 +140,7 @@ class FranceTVPluzz:
                 cat_name          = cat['titre'].encode('utf-8')
                 cat_infos         = {}
                 cat_infos['Plot'] = cat['accroche'].encode('utf-8')
-                self.addDir(cat_name,url,3,'','',cat_infos,cat_name)            
+                self.addDir(cat_name,url,self.categ_mode,'','',cat_infos,cat_name)            
             self.clean_thumbnail(str(url))
             xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=__language__ ( 30000 ) )
             xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -371,6 +377,30 @@ class FranceTVPluzz:
         print "FranceTV Pluzz:self.debug_mode Mode:"
         print self.debug_mode        
         
+    def set_navigation_mode(self):
+        if self.debug_mode:
+            print "FranceTV Pluzz:setting navigation_mode Mode:"
+            print __addon__.getSetting('navigation_mode')        
+        if __addon__.getSetting('navigation_mode') == '0':
+            self.replay_mode = 1
+            self.channel_mode = 2
+            self.categ_mode = 3
+        else:
+            self.replay_mode = 2
+            self.channel_mode = 3
+            self.categ_mode = 1
+        if self.debug_mode:
+            print "FranceTV Pluzz:self.replay_mode Mode:"
+            print self.replay_mode        
+            print "FranceTV Pluzz:self.channel_mode Mode:"
+            print self.channel_mode        
+            print "FranceTV Pluzz:self.categ_mode Mode:"
+            print self.categ_mode        
+        
+    replay_mode = 1
+    channel_mode = 2
+    categ_mode = 3
+    
     
 #######################################################################################################################    
 # BEGIN !

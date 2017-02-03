@@ -8,6 +8,9 @@
   <!--SETTINGS STRINGS -->
   <string id="30010">Avancé</string>
   <string id="30011">Activer le débogage</string>
+  <string id="30020">Mode de navigation des replays</string>
+  <string id="30021">Chaines en premier</string>
+  <string id="30022">Catégories en premier</string>
   
   
    <!--DIALOG STRINGS -->

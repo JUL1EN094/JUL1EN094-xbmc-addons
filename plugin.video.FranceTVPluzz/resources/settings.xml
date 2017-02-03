@@ -6,6 +6,7 @@
     <!-- ADVANCED -->
   	<category label="30010">
 	    <setting label="30011" type="bool" id="debug" default="false" />
+	    <setting label="30020" type="enum" id="navigation_mode" lvalues="30021|30022" />
 	</category>
     
     <!-- DOWNLOAD -->
