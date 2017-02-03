@@ -49,11 +49,10 @@ class FranceTVPluzz:
     """
     main plugin class
     """
-    debug_mode = False #self.debug_mode
-
-    replay_mode = 1
-    channel_mode = 2
-    categ_mode = 3
+    debug_mode   = False #self.debug_mode
+    replay_mode  = 1     #self.replay_mode
+    channel_mode = 2     #self.channel_mode
+    categ_mode   = 3     #self.categ_mode
     
     def __init__( self, *args, **kwargs ):
         print "==============================="
@@ -253,7 +252,8 @@ class FranceTVPluzz:
             directs       = configuration['directs']
             for direct in directs :
                 direct_name    = direct['nom'].encode('utf-8')
-                direct_video   = direct['video_ipad'].encode('utf-8')
+                direct_video   = direct['video_ipad_v5'].encode('utf-8')
+                direct_video   = self.get_live_url(direct_video)
                 direct_image   = os.path.join(MEDIA_PATH, direct_name+'.png')
                 infos          = {}
                 infos['Title'] ='Direct :'+direct_name
@@ -350,7 +350,14 @@ class FranceTVPluzz:
         url_base_videos = configuration['url_base_videos']
         url_base_images = configuration['url_base_images']
         return url_base_videos, url_base_images        
-    
+
+    def get_live_url(self,videoUrl) :
+        authUrl  = "http://hdfauth.francetv.fr/esi/TA"
+        payload  = {'format':'json','url':videoUrl}
+        ws       = webSession.get(authUrl,params=payload)
+        formated = ws.json()
+        return formated['url']
+            
     def get_params(self):
         param      =[]
         paramstring=sys.argv[2]
@@ -382,25 +389,24 @@ class FranceTVPluzz:
             print "FranceTV Pluzz:setting navigation_mode Mode:"
             print __addon__.getSetting('navigation_mode')        
         if __addon__.getSetting('navigation_mode') == '0':
-            self.replay_mode = 1
+            self.replay_mode  = 1
             self.channel_mode = 2
-            self.categ_mode = 3
+            self.categ_mode   = 3
         else:
-            self.replay_mode = 2
+            self.replay_mode  = 2
             self.channel_mode = 3
-            self.categ_mode = 1
+            self.categ_mode   = 1
         if self.debug_mode:
             print "FranceTV Pluzz:self.replay_mode Mode:"
-            print self.replay_mode        
+            print str(self.replay_mode)        
             print "FranceTV Pluzz:self.channel_mode Mode:"
-            print self.channel_mode        
+            print str(self.channel_mode)        
             print "FranceTV Pluzz:self.categ_mode Mode:"
-            print self.categ_mode        
+            print str(self.categ_mode)        
         
-    replay_mode = 1
+    replay_mode  = 1
     channel_mode = 2
-    categ_mode = 3
-    
+    categ_mode   = 3    
     
 #######################################################################################################################    
 # BEGIN !
