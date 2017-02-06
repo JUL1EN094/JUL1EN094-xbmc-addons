@@ -20,7 +20,7 @@ webSession = requests.Session()
 
 __addonID__         = "plugin.video.FranceTVPluzz"
 __author__          = "JUL1EN094"
-__date__            = "31-05-2016"
+__date__            = "06-02-2017"
 __addon__           = xbmcaddon.Addon( __addonID__ )
 __version__         = __addon__.getAddonInfo("version")
 __language__        = __addon__.getLocalizedString
@@ -252,7 +252,7 @@ class FranceTVPluzz:
             directs       = configuration['directs']
             for direct in directs :
                 direct_name    = direct['nom'].encode('utf-8')
-                direct_video   = direct['video_ipad_v5'].encode('utf-8')
+                direct_video   = direct['video_ipad'].encode('utf-8')
                 direct_video   = self.get_live_url(direct_video)
                 direct_image   = os.path.join(MEDIA_PATH, direct_name+'.png')
                 infos          = {}
