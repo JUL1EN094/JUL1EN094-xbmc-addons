@@ -17,13 +17,12 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-import urllib
-from lib import jsunpack
 from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
 MAX_TRIES = 5
+
 
 class YouWatchResolver(UrlResolver):
     name = "youwatch"
@@ -35,12 +34,13 @@ class YouWatchResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        web_url = self.net.http_GET(web_url)._response.url
-        headers = {'Referer': web_url}
+        headers = {'User-Agent': common.FF_USER_AGENT}
+        web_url = self.net.http_HEAD(web_url, headers=headers).get_url()
+        headers['Referer'] = web_url
 
         tries = 0
         while tries < MAX_TRIES:
-            html = self.net.http_GET(web_url).content
+            html = self.net.http_GET(web_url, headers=headers).content
             html = html.replace('\n', '')
             r = re.search('<iframe\s+src\s*=\s*"([^"]+)', html)
             if r:
@@ -48,13 +48,10 @@ class YouWatchResolver(UrlResolver):
             else:
                 break
             tries += 1
-        
-        html = self.net.http_GET(web_url, headers=headers).content
-        r = re.search('file\s*:\s*"([^"]+)', html)
-        if r:
-            return r.group(1) + helpers.append_headers({'Referer': web_url})
 
-        raise ResolverError('Unable to resolve youwatch link. Filelink not found.')
+        html = self.net.http_GET(web_url, headers=headers).content
+        sources = helpers.scrape_sources(html, result_blacklist=['youwatch.'])
+        return helpers.pick_source(sources) + helpers.append_headers(headers)
 
     def get_url(self, host, media_id):
         return 'http://youwatch.org/embed-%s.html' % media_id

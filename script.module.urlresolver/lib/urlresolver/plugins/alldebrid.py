@@ -22,6 +22,7 @@ import urllib
 import json
 from lib import helpers
 from urlresolver import common
+from urlresolver.common import i18n
 from urlresolver.resolver import UrlResolver, ResolverError
 
 class AllDebridResolver(UrlResolver):
@@ -109,9 +110,9 @@ class AllDebridResolver(UrlResolver):
     @classmethod
     def get_settings_xml(cls):
         xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting id="%s_login" type="bool" label="login" default="false"/>' % (cls.__name__))
-        xml.append('<setting id="%s_username" enable="eq(-1,true)" type="text" label="Username" default=""/>' % (cls.__name__))
-        xml.append('<setting id="%s_password" enable="eq(-2,true)" type="text" label="Password" option="hidden" default=""/>' % (cls.__name__))
+        xml.append('<setting id="%s_login" type="bool" label="%s" default="false"/>' % (cls.__name__, i18n('login')))
+        xml.append('<setting id="%s_username" enable="eq(-1,true)" type="text" label="%s" default=""/>' % (cls.__name__, i18n('username')))
+        xml.append('<setting id="%s_password" enable="eq(-2,true)" type="text" label="%s" option="hidden" default=""/>' % (cls.__name__, i18n('password')))
         return xml
 
     @classmethod

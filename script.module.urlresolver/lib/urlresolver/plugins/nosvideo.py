@@ -15,8 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
-
 import re
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -30,28 +30,20 @@ class NosvideoResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-
-        html = self.net.http_GET(web_url).content
-
-        if 'File Not Found' in html:
-            raise ResolverError('File Not Found')
-
-        web_url = 'http://nosvideo.com/vj/video.php?u=%s&w=&h=530' % media_id
-
-        html = self.net.http_GET(web_url).content
-
-        smil_url = re.compile('\':\'(.+?)\'').findall(html)
-        smil_url = [i for i in smil_url if '.smil' in i][0]
-
-        html = self.net.http_GET(smil_url).content
-
-        streamer = re.findall('base\s*=\s*"(.+?)"', html)[0]
-        playpath = re.findall('src\s*=\s*"(.+?)"', html)[0]
-
-        stream_url = '%s playpath=%s' % (streamer, playpath)
-
-        return stream_url
+        headers = {'User-Agent': common.FF_USER_AGENT, 'Referer': web_url}
+        html = self.net.http_GET(web_url, headers=headers).content
+        sources = []
+        streams = set()
+        count = 1
+        for match in re.finditer('<script.*?</script>', html):
+            for match in re.finditer("'(http[^']*v\.mp4)", match.group(0)):
+                stream_url = match.group(1)
+                if stream_url not in streams:
+                    sources.append(('Source %s' % (count), stream_url))
+                    streams.add(stream_url)
+                    count += 1
+            
+        return helpers.pick_source(sources) + helpers.append_headers(headers)
 
     def get_url(self, host, media_id):
-        return 'http://nosvideo.com/%s' % media_id
-
+        return 'http://nosvideo.com/embed/%s' % media_id

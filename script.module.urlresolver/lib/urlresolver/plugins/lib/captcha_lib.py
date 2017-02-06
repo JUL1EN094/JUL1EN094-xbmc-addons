@@ -20,7 +20,6 @@
 from urlresolver import common
 import re
 import xbmcgui
-import xbmc
 import os
 import recaptcha_v2
 import helpers
@@ -34,17 +33,10 @@ def get_response(img):
         wdlg = xbmcgui.WindowDialog()
         wdlg.addControl(img)
         wdlg.show()
-        xbmc.sleep(3000)
-        kb = xbmc.Keyboard('', 'Type the letters in the image', False)
-        kb.doModal()
-        if (kb.isConfirmed()):
-            solution = kb.getText()
-            if solution == '':
-                raise Exception('You must enter text in the image to access video')
-            else:
-                return solution
-        else:
-            raise Exception('Captcha Error')
+        common.kodi.sleep(3000)
+        solution = common.kodi.get_keyboard(common.i18n('letters_image'))
+        if not solution:
+            raise Exception('captcha_error')
     finally:
         wdlg.close()
 
@@ -78,7 +70,7 @@ def do_solvemedia_captcha(captcha_url):
     data = {
         'adcopy_challenge': ''  # set to blank just in case not found; avoids exception on return
     }
-    data.update(helpers.get_hidden(html))
+    data.update(helpers.get_hidden(html), include_submit=False)
     captcha_img = os.path.join(common.profile_path, IMG_FILE)
     try: os.remove(captcha_img)
     except: pass

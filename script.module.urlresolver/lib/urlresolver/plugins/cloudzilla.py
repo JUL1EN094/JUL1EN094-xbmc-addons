@@ -15,33 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
+from __generic_resolver__ import GenericResolver
 
-import re
-from lib import jsunpack
-from urlresolver import common
-from urlresolver.resolver import UrlResolver, ResolverError
-
-class CloudZillaResolver(UrlResolver):
+class CloudZillaResolver(GenericResolver):
     name = "cloudzilla"
     domains = ['cloudzilla.to', 'neodrive.co']
     pattern = '(?://|\.)(cloudzilla.to|neodrive.co)/(?:share/file|embed)/([A-Za-z0-9]+)'
-
-    def __init__(self):
-        self.net = common.Net()
-
-    def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-        html = self.net.http_GET(web_url).content
-        for match in re.finditer('(eval\(function.*?)</script>', html, re.DOTALL):
-            html += jsunpack.unpack(match.group(1))
-            
-        common.log_utils.log(html)
-
-        match = re.search('vurl\s*=\s*"([^"]+)', html)
-        if match:
-            return match.group(1)
-        else:
-            raise ResolverError('Unable to resolve cloudtime link. Filelink not found.')
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id, 'http://{host}/embed/{media_id}')

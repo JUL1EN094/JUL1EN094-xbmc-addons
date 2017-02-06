@@ -19,6 +19,7 @@ import json
 import re
 import urllib2
 from urlresolver import common
+from urlresolver.common import i18n
 from lib import helpers
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -44,10 +45,10 @@ class VidUpMeResolver(UrlResolver):
             try:
                 vt = self.__auth_ip(media_id)
                 if vt:
-                    source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
+                    source = helpers.pick_source(sources)
                     return '%s?direct=false&ua=1&vt=%s' % (source, vt) + helpers.append_headers({'User-Agent': common.SMU_USER_AGENT})
             except urllib2.HTTPError:
-                source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
+                source = helpers.pick_source(sources)
                 return source
         else:
             raise ResolverError('Unable to locate links')
@@ -63,10 +64,10 @@ class VidUpMeResolver(UrlResolver):
         return sources
 
     def __auth_ip(self, media_id):
-        header = 'VidUP.me Stream Authorization'
-        line1 = 'To play this video, authorization is required'
-        line2 = 'Visit the link below to authorize the devices on your network:'
-        line3 = '[B][COLOR blue]https://vidup.me/pair[/COLOR][/B] then "Activate Streaming"'
+        header = i18n('vidup_auth_header')
+        line1 = i18n('auth_required')
+        line2 = i18n('visit_link')
+        line3 = i18n('click_pair') % ('https://vidup.me/pair')
         with common.kodi.CountdownDialog(header, line1, line2, line3) as cd:
             return cd.start(self.__check_auth, [media_id])
         
@@ -81,9 +82,3 @@ class VidUpMeResolver(UrlResolver):
         
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id)
-
-    @classmethod
-    def get_settings_xml(cls):
-        xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
-        return xml

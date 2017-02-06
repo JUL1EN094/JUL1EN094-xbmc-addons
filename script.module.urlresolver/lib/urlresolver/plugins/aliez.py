@@ -18,33 +18,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import re
-from urlresolver import common
-from urlresolver.resolver import UrlResolver, ResolverError
+from __generic_resolver__ import GenericResolver
 
-class AliezResolver(UrlResolver):
+class AliezResolver(GenericResolver):
     name = "aliez"
     domains = ['aliez.me']
     pattern = '(?://|\.)(aliez\.me)/(?:(?:player/video\.php\?id=([0-9]+)&s=([A-Za-z0-9]+))|(?:video/([0-9]+)/([A-Za-z0-9]+)))'
-
-    def __init__(self):
-        self.net = common.Net()
-
-    def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-        response = self.net.http_GET(web_url)
-        html = response.content
-
-        if html:
-            try:
-                stream_url = re.search(r"file:\s'(.+?)'", html).groups()[0]
-                return stream_url
-                
-            except:
-                pass
-
-        raise ResolverError('No playable video found.')
 
     def get_host_and_id(self, url):
         r = re.search(self.pattern, url, re.I)
@@ -54,7 +34,7 @@ class AliezResolver(UrlResolver):
             return r
         else:
             return False
-    
+
     def get_url(self, host, media_id):
         media_id = media_id.split("|")
         return self._default_get_url(host, media_id, 'http://emb.%s/player/video.php?id=%s&s=%s&w=590&h=332' % (host, media_id[0], media_id[1]))

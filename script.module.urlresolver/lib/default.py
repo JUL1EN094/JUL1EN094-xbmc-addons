@@ -33,7 +33,7 @@ def auth_rd():
     kodi.sleep(500)  # sleep or authorize won't work for some reason
     from urlresolver.plugins import realdebrid
     if realdebrid.RealDebridResolver().authorize_resolver():
-        kodi.notify(msg='Real-Debrid Resolver Authorized', duration=5000)
+        kodi.notify(msg=kodi.i18n('rd_authorized'), duration=5000)
 
 @url_dispatcher.register(MODES.RESET_RD)
 def reset_rd():
@@ -42,14 +42,14 @@ def reset_rd():
     from urlresolver.plugins import realdebrid
     rd = realdebrid.RealDebridResolver()
     rd.reset_authorization()
-    kodi.notify(msg='Real-Debrid Authorization Reset', duration=5000)
+    kodi.notify(msg=kodi.i18n('rd_auth_reset'), duration=5000)
     
 @url_dispatcher.register(MODES.RESET_CACHE)
 def reset_cache():
     if cache.reset_cache():
-        kodi.notify(msg='Cache Reset')
+        kodi.notify(msg=kodi.i18n('cache_reset'))
     else:
-        kodi.notify(msg='Cache Reset Failed')
+        kodi.notify(msg=kodi.i18n('cache_reset_failed'))
     
 def main(argv=None):
     if sys.argv: argv = sys.argv

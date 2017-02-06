@@ -17,6 +17,7 @@
 This module defines the interfaces that you can implement when writing
 your URL resolving plugin.
 '''
+import os
 import re
 import abc
 from urlresolver import common
@@ -137,8 +138,8 @@ class UrlResolver(object):
             A list containing XML elements that will be valid in settings.xml
         '''
         xml = [
-            '<setting id="%s_priority" type="number" label="Priority" default="100"/>' % (cls.__name__),
-            '<setting id="%s_enabled" ''type="bool" label="Enabled" default="true"/>' % (cls.__name__)
+            '<setting id="%s_priority" type="number" label="%s" default="100"/>' % (cls.__name__, common.i18n('priority')),
+            '<setting id="%s_enabled" ''type="bool" label="%s" default="true"/>' % (cls.__name__, common.i18n('enabled'))
         ]
         return xml
 
@@ -172,3 +173,33 @@ class UrlResolver(object):
         if template is None: template = 'http://{host}/embed-{media_id}.html'
         host = self._get_host(host)
         return template.format(host=host, media_id=media_id)
+
+    @common.cache.cache_method(cache_limit=1)
+    def _auto_update(self, py_source, py_path, key=''):
+        try:
+            if self.get_setting('auto_update') == 'true' and py_source:
+                headers = self.net.http_HEAD(py_source).get_headers(as_dict=True)
+                common.log_utils.log(headers)
+                old_etag = self.get_setting('etag')
+                new_etag = headers.get('Etag', '')
+                old_len = common.file_length(py_path, key)
+                new_len = int(headers.get('Content-Length', 0))
+                py_name = os.path.basename(py_path)
+                
+                if old_etag != new_etag or old_len != new_len:
+                    common.log_utils.log('Updating %s: |%s|%s|%s|%s|' % (py_name, old_etag, new_etag, old_len, new_len))
+                    self.set_setting('etag', new_etag)
+                    new_py = self.net.http_GET(py_source).content
+                    if new_py:
+                        if key:
+                            new_py = common.decrypt_py(new_py, key)
+                            
+                        if new_py and 'import' in new_py:
+                            with open(py_path, 'w') as f:
+                                f.write(new_py)
+                            common.kodi.notify('%s %s' % (self.name, common.i18n('resolver_updated')))
+                else:
+                    common.log_utils.log('Reusing existing %s: |%s|%s|%s|%s|' % (py_name, old_etag, new_etag, old_len, new_len))
+                common.log_file_hash(py_path)
+        except Exception as e:
+            common.log_utils.log_warning('Exception during %s Auto-Update code retrieve: %s' % (self.name, e))

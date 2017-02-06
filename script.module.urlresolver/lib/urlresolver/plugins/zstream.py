@@ -15,32 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __generic_resolver__ import GenericResolver
 
-
-import re
-from urlresolver import common
-from urlresolver.resolver import UrlResolver, ResolverError
-
-class ZstreamResolver(UrlResolver):
+class ZstreamResolver(GenericResolver):
     name = 'zstream.to'
     domains = ['zstream.to']
     pattern = '(?://|\.)(zstream\.to)/(?:embed-)?([0-9a-zA-Z]+)'
-
-    def __init__(self):
-        self.net = common.Net()
-
-    def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-
-        html = self.net.http_GET(web_url).content
-
-        stream_url = re.compile('file *: *"(http.+?)"').findall(html)
-        stream_url = [i for i in stream_url if not i.endswith('.srt')]
-
-        if stream_url:
-            return stream_url[-1]
-
-        raise ResolverError('File Not Found or removed')
-
-    def get_url(self, host, media_id):
-        return 'http://zstream.to/embed-%s.html' % media_id

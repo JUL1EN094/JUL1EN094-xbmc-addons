@@ -21,6 +21,7 @@ import urlparse
 import socket
 import xml.etree.ElementTree as ET
 from urlresolver import common
+from urlresolver.common import i18n
 from urlresolver.resolver import UrlResolver, ResolverError
 
 MAX_REDIR = 10
@@ -112,9 +113,9 @@ class ZeveraResolver(UrlResolver):
     @classmethod
     def get_settings_xml(cls):
         xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting id="%s_login" type="bool" label="login" default="false"/>' % (cls.__name__))
-        xml.append('<setting id="%s_username" enable="eq(-1,true)" type="text" label="Username" default=""/>' % (cls.__name__))
-        xml.append('<setting id="%s_password" enable="eq(-2,true)" type="text" label="Password" option="hidden" default=""/>' % (cls.__name__))
+        xml.append('<setting id="%s_login" type="bool" label="%s" default="false"/>' % (cls.__name__, i18n('login')))
+        xml.append('<setting id="%s_username" enable="eq(-1,true)" type="text" label="%s" default=""/>' % (cls.__name__, i18n('username')))
+        xml.append('<setting id="%s_password" enable="eq(-2,true)" type="text" label="%s" option="hidden" default=""/>' % (cls.__name__, i18n('password')))
         return xml
 
     @classmethod

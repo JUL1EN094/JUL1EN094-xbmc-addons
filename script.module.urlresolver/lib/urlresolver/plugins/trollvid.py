@@ -20,7 +20,7 @@ import re
 import base64
 import urllib
 from urlresolver import common
-from urlresolver.resolver import UrlResolver
+from urlresolver.resolver import UrlResolver, ResolverError
 
 class TrollVidResolver(UrlResolver):
     name = 'trollvid.net'
@@ -34,7 +34,7 @@ class TrollVidResolver(UrlResolver):
         web_url = self.get_url(host, media_id)
 
         html = self.net.http_GET(web_url).content
-
+        stream_url = None
         try: stream_url = re.search('url\s*:\s*"(http.+?)"', html).group(1)
         except: pass
 
@@ -44,9 +44,10 @@ class TrollVidResolver(UrlResolver):
         try: stream_url = base64.b64decode(re.search('atob\(\'(.+?)\'', html).group(1))
         except: pass
 
-        stream_url = urllib.unquote_plus(stream_url)
+        if not stream_url:
+            raise ResolverError('File not found')
 
-        return stream_url
+        return urllib.unquote_plus(stream_url)
 
     def get_url(self, host, media_id):
         return 'http://trollvid.net/embed/%s' % media_id

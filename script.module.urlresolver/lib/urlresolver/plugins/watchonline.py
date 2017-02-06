@@ -18,10 +18,10 @@
 """
 
 import re
-from lib import jsunpack
 from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
+
 
 class WatchonlineResolver(UrlResolver):
     name = "watchonline"
@@ -34,32 +34,24 @@ class WatchonlineResolver(UrlResolver):
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
         headers = {'User-Agent': common.FF_USER_AGENT}
-        
+
         html = self.net.http_GET(web_url, headers=headers).content
 
         match = re.search('file\s*:\s*["\']([^"\']+)', html)
         if not match:
-            ResolverError('File Not Found or removed')
+            raise ResolverError('File Not Found or removed')
         else:
             source = match.group(1)
-            
+
         html = self.net.http_GET(source).content
         html = html.replace('\n', '')
-        
-        sources = re.findall('RESOLUTION\s*=\s*([^,]+).+?(http[^\#]+)', html)
-        if not sources:
-            ResolverError('File Not Found or removed')
-        else:
-            source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
-            return source
 
-        raise ResolverError('File not found')
+        sources = re.findall('RESOLUTION\s*=\s*([^,]+).+?(http[^\#]+)', html)
+        sources.sort(key=lambda x: int(x[0].split('x')[0]), reverse=True)
+        if not sources:
+            raise ResolverError('File Not Found or removed')
+        else:
+            return helpers.pick_source(sources) + helpers.append_headers(headers)
 
     def get_url(self, host, media_id):
         return 'http://www.%s/embed-%s.html' % (host, media_id)
-
-    @classmethod
-    def get_settings_xml(cls):
-        xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
-        return xml

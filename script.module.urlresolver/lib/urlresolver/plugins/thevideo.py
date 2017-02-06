@@ -15,11 +15,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
-import re
 import json
-import time
 from lib import helpers
 from urlresolver import common
+from urlresolver.common import i18n
 from urlresolver.resolver import UrlResolver, ResolverError
 
 INTERVALS = 5
@@ -40,30 +39,20 @@ class TheVideoResolver(UrlResolver):
         }
         headers.update(self.headers)
         html = self.net.http_GET(web_url, headers=headers).content
-        sources = self.__parse_sources_list(html)
+        sources = helpers.parse_sources_list(html)
         if sources:
             vt = self.__auth_ip(media_id)
             if vt:
-                source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
+                source = helpers.pick_source(sources)
                 return '%s?direct=false&ua=1&vt=%s' % (source, vt) + helpers.append_headers({'User-Agent': common.SMU_USER_AGENT})
         else:
             raise ResolverError('Unable to locate links')
 
-    def __parse_sources_list(self, html):
-        sources = []
-        match = re.search('sources\s*:\s*\[(.*?)\]', html, re.DOTALL)
-        if match:
-            for match in re.finditer('''['"]?file['"]?\s*:\s*['"]([^'"]+)['"][^}]*['"]?label['"]?\s*:\s*['"]([^'"]*)''', match.group(1), re.DOTALL):
-                stream_url, label = match.groups()
-                stream_url = stream_url.replace('\/', '/')
-                sources.append((label, stream_url))
-        return sources
-
     def __auth_ip(self, media_id):
-        header = 'TheVideo.me Stream Authorization'
-        line1 = 'To play this video, authorization is required'
-        line2 = 'Visit the link below to authorize the devices on your network:'
-        line3 = '[B][COLOR blue]https://thevideo.me/pair[/COLOR][/B] then "Activate Streaming"'
+        header = i18n('thevideo_auth_header')
+        line1 = i18n('auth_required')
+        line2 = i18n('visit_link')
+        line3 = i18n('click_pair') % ('https://thevideo.me/pair')
         with common.kodi.CountdownDialog(header, line1, line2, line3) as cd:
             return cd.start(self.__check_auth, [media_id])
         
@@ -78,9 +67,3 @@ class TheVideoResolver(UrlResolver):
         
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id)
-
-    @classmethod
-    def get_settings_xml(cls):
-        xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
-        return xml

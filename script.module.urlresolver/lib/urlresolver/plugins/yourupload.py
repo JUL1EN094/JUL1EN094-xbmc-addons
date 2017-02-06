@@ -17,9 +17,11 @@
 """
 
 import re
-import urllib2
+import urlparse
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
+
 
 class YourUploadResolver(UrlResolver):
     name = "yourupload.com"
@@ -32,21 +34,21 @@ class YourUploadResolver(UrlResolver):
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
 
-        headers = {
-            'User-Agent': common.IE_USER_AGENT,
-            'Referer': web_url
-        }
+        html = self.net.http_GET(web_url).content
+        url = re.findall('file\s*:\s*(?:\'|\")(.+?)(?:\'|\")', html)
 
-        html = self.net.http_GET(web_url, headers=headers).content
+        if not url: raise ResolverError('No video found')
 
-        r = re.search("file\s*:\s*'(.+?)'", html)
-        if r:
-            stream_url = r.group(1)
-            stream_url = urllib2.urlopen(urllib2.Request(stream_url, headers=headers)).geturl()
+        headers = {'User-Agent': common.FF_USER_AGENT,
+                'Referer': web_url}
 
-            return stream_url
-        else:
-            raise ResolverError('no file located')
+        url = urlparse.urljoin(web_url, url[0])
+        url = self.net.http_HEAD(url, headers=headers).get_url()
+
+        url = url + helpers.append_headers(headers)
+        return url
+
+        raise ResolverError('No video found')
 
     def get_url(self, host, media_id):
         return 'http://www.yourupload.com/embed/%s' % media_id

@@ -15,37 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __generic_resolver__ import GenericResolver
 
-import re
-import urllib
-from urlresolver import common
-from lib import helpers
-from urlresolver.resolver import UrlResolver, ResolverError
-
-
-class PlayHDResolver(UrlResolver):
+class PlayHDResolver(GenericResolver):
     name = "playhd.video"
     domains = ["www.playhd.video", "www.playhd.fo"]
-    pattern = '(?://|\.)(playhd\.(?:video|fo))/embed\.php?.*?vid=([0-9]+)[\?&]*'
-
-    def __init__(self):
-        self.net = common.Net()
-
-    def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-        resp = self.net.http_GET(web_url)
-        html = resp.content
-
-        headers = dict(resp._response.info().items())
-
-        r = re.findall('<source\s+src="(.*?)"', html)
-
-        if r:
-            stream_url = r[0] + helpers.append_headers({'Cookie': headers['set-cookie']})
-        else:
-            raise ResolverError('no file located')
-
-        return stream_url
+    pattern = '(?://|\.)(playhd\.(?:video|fo))/(?:embed\.php?.*?vid=|video/)([0-9]+)'
 
     def get_url(self, host, media_id):
-        return 'http://www.playhd.video/embed.php?vid=%s' % media_id
+        return 'http://www.playhd.video/embed.php?vid=%s' % (media_id)

@@ -15,28 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
+from __generic_resolver__ import GenericResolver
 
-import re
-from urlresolver import common
-from urlresolver.resolver import UrlResolver, ResolverError
-
-class StagevuResolver(UrlResolver):
+class StagevuResolver(GenericResolver):
     name = "stagevu"
     domains = ["stagevu.com"]
     pattern = '(?://|\.)(stagevu\.com)/(?:video/|embed.+?uid=)?([A-Za-z0-9]+)'
-
-    def __init__(self):
-        self.net = common.Net()
-
-    def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-        link = self.net.http_GET(web_url).content
-        p = re.compile('type="video/.+?"\s+src="(.+?)"')
-        match = p.findall(link)
-        if match:
-            return match[0]
-        else:
-            raise ResolverError('File Not Found or removed')
 
     def get_url(self, host, media_id):
         return 'http://www.stagevu.com/video/%s' % media_id

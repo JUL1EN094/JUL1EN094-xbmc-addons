@@ -19,6 +19,7 @@ import re
 import json
 import urllib
 from urlresolver import common
+from urlresolver.common import i18n
 from urlresolver.resolver import UrlResolver, ResolverError
 
 class MegaDebridResolver(UrlResolver):
@@ -70,10 +71,14 @@ class MegaDebridResolver(UrlResolver):
 
     @common.cache.cache_method(cache_limit=8)
     def get_hosters(self):
-        url = self.base_url + '?' + urllib.urlencode({'action': 'getHosters'})
-        html = self.net.http_GET(url).content
-        js_data = json.loads(html)
-        return [host.lower() for item in js_data['hosters'] for host in item]
+        try:
+            url = self.base_url + '?' + urllib.urlencode({'action': 'getHosters'})
+            html = self.net.http_GET(url).content
+            js_data = json.loads(html)
+            return [host.lower() for item in js_data['hosters'] for host in item]
+        except Exception as e:
+            common.log_utils.log_error('Error getting Meg-Debrid hosts: %s' % (e))
+            return []
 
     def valid_url(self, url, host):
         if self.hosters is None:
@@ -116,10 +121,10 @@ class MegaDebridResolver(UrlResolver):
     @classmethod
     def get_settings_xml(cls):
         xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting id="%s_use_https" type="bool" label="Use HTTPS" default="true"/>' % (cls.__name__))
-        xml.append('<setting id="%s_login" type="bool" label="login" default="false"/>' % (cls.__name__))
-        xml.append('<setting id="%s_username" enable="eq(-1,true)" type="text" label="Username" default=""/>' % (cls.__name__))
-        xml.append('<setting id="%s_password" enable="eq(-2,true)" type="text" label="Password" option="hidden" default=""/>' % (cls.__name__))
+        xml.append('<setting id="%s_use_https" type="bool" label="%s" default="true"/>' % (cls.__name__, i18n('use_https')))
+        xml.append('<setting id="%s_login" type="bool" label="%s" default="false"/>' % (cls.__name__, i18n('login')))
+        xml.append('<setting id="%s_username" enable="eq(-1,true)" type="text" label="%s" default=""/>' % (cls.__name__, i18n('username')))
+        xml.append('<setting id="%s_password" enable="eq(-2,true)" type="text" label="%s" option="hidden" default=""/>' % (cls.__name__, i18n('password')))
         return xml
 
     @classmethod

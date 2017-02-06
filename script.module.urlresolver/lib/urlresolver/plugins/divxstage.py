@@ -15,33 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
+from __generic_resolver__ import GenericResolver
 
-import re
-from lib import helpers
-from urlresolver import common
-from urlresolver.resolver import UrlResolver, ResolverError
-
-class DivxstageResolver(UrlResolver):
+class DivxstageResolver(GenericResolver):
     name = 'divxstage'
     domains = ['divxstage.eu', 'divxstage.net', 'divxstage.to', 'cloudtime.to']
     pattern = '(?://|\.)(divxstage.eu|divxstage.net|divxstage.to|cloudtime.to)/(?:video/|embed/\?v=)([A-Za-z0-9]+)'
-
-    def __init__(self):
-        self.net = common.Net()
-
-    def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-
-        html = self.net.http_GET(web_url).content
-
-        sources = []
-        for idx, match in enumerate(re.finditer('<source src="([^"]+)"', html, re.DOTALL)):
-            sources.append(('Mirror ' + str(idx + 1), match.group(1)))
-
-        if not sources:
-            raise ResolverError('File not found')
-        source = helpers.pick_source(sources, self.get_setting('auto_pick') == 'true')
-        return source
 
     def get_url(self, host, media_id):
         return 'http://www.cloudtime.to/embed/?v=%s' % media_id

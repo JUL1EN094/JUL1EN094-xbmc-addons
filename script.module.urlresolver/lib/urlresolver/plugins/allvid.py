@@ -17,9 +17,10 @@
 """
 
 import re
-from lib import jsunpack
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
+
 
 class AllVidResolver(UrlResolver):
     name = "allvid"
@@ -28,31 +29,20 @@ class AllVidResolver(UrlResolver):
 
     def __init__(self):
         self.net = common.Net()
-        self.user_agent = common.IE_USER_AGENT
-        self.net.set_user_agent(self.user_agent)
-        self.headers = {'User-Agent': self.user_agent}
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        self.headers['Referer'] = web_url
-        html = self.net.http_GET(web_url, headers=self.headers).content
+        headers = {'User-Agent': common.IE_USER_AGENT,
+                   'Referer': web_url}
+        html = self.net.http_GET(web_url, headers=headers).content
 
-        r = re.search('<iframe\s+src\s*=\s*"([^"]+)', html, re.DOTALL)
-
-        if r:
-            web_url = r.group(1)
-            html = self.net.http_GET(web_url, headers=self.headers).content
-
-        for match in re.finditer('(eval\(function.*?)</script>', html, re.DOTALL):
-            js_data = jsunpack.unpack(match.group(1))
-            js_data = js_data.replace('\\\'', '\'')
-
-            r = re.search('sources\s*:\s*\[\s*\{\s*file\s*:\s*["\'](.+?)["\']', js_data)
-
-            if r:
-                return r.group(1)
+        iframe = re.findall('<iframe\s+src\s*=\s*"([^"]+)', html, re.DOTALL)[0]
+        
+        if iframe:
+            return helpers.get_media_url(iframe, result_blacklist=['dl', 'm3u8'])
+        
         else:
-            raise ResolverError('File not found')
+            raise ResolverError('File Not Found or removed')
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id)
