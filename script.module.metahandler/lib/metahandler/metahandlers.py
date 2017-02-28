@@ -1386,7 +1386,8 @@ class MetaData:
         meta['tagline'] = md.get('tagline', '')
         meta['rating'] = float(md.get('rating', 0))
         meta['votes'] = str(md.get('votes', ''))
-        meta['duration'] = int(str(md.get('runtime', 0))) * 60
+        try: meta['duration'] = int(str(md.get('runtime', 0))) * 60
+        except: meta['duration'] = 0
         meta['plot'] = md.get('overview', '')
         meta['mpaa'] = md.get('certification', '')       
         meta['premiered'] = md.get('released', '')
@@ -1552,7 +1553,8 @@ class MetaData:
                 meta['title'] = name
                 if str(show.rating) != '' and show.rating != None:
                     meta['rating'] = float(show.rating)
-                meta['duration'] = int(show.runtime) * 60
+                try: meta['duration'] = int(show.runtime) * 60
+                except: meta['duration'] = 0
                 meta['plot'] = show.overview
                 meta['mpaa'] = show.content_rating
                 meta['premiered'] = str(show.first_aired)
@@ -1588,7 +1590,8 @@ class MetaData:
                         if imdb_meta.has_key('rating'):
                             meta['rating'] = float(imdb_meta['rating'])
                         if imdb_meta.has_key('runtime'):
-                            meta['duration'] = int(imdb_meta['runtime']) * 60
+                            try: meta['duration'] = int(imdb_meta['runtime']) * 60
+                            except: meta['duration'] = 0
                         if imdb_meta.has_key('cast'):
                             meta['cast'] = imdb_meta['cast']
                         if imdb_meta.has_key('cover_url'):
@@ -2088,6 +2091,7 @@ class MetaData:
                     common.addon.log('Episode matched row found, deleting table entry', 0)
                     common.addon.log('SQL Delete: %s' % sql_delete, 0)
                     self.dbcur.execute(sql_delete) 
+                    self.dbcon.commit()
         except Exception, e:
             common.addon.log('************* Error attempting to delete from cache table: %s ' % e, 4)
             common.addon.log('Meta data: %' % meta, 4)
