@@ -1,6 +1,6 @@
-"""
-grifthost urlresolver plugin
-Copyright (C) 2015 tknorris
+'''
+    urlresolver XBMC Addon
+    Copyright (C) 2016 MavWolverine
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,13 +14,13 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
 from __generic_resolver__ import GenericResolver
 
-class IDoWatchResolver(GenericResolver):
-    name = 'idowatch'
-    domains = ['idowatch.net']
-    pattern = '(?://|\.)(idowatch\.net)/(?:embed-)?([0-9a-zA-Z]+)'
+class VidFileResolver(GenericResolver):
+    name = "vidfile"
+    domains = ["vidfile.net"]
+    pattern = '(?://|\.)(vidfile.net)/v/([0-9A-Za-z]+)'
 
     def get_url(self, host, media_id):
-        return 'http://idowatch.net/%s.html' % (media_id)
+        return self._default_get_url(host, media_id, 'http://{host}/v/{media_id}')

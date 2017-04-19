@@ -23,7 +23,7 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class ApnaSaveResolver(UrlResolver):
     name = "apnasave.com"
-    domains = ["www.apnasave.club"]
+    domains = ["apnasave.club"]
     pattern = '(?://|\.)(apnasave\.club)/embed/([0-9a-f]+)'
 
     def __init__(self):
@@ -53,5 +53,5 @@ class ApnaSaveResolver(UrlResolver):
         return stream_url
 
     def get_url(self, host, media_id):
-        return 'http://%s/embed/%s' % (host, media_id)
+        return self._default_get_url(host, media_id, 'http://{host}/embed/{media_id}')
 

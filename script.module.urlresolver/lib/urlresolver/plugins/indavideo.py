@@ -23,7 +23,7 @@ from urlresolver.resolver import UrlResolver, ResolverError
 class IndavideoResolver(UrlResolver):
     name = "indavideo"
     domains = ["indavideo.hu"]
-    pattern = '(?://|\.)(indavideo\.hu)/(?:player/video/|video/)([^/]+)'
+    pattern = '(?://|\.)(indavideo\.hu)/(?:player/video|video)/([0-9A-Za-z-_]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -47,15 +47,18 @@ class IndavideoResolver(UrlResolver):
             data = json.loads(html)
 
         if data['success'] == '1':
-            video_file = data['data']['video_file']
-            if video_file == '':
+            video_files = data['data']['video_files']
+            if not video_files:
                 raise ResolverError('File removed')
-            
-            video_file = video_file.rsplit('/', 1)[0] + '/'
-            sources = list(set(data['data']['flv_files']))
-            sources = [(i.rsplit('.', 2)[-2] + 'p', i.split('?')[0] + '?channel=main') for i in sources]
+
+            tokens = data['data']['filesh']
+
+            sources = [(re.search('\.(\d+)\.mp4', i).group(1), i) for i in video_files]
+            sources = [(i[0], i[1] + '&token=%s' % tokens[i[0]]) for i in sources]
+            try: sources = list(set(sources))
+            except: pass
             sources = sorted(sources, key=lambda x: x[0])[::-1]
-            return video_file + helpers.pick_source(sources)
+            return helpers.pick_source(sources)
 
         raise ResolverError('File not found')
 

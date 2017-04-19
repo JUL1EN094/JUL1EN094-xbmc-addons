@@ -1,4 +1,7 @@
 """
+    OVERALL CREDIT TO:
+        t0mm0, Eldorado, VOINAGE, BSTRDMKR, tknorris, smokdpi, TheHighway
+
     urlresolver XBMC Addon
     Copyright (C) 2011 t0mm0
 
@@ -15,9 +18,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from __generic_resolver__ import GenericResolver
 
-class UploadcResolver(GenericResolver):
-    name = 'uploadc'
-    domains = ['uploadc.com', 'uploadc.ch', 'zalaa.com']
-    pattern = '(?://|\.)(uploadc.com|uploadc.ch|zalaa.com)/(?:embed-)?([0-9a-zA-Z]+)'
+class StreamangoResolver(GenericResolver):
+    name = "streamango"
+    domains = ['streamango.com']
+    pattern = '(?://|\.)(streamango\.com)/(?:f/|embed/)?([0-9a-zA-Z]+)'
+
+    def get_url(self, host, media_id):
+        return self._default_get_url(host, media_id, 'http://{host}/f/{media_id}')

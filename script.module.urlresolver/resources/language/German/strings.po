@@ -30,7 +30,7 @@ msgstr "Besuche folgenden Link, um Geräte im Netzwerk zu autorisieren:"
 
 msgctxt "#33003"
 msgid "[B][COLOR blue]%s[/COLOR][/B] then click 'Pair'"
-msgstr "[B][COLOR blue]%s[/COLOR][/B] und klicken dann 'Pair'"
+msgstr "[B][COLOR blue]%s[/COLOR][/B] und klicke dann 'Pair'"
 
 msgctxt "#33004"
 msgid "No OpenLoad Authorization"
@@ -175,4 +175,12 @@ msgstr "Abbrechen"
 msgctxt "#33039"
 msgid "OK"
 msgstr "OK"
+
+msgctxt "#33040"
+msgid "IP Stream Authorization Pairing"
+msgstr "IP Stream Autorisierung"
+
+msgctxt "#33041"
+msgid "No IP Authorization"
+msgstr "Keine IP Autorisierung"
 

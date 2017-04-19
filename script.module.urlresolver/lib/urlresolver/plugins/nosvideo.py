@@ -32,11 +32,14 @@ class NosvideoResolver(UrlResolver):
         web_url = self.get_url(host, media_id)
         headers = {'User-Agent': common.FF_USER_AGENT, 'Referer': web_url}
         html = self.net.http_GET(web_url, headers=headers).content
-        sources = []
-        streams = set()
-        count = 1
-        for match in re.finditer('<script.*?</script>', html):
-            for match in re.finditer("'(http[^']*v\.mp4)", match.group(0)):
+        html = helpers.add_packed_data(html)
+        match = re.search('playlist\s*:\s*"([^"]+)', html)
+        if match:
+            xml = self.net.http_GET(match.group(1), headers=headers).content
+            count = 1
+            sources = []
+            streams = set()
+            for match in re.finditer('''file="([^'"]*mp4)''', xml):
                 stream_url = match.group(1)
                 if stream_url not in streams:
                     sources.append(('Source %s' % (count), stream_url))

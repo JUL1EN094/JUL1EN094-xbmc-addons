@@ -27,19 +27,26 @@ from urlresolver.resolver import UrlResolver, ResolverError
 class RuTubeResolver(UrlResolver):
     name = "rutube.ru"
     domains = ['rutube.ru']
-    pattern = '(?://|\.)(rutube\.ru)/(?:play/embed/)?(\d*)'
+    pattern = '(?://|\.)(rutube\.ru)/(?:play/embed/|video/)([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
+        headers = {
+            'User-Agent': common.ANDROID_USER_AGENT
+        }
 
         json_url = 'http://rutube.ru/api/play/options/%s/?format=json&no_404=true' % media_id
 
-        json_data = self.net.http_GET(json_url).content
+        json_data = self.net.http_GET(json_url, headers=headers).content
+        json_data = json.loads(json_data)['video_balancer']
+        url = json_data.get('m3u8')
+        if not url == None: return url
 
-        try: return json.loads(json_data)['video_balancer']['m3u8']
+        json_url = json_data.get('json')
+        json_data = self.net.http_GET(json_url, headers=headers).content
+        try: return json.loads(json_data)['results'][0]
         except: pass
 
         raise ResolverError('No playable video found.')

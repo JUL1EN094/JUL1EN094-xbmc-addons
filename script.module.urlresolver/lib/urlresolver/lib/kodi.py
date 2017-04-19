@@ -29,6 +29,7 @@ import time
 import log_utils
 import strings
 import CustomProgressDialog
+import urlresolver
 
 addon = xbmcaddon.Addon('script.module.urlresolver')
 get_setting = addon.getSetting
@@ -187,12 +188,14 @@ class ProgressDialog(object):
             pd = xbmcgui.DialogProgressBG()
             msg = line1 + line2 + line3
             pd.create(self.heading, msg)
-        else:
+        elif urlresolver.ALLOW_POPUPS:
             if xbmc.getCondVisibility('Window.IsVisible(progressdialog)'):
                 pd = CustomProgressDialog.ProgressDialog()
             else:
                 pd = xbmcgui.DialogProgress()
             pd.create(self.heading, line1, line2, line3)
+        else:
+            pd = None
         return pd
         
     def __enter__(self):
@@ -228,7 +231,7 @@ class CountdownDialog(object):
         self.countdown = countdown
         self.interval = interval
         self.line3 = line3
-        if active:
+        if active and urlresolver.ALLOW_POPUPS:
             if xbmc.getCondVisibility('Window.IsVisible(progressdialog)'):
                 pd = CustomProgressDialog.ProgressDialog()
             else:
@@ -255,22 +258,23 @@ class CountdownDialog(object):
         if result:
             return result
         
-        start = time.time()
-        expires = time_left = self.countdown
-        interval = self.interval
-        while time_left > 0:
-            for _ in range(CountdownDialog.__INTERVALS):
-                sleep(interval * 1000 / CountdownDialog.__INTERVALS)
-                if self.is_canceled(): return
-                time_left = expires - int(time.time() - start)
-                if time_left < 0: time_left = 0
-                progress = time_left * 100 / expires
-                line3 = 'Expires in: %s seconds' % (time_left) if not self.line3 else ''
-                self.update(progress, line3=line3)
-                
-            result = func(*args, **kwargs)
-            if result:
-                return result
+        if self.pd is not None:
+            start = time.time()
+            expires = time_left = self.countdown
+            interval = self.interval
+            while time_left > 0:
+                for _ in range(CountdownDialog.__INTERVALS):
+                    sleep(interval * 1000 / CountdownDialog.__INTERVALS)
+                    if self.is_canceled(): return
+                    time_left = expires - int(time.time() - start)
+                    if time_left < 0: time_left = 0
+                    progress = time_left * 100 / expires
+                    line3 = 'Expires in: %s seconds' % (time_left) if not self.line3 else ''
+                    self.update(progress, line3=line3)
+                    
+                result = func(*args, **kwargs)
+                if result:
+                    return result
     
     def is_canceled(self):
         if self.pd is None:

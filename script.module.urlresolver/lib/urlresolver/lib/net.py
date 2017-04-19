@@ -114,9 +114,12 @@ class Net:
         except:
             return False
 
-    def get_cookies(self):
+    def get_cookies(self, as_dict=False):
         '''Returns A dictionary containing all cookie information by domain.'''
-        return self._cj._cookies
+        if as_dict:
+            return dict((cookie.name, cookie.value) for cookie in self._cj)
+        else:
+            return self._cj._cookies
 
     def save_cookies(self, cookie_file):
         '''

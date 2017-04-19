@@ -38,11 +38,16 @@ class StreamcloudResolver(UrlResolver):
         if re.search('>(File Not Found)<', html):
             raise ResolverError('File Not Found or removed')
 
-        data = {}
-        for i in re.finditer('<input.*?name="(.*?)".*?value="(.*?)">', html):
-            data[i.group(1)] = i.group(2).replace("download1", "download2")
-        headers['Cookie'] = response.get_headers(as_dict=True).get('Set-Cookie', '')
-        html = self.net.http_POST(response.get_url(), headers=headers, form_data=data).content
+        cnt = 10
+        match = re.search('count\s*=\s*(\d+);', html)
+        if match:
+            cnt = int(match.group(1))
+        cnt += 1
+
+        data = helpers.get_hidden(html)
+        headers.update({'Referer': web_url})
+        common.kodi.sleep(cnt*1000)
+        html = self.net.http_POST(response.get_url(), form_data=data, headers=headers).content
         sources = helpers.scrape_sources(html)
         return helpers.pick_source(sources) + helpers.append_headers(headers)
 

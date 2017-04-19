@@ -19,5 +19,5 @@ from __generic_resolver__ import GenericResolver
 
 class PutLoadResolver(GenericResolver):
     name = "putload.tv"
-    domains = ["putload.tv", "youlolx.site", "shitmovie.com"]
-    pattern = '(?://|\.)(putload\.tv|youlolx\.site|shitmovie\.com)/(?:embed-)?([0-9a-zA-Z]+)'
+    domains = ["putload.tv", "shitmovie.com"]
+    pattern = '(?://|\.)(putload\.tv|shitmovie\.com)/(?:embed-)?([0-9a-zA-Z]+)'

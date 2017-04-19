@@ -1,6 +1,6 @@
 """
-    urlresolver Kodi Addon
-    Copyright (C) 2016 Gujal
+    Kodi urlresolver plugin
+    Copyright (C) 2016  script.module.urlresolver
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,31 +16,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
 from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-
-class PlayUResolver(UrlResolver):
-    name = "playu"
-    domains = ["playu.net", "playu.me"]
-    pattern = '(?://|\.)(playu\.(?:net|me))/(?:embed-)?([0-9a-zA-Z]+)'
+class AnimePortalResolver(UrlResolver):
+    name = "animeportal"
+    domains = ["anime-portal.org"]
+    pattern = '(?://|\.)(anime-portal\.org)/(?:embed/)?([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT}
-        response = self.net.http_GET(web_url, headers=headers)
-        html = response.content
-        headers['Cookie'] = response.get_headers(as_dict=True).get('Set-Cookie', '')
-        sources = helpers.scrape_sources(html, result_blacklist=['dl', '.mp4'])  # mp4 fails
-        source = helpers.pick_source(sources)
-        if '.smil' in source:
-            smil = self.net.http_GET(source, headers=headers).content
-            sources = helpers.parse_smil_source_list(smil)
-            return helpers.pick_source(sources) + helpers.append_headers(headers)
+        html = self.net.http_GET(web_url).content
+
+        match = re.search('''cnf\s*=\s*['"]([^'"]+)''', html, re.I)
+        if not match:
+            raise ResolverError('File Not Found or removed')
+
+        html = self.net.http_GET(match.group(1)).content
+
+        sources = [(r.group(1).upper(), r.group(2)) for r in re.finditer('''<file(\w*)>(.*?)</file\w*>''', html, re.DOTALL)]
+        sources = sorted(sources, key=lambda k: k[0], reverse=True)
+
+        return helpers.pick_source(sources)
 
     def get_url(self, host, media_id):
-        return 'http://playu.me/embed-%s.html' % media_id
+        return self._default_get_url(host, media_id, template='http://{host}/embed/{media_id}')

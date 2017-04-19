@@ -17,27 +17,33 @@
 """
 
 import re
-import urllib
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-class AuEngineResolver(UrlResolver):
-    name = "auengine.com"
-    domains = ["auengine.com"]
-    pattern = '(?://|\.)(auengine\.com)/embed.php\?file=([0-9a-zA-Z\-_]+)[&]*'
+class SapoResolver(UrlResolver):
+    name = "sapo"
+    domains = ["videos.sapo.pt"]
+    pattern = '(?://|\.)(videos\.sapo\.pt)/([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        resp = self.net.http_GET(web_url)
-        html = resp.content
-        r = re.search("video_link\s=\s'(.+?)';", html)
-        if r:
-            return urllib.unquote_plus(r.group(1))
+
+        html = self.net.http_GET(web_url).content
+
+        if html:
+            try:
+                video_link = re.search(r'data-video-link=[\"\'](.+?)[\"\']', html).groups()[0]
+                if video_link.startswith('//'): video_link = 'http:%s' % video_link
+                return video_link
+            except:
+                raise ResolverError('No playable video found.')
+
         else:
-            raise ResolverError('no file located')
+            raise ResolverError('No playable video found.')
 
     def get_url(self, host, media_id):
-        return 'http://www.auengine.com/embed.php?file=%s' % (media_id)
+        return 'http://%s/%s' % (host, media_id)
+        

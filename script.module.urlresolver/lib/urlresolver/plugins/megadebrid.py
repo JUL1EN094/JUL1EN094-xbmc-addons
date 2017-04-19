@@ -34,19 +34,19 @@ class MegaDebridResolver(UrlResolver):
         self.net = common.Net()
         scheme = 'https' if self.get_setting('use_https') == 'true' else 'http'
         self.base_url = '%s://www.mega-debrid.eu/api.php' % (scheme)
+        self.headers = {'User-Agent': common.SMU_USER_AGENT}
 
     # UrlResolver methods
     def get_media_url(self, host, media_id):
-        msg = ''
         common.log_utils.log('in get_media_url %s : %s' % (host, media_id))
         if self.token is None:
             raise ResolverError('No MD Token Available')
         
         url = self.base_url + '?' + urllib.urlencode({'action': 'getLink', 'token': self.token})
         data = {'link': media_id}
-        html = self.net.http_POST(url, form_data=data).content
+        html = self.net.http_POST(url, form_data=data, headers=self.headers).content
         js_data = json.loads(html)
-        if 'response_code' in js_data and js_data['response_code'] == 'ok':
+        if js_data.get('response_code') == 'ok':
             if 'debridLink' in js_data:
                 stream_url = js_data['debridLink'].strip('"')
                 if stream_url.startswith('http'):
@@ -55,10 +55,9 @@ class MegaDebridResolver(UrlResolver):
                     msg = 'MD Unusable Link: %s' % (stream_url)
             else:
                 msg = 'MD No Link'
-        elif 'response_text' in js_data:
-            msg = 'MD Resolve Failure: %s' % (js_data['response_text'])
+        else:
+            msg = js_data.get('response_text', 'Unknown MD Error during resolve')
         
-        if not msg: msg = 'Unknown MD Error during resolve'
         common.log_utils.log_warning(msg)
         if isinstance(msg, unicode): msg = msg.encode('utf-8')
         raise ResolverError(msg)
@@ -73,7 +72,7 @@ class MegaDebridResolver(UrlResolver):
     def get_hosters(self):
         try:
             url = self.base_url + '?' + urllib.urlencode({'action': 'getHosters'})
-            html = self.net.http_GET(url).content
+            html = self.net.http_GET(url, headers=self.headers).content
             js_data = json.loads(html)
             return [host.lower() for item in js_data['hosters'] for host in item]
         except Exception as e:
@@ -101,18 +100,20 @@ class MegaDebridResolver(UrlResolver):
     # SiteAuth methods
     def login(self):
         try:
-            msg = 'Unknown Error'
             common.log_utils.log('Mega-debrid - Logging In')
             username = self.get_setting('username')
             password = self.get_setting('password')
-            url = self.base_url + '?' + urllib.urlencode({'action': 'connectUser', 'login': username, 'password': password})
-            html = self.net.http_GET(url).content
-            js_data = json.loads(html)
-            if 'response_code' in js_data and js_data['response_code'] == 'ok':
-                self.token = js_data['token']
-                return True
-            elif 'response_text' in js_data:
-                msg = js_data['response_text']
+            if username and password:
+                url = self.base_url + '?' + urllib.urlencode({'action': 'connectUser', 'login': username, 'password': password})
+                html = self.net.http_GET(url, headers=self.headers).content
+                js_data = json.loads(html)
+                if js_data.get('response_code') == 'ok':
+                    self.token = js_data['token']
+                    return True
+                else:
+                    msg = js_data.get('response_text', 'Unknown Error')
+            else:
+                msg = 'No Username/Password'
         except Exception as e:
             msg = str(e)
         

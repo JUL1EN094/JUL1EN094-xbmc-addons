@@ -21,6 +21,7 @@ import re
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
+TWITCH_INSTALLED = common.has_addon('plugin.video.twitch')
 
 class TwitchResolver(UrlResolver):
     name = 'twitch'
@@ -46,12 +47,12 @@ class TwitchResolver(UrlResolver):
 
     @classmethod
     def _is_enabled(cls):
-        if not common.has_addon('plugin.video.twitch'):
+        if not TWITCH_INSTALLED:
             return False
         return super(cls, cls)._is_enabled()
 
     def valid_url(self, url, host):
-        if common.has_addon('plugin.video.twitch'):
+        if TWITCH_INSTALLED:
             if re.search(self.pattern, url, re.I):
                 return not re.match(self.exclusion_pattern, url, re.I) or any(host in domain.lower() for domain in self.domains)
         return False

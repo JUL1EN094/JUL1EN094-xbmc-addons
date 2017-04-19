@@ -41,4 +41,4 @@ class GrifthostResolver(UrlResolver):
         return helpers.pick_source(sources) + helpers.append_headers(headers)
 
     def get_url(self, host, media_id):
-        return 'http://grifthost.com/%s' % (media_id)
+        return 'http://grifthost.com/embed-%s.html' % (media_id)

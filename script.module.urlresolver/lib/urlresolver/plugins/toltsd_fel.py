@@ -34,9 +34,9 @@ class Toltsd_felResolver(UrlResolver):
 
         html = self.net.http_GET(web_url).content
 
-        direct_url = re.search('data-video\s*=\s*[\'"]([^\'"]+)', html)
+        direct_url = re.search('m4v\s*:\s*["\']([^"\']+)', html)
         if direct_url:
-            return direct_url.group(1).replace("&amp;", "&")
+            return direct_url.group(1)
         
         raise ResolverError('File not found')
 

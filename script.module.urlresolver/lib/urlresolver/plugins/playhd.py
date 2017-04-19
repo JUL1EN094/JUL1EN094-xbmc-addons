@@ -19,7 +19,7 @@ from __generic_resolver__ import GenericResolver
 
 class PlayHDResolver(GenericResolver):
     name = "playhd.video"
-    domains = ["www.playhd.video", "www.playhd.fo"]
+    domains = ["playhd.video", "playhd.fo"]
     pattern = '(?://|\.)(playhd\.(?:video|fo))/(?:embed\.php?.*?vid=|video/)([0-9]+)'
 
     def get_url(self, host, media_id):

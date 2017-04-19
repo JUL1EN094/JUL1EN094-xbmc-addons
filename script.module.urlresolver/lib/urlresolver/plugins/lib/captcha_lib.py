@@ -23,6 +23,7 @@ import xbmcgui
 import os
 import recaptcha_v2
 import helpers
+import urlresolver
 
 net = common.Net()
 IMG_FILE = 'captcha_img.gif'
@@ -46,22 +47,25 @@ def do_captcha(html):
     recaptcha_v2 = re.search('data-sitekey="([^"]+)', html)
     xfilecaptcha = re.search('<img\s+src="([^"]+/captchas/[^"]+)', html)
 
-    if solvemedia:
-        return do_solvemedia_captcha(solvemedia.group(1))
-    elif recaptcha:
-        return do_recaptcha(recaptcha.group(1))
-    elif recaptcha_v2:
-        return do_recaptcha_v2(recaptcha_v2.group(1))
-    elif xfilecaptcha:
-        return do_xfilecaptcha(xfilecaptcha.group(1))
-    else:
-        captcha = re.compile("left:(\d+)px;padding-top:\d+px;'>&#(.+?);<").findall(html)
-        result = sorted(captcha, key=lambda ltr: int(ltr[0]))
-        solution = ''.join(str(int(num[1]) - 48) for num in result)
-        if solution:
-            return {'code': solution}
+    if urlresolver.ALLOW_POPUPS:
+        if solvemedia:
+            return do_solvemedia_captcha(solvemedia.group(1))
+        elif recaptcha:
+            return do_recaptcha(recaptcha.group(1))
+        elif recaptcha_v2:
+            return do_recaptcha_v2(recaptcha_v2.group(1))
+        elif xfilecaptcha:
+            return do_xfilecaptcha(xfilecaptcha.group(1))
         else:
-            return {}
+            captcha = re.compile("left:(\d+)px;padding-top:\d+px;'>&#(.+?);<").findall(html)
+            result = sorted(captcha, key=lambda ltr: int(ltr[0]))
+            solution = ''.join(str(int(num[1]) - 48) for num in result)
+            if solution:
+                return {'code': solution}
+            else:
+                return {}
+    else:
+        return {}
 
 def do_solvemedia_captcha(captcha_url):
     common.log_utils.log_debug('SolveMedia Captcha: %s' % (captcha_url))

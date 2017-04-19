@@ -14,35 +14,9 @@
     Special thanks for help with this resolver go out to t0mm0, jas0npc,
     mash2k3, Mikey1234,voinage and of course Eldorado. Cheers guys :)
 """
+from __generic_resolver__ import GenericResolver
 
-import re
-from lib import helpers
-from urlresolver import common
-from urlresolver.resolver import UrlResolver, ResolverError
-
-
-class VidtoResolver(UrlResolver):
+class VidtoResolver(GenericResolver):
     name = "vidto"
     domains = ["vidto.me"]
     pattern = '(?://|\.)(vidto\.me)/(?:embed-)?([0-9a-zA-Z]+)'
-
-    def __init__(self):
-        self.net = common.Net()
-
-    def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT}
-        html = self.net.http_GET(web_url, headers=headers).content
-        html = helpers.add_packed_data(html)
-        sources = []
-        for match in re.finditer('label:\s*"([^"]+)"\s*,\s*file:\s*"([^"]+)', html):
-            label, stream_url = match.groups()
-            sources.append((label, stream_url))
-
-        sources = sorted(sources, key=lambda x: x[0])[::-1]
-        return helpers.pick_source(sources) + helpers.append_headers(headers)
-
-        raise ResolverError("File Link Not Found")
-
-    def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id)

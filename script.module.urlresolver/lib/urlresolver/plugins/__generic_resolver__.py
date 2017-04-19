@@ -31,7 +31,7 @@ class GenericResolver(UrlResolver):
     """
     name = 'generic'
     domains = ['example.com']
-    pattern = '(?://|\.)(example\.com)/(?:embed/)?([0-9a-zA-Z]+)'
+    pattern = '(?://|\.)(example\.com)/(?:embed[/-])?([0-9a-zA-Z]+)'
 
     def get_media_url(self, host, media_id):
         """

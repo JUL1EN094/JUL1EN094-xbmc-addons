@@ -15,9 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import re
 import json
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -31,37 +30,13 @@ class VimeoResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'Referer': 'https://vimeo.com/',
-                   'Origin': 'https://vimeo.com'}
-        data = self.net.http_GET(web_url,headers).content
+        headers = {'Referer': 'https://vimeo.com/', 'Origin': 'https://vimeo.com'}
+        data = self.net.http_GET(web_url, headers).content
         data = json.loads(data)
-
-        vids = data['request']['files']['progressive']
-        vids = [i['url'] for i in vids if 'url' in i]
-
-        if vids:
-            vUrlsCount = len(vids)
-
-            if (vUrlsCount > 0):
-                q = self.get_setting('quality')
-                # Lowest Quality
-                i = 0
-
-                if q == '1':
-                    # Medium Quality
-                    i = (int)(vUrlsCount / 2)
-                elif q == '2':
-                    # Highest Quality
-                    i = vUrlsCount - 1
-
-                vUrl = vids[i]
-                return vUrl
+        sources = [(vid['height'], vid['url']) for vid in data.get('request', {}).get('files', {}).get('progressive', {})]
+        try: sources.sort(key=lambda x: x[0], reverse=True)
+        except: pass
+        return helpers.pick_source(sources)
 
     def get_url(self, host, media_id):
         return 'https://player.vimeo.com/video/%s/config' % media_id
-
-    @classmethod
-    def get_settings_xml(cls):
-        xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting label="Video Quality" id="%s_quality" type="enum" values="High|Medium|Low" default="0" />' % (cls.__name__))
-        return xml

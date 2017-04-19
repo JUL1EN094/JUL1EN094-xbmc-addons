@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import re
 from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
@@ -30,21 +29,7 @@ class StreamplayResolver(UrlResolver):
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT, 'Accept': '*/*'}
-        html = self.net.http_GET(web_url, headers=headers).content
-        html = helpers.add_packed_data(html)
-        match = re.findall('[\'"]?file[\'"]?\s*:\s*[\'"]([^\'"]+)', html)
-        if match:
-            stream_url = [i for i in match if i.endswith('.mp4')]
-            if stream_url:
-                match = re.search("\$\.get\('([^']+)", html)
-                if match:
-                    headers.update({'Referer': web_url, 'X-Requested-With': 'XMLHttpRequest'})
-                    self.net.http_GET(match.group(1), headers=headers)
-                # returned stream still doesn't work, probably either a header issue or a pre-http call needed
-                # commenting out until someone else can fix it
-                # return stream_url[0] + helpers.append_headers({'User-Agent': common.FF_USER_AGENT})
-
+        return helpers.get_media_url(web_url)
         raise ResolverError('File not found')
 
     def get_url(self, host, media_id):

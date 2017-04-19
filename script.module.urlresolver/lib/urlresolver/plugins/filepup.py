@@ -25,7 +25,7 @@ class FilePupResolver(UrlResolver):
     name = "filepup"
     domains = ["filepup.net"]
     pattern = '(?://|\.)(filepup.(?:net))/(?:play|files)/([0-9a-zA-Z]+)'
-    headers = {'User-Agent': common.SMU_USER_AGENT}
+    headers = {'User-Agent': common.RAND_UA}
 
     def __init__(self):
         self.net = common.Net()
@@ -33,7 +33,6 @@ class FilePupResolver(UrlResolver):
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
         html = self.net.http_GET(web_url, headers=self.headers).content
-        common.log_utils.log(html)
         default_url = self.__get_def_source(html)
         if default_url:
             qualities = self.__get_qualities(html)

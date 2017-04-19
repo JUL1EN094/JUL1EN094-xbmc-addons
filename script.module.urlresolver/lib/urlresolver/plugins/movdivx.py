@@ -23,8 +23,8 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class MovDivxResolver(UrlResolver):
     name = "movdivx"
-    domains = ["movdivx.com"]
-    pattern = '(?://|\.)(movdivx\.com)/([0-9a-zA-Z]+)'
+    domains = ["movdivx.com", "divxme.com"]
+    pattern = '(?://|\.)(movdivx\.com|divxme\.com)/([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -41,4 +41,4 @@ class MovDivxResolver(UrlResolver):
         return helpers.pick_source(sources) + helpers.append_headers(headers)
 
     def get_url(self, host, media_id):
-        return 'http://movdivx.com/%s.html' % (media_id)
+        return self._default_get_url(host, media_id, template='http://{host}/{media_id}.html')

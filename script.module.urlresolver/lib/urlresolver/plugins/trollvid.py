@@ -24,8 +24,8 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class TrollVidResolver(UrlResolver):
     name = 'trollvid.net'
-    domains = ['trollvid.net', 'mp4edge.com']
-    pattern = '(?://|\.)((?:trollvid\.net|mp4edge\.com))/(?:embed\.php.file=|embed/|stream/)([0-9a-zA-Z]+)'
+    domains = ['trollvid.net', 'trollvid.io', 'mp4edge.com']
+    pattern = '(?://|\.)(trollvid(?:\.net|\.io)|mp4edge\.com)/(?:embed\.php.file=|embed/|stream/)([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
@@ -38,11 +38,13 @@ class TrollVidResolver(UrlResolver):
         try: stream_url = re.search('url\s*:\s*"(http.+?)"', html).group(1)
         except: pass
 
-        try: stream_url = re.search('unescape\(\'(http.+?)\'', html).group(1)
-        except: pass
+        if not stream_url:
+            try: stream_url = re.search('unescape\(\'(http.+?)\'', html).group(1)
+            except: pass
 
-        try: stream_url = base64.b64decode(re.search('atob\(\'(.+?)\'', html).group(1))
-        except: pass
+        if not stream_url:
+            try: stream_url = base64.b64decode(re.search('atob\(\'(.+?)\'', html).group(1))
+            except: pass
 
         if not stream_url:
             raise ResolverError('File not found')

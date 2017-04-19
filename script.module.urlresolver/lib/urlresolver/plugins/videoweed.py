@@ -16,8 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re
-from urlresolver import common
+from lib import helpers
 from urlresolver.resolver import UrlResolver, ResolverError
 
 class VideoweedResolver(UrlResolver):
@@ -25,33 +24,8 @@ class VideoweedResolver(UrlResolver):
     domains = ['bitvid.sx', 'videoweed.es', 'videoweed.com']
     pattern = '(?://|\.)(bitvid.sx|videoweed.es|videoweed.com)/(?:mobile/video\.php\?id=|video/|embed/\?v=|embed\.php\?v=|file/)([0-9a-z]+)'
 
-    def __init__(self):
-        self.net = common.Net()
-
     def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-
-        html = self.net.http_GET(web_url).content
-
-        r = re.search('flashvars.filekey=(.+?);', html)
-        if r:
-            r = r.group(1)
-
-            try: filekey = re.compile('\s+%s="(.+?)"' % r).findall(html)[-1]
-            except: filekey = r
-
-            player_url = 'http://www.bitvid.sx/api/player.api.php?key=%s&file=%s' % (filekey, media_id)
-
-            html = self.net.http_GET(player_url).content
-
-            r = re.search('url=(.+?)&', html)
-
-            if r:
-                stream_url = r.group(1)
-            else:
-                raise ResolverError('File Not Found or removed')
-
-        return stream_url
+        return helpers.get_media_url(self.get_url(host, media_id)).replace(' ', '%20')
 
     def get_url(self, host, media_id):
         return 'http://www.bitvid.sx/embed/?v=%s' % media_id

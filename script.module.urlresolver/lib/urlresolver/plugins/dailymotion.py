@@ -15,8 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
-
-import re,urllib
+import json
+import re
+import urllib
 from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
@@ -28,48 +29,36 @@ class DailymotionResolver(UrlResolver):
 
     def __init__(self):
         self.net = common.Net()
+        self.headers = {'User-Agent': common.RAND_UA}
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        html = self.net.http_GET(web_url).content
+        html = self.net.http_GET(web_url, headers=self.headers).content
         if '"reason":"video attribute|explicit"' in html:
-            headers = {'User-Agent': common.FF_USER_AGENT, 'Referer': web_url}
-            url_back = '/embed/video/%s' % media_id
-            web_url = 'http://www.dailymotion.com/family_filter?enable=false&urlback=%s' % urllib.quote_plus(url_back)
+            headers = {'Referer': web_url}
+            headers.update(self.headers)
+            url_back = '/embed/video/%s' % (media_id)
+            web_url = 'http://www.dailymotion.com/family_filter?enable=false&urlback=%s' % (urllib.quote_plus(url_back))
             html = self.net.http_GET(url=web_url, headers=headers).content
             
-        html = html.replace('\\', '')
-
-        livesource = re.findall('"auto"\s*:\s*.+?"url"\s*:\s*"(.+?)"', html)
-
-        sources = re.findall('"(\d+)"\s*:.+?"url"\s*:\s*"([^"]+)', html)
+        match = re.search('var\s+config\s*=\s*(.*?}});', html)
+        if not match: raise ResolverError('Unable to locate config')
+        try: js_data = json.loads(match.group(1))
+        except: js_data = {}
         
-        if not sources and not livesource:
-            raise ResolverError('File not found')
-
-        if livesource and not sources:
-            return self.net.http_HEAD(livesource[0]).get_url()
-
-        sources = sorted(sources, key=lambda x: x[0])[::-1]
-
-        source = helpers.pick_source(sources)
-        
-        if not '.m3u8' in source:
-            raise ResolverError('File not found')
-        
-        vUrl = self.net.http_GET(source).content
-        vUrl = re.search('(http.+?m3u8)', vUrl)
-        
-        if vUrl:
-            return vUrl.group(1)
-        
-        raise ResolverError('File not found')
+        sources = []
+        streams = js_data.get('metadata', {}).get('qualities', {})
+        for quality, links in streams.iteritems():
+            for link in links:
+                if not quality.isdigit() or link.get('type', '').startswith('video'):
+                    sources.append((quality, link['url']))
+                
+        sources.sort(key=lambda x: self.__key(x), reverse=True)
+        return helpers.pick_source(sources) + helpers.append_headers(self.headers)
     
+    def __key(self, item):
+        try: return int(item[0])
+        except: return 0
+
     def get_url(self, host, media_id):
         return 'http://www.dailymotion.com/embed/video/%s' % media_id
-
-    @classmethod
-    def get_settings_xml(cls):
-        xml = super(cls, cls).get_settings_xml()
-        xml.append('<setting id="%s_auto_pick" type="bool" label="Automatically pick best quality" default="false" visible="true"/>' % (cls.__name__))
-        return xml

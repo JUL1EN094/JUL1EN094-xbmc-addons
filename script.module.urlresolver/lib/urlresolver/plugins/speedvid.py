@@ -1,6 +1,9 @@
 """
-    Kodi urlresolver plugin
-    Copyright (C) 2016  tknorris
+    OVERALL CREDIT TO:
+        t0mm0, Eldorado, VOINAGE, BSTRDMKR, tknorris, smokdpi, TheHighway
+
+    urlresolver XBMC Addon
+    Copyright (C) 2011 t0mm0
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,10 +20,7 @@
 """
 from __generic_resolver__ import GenericResolver
 
-class VodmineResolver(GenericResolver):
-    name = 'Vodmine'
-    domains = ['vodmine.com']
-    pattern = '(?://|\.)(vodmine\.com)/(?:video|embed)/([0-9a-zA-Z]+)'
-
-    def get_url(self, host, media_id):
-        return 'http://vodmine.com/embed/%s' % media_id
+class SpeedVidResolver(GenericResolver):
+    name = "SpeedVid"
+    domains = ['speedvid.net']
+    pattern = '(?://|\.)(speedvid\.net)/(?:embed-)?([0-9a-zA-Z-]+)'
