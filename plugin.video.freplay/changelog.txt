@@ -1,3 +1,9 @@
+Version 0.6.10
+  -Fixed Canal +
+  -Renamed iTele to cNews
+  -Fixed l'equipe TV
+  -Fixed Allocine
+  
 Version 0.6.9
   -Fixzd NRJ12
   
