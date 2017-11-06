@@ -67,7 +67,6 @@ def list_videos(channel,folder):
   videos=[]
   filePath=utils.downloadCatalog('http://www.allocine.fr/' + cat + '/?page=' + page ,'allocine' + cat + '-' + page +'.html',False,{})
   html=open(filePath).read().replace('\xe9', 'e').replace('\xe0', 'a').replace('\n', ' ').replace('\r', '')
-  print html
   
   match = re.compile(r'btn-primary btn-large (.*?)">(.*?)<i class="icon-arrow-(.*?)"></i>',re.DOTALL).findall(html)
   prev=False
@@ -90,7 +89,7 @@ def list_videos(channel,folder):
    
   match = re.compile(r'<h3 class="title "> <span > <a href="/video/video-(.*?)/" itemprop="url">(.*?)</a> </span> </h3>',re.DOTALL).findall(html) 
   if match:
-    for link,title in match:
+    for idVideo,title in match:
       title=title.replace('<strong>','').replace('</strong>','')
       infoLabels={ "Title": title}
       videos.append( [channel, idVideo , title , '',infoLabels,'play'] )  
