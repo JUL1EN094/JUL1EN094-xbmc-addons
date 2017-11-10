@@ -10,7 +10,9 @@ import urllib2
 import string
 import log
 import logging
-import requests
+import requests       
+import YDStreamExtractor     
+import HTMLParser
 from random import randint
 
 default_ua = "Mozilla/5.0 (Windows NT 6.1; WOW64) " \
@@ -43,6 +45,7 @@ def getOrderChannel(chanName):
     if globalvar.ADDON.getSetting('disp' + chanName):
         return int(globalvar.ADDON.getSetting('disp' + chanName))
     else:
+        print 'Missing Settings for :' + chanName
         return 20
 
 
@@ -225,6 +228,17 @@ def unhide(order):
         'disp' + globalvar.hidden_channelsName[order],
         str(len(globalvar.ordered_channels)))
 
+def formatName(text):
+  return HTMLParser.HTMLParser().unescape(text).title().encode('utf-8')
+  
+def getExtURL(urlPage):
+  print 'YoutubeDL decoding ' + urlPage
+  
+  vid = YDStreamExtractor.getVideoInfo(urlPage,quality=2) #quality is 0=SD, 1=720p, 2=1080p and is a maximum
+  stream_url = vid.streamURL() #This is what Kodi (XBMC) will play
+  
+  return stream_url
+  
 def getDMURL(urlPage):
   html     = get_webcontent(urlPage)
   jsonFile=re.compile('var config = (.+?)};', re.DOTALL).findall(html)
@@ -237,14 +251,23 @@ def getDMURL(urlPage):
   video_url_len = len(video_urls)
   if video_url_len > 0:
     q = globalvar.ADDON.getSetting('DMQuality')
-    print q
-    if q == 'HD':
+    if q == 'HD' or q=='0':
       # Highest Quality
       video_url = video_urls[video_url_len - 1]
-    elif q == 'MD':
+    elif q == 'MD' or q=='1':
       # Medium Quality
       video_url = video_urls[(int)(video_url_len / 2)]
-    elif q == 'SD':
+    elif q == 'SD' or q=='2':
       # Lowest Quality
       video_url = video_urls[0] 
   return 'https:%score' % video_url
+  
+def getVimeoURL(urlPage):
+  html     = get_webcontent(urlPage)
+  jsonFile=re.compile('var t=(.+?)};', re.DOTALL).findall(html)
+  print jsonFile[0] + '}'
+  jsonParser = json.loads(jsonFile[0] + '}')
+  qualities= jsonParser['request']['files']['progressive'] 
+  lenQ=len(qualities)
+  print qualities[lenQ-1]['url'] 
+  return qualities[lenQ-1]['url']
