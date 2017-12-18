@@ -1,6 +1,6 @@
-'''
-    urlresolver Kodi Addon
-    Copyright (C) 2016 Gujal
+"""
+    Kodi urlresolver plugin
+    Copyright (C) 2016  script.module.urlresolver
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,10 +14,14 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
+
 from __generic_resolver__ import GenericResolver
 
-class LetwatchResolver(GenericResolver):
-    name = "letwatch"
-    domains = ['letwatch.us', 'letwatch.to', 'vidshare.us']
-    pattern = '(?://|\.)(letwatch\.(?:us|to)|vidshare\.us)/(?:embed-)?([0-9a-zA-Z]+)'
+class MycloudResolver(GenericResolver):
+    name = "mycloud"
+    domains = ["mycloud.to", "mcloud.to"]
+    pattern = '(?://|\.)(my?cloud\.to)/embed/([\S]+)'
+
+    def get_url(self, host, media_id):
+        return self._default_get_url(host, media_id, template='http://{host}/embed/{media_id}')

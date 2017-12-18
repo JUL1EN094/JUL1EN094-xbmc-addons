@@ -22,20 +22,21 @@ from urlresolver.resolver import UrlResolver, ResolverError
 
 class VideaResolver(UrlResolver):
     name = "videa"
-    domains = ["videa.hu"]
-    pattern = '(?://|\.)(videa\.hu)/(?:player\?v=|videok/.*-|videok/)([0-9a-zA-Z]+)'
+    domains = ["videa.hu", "videakid.hu"]
+    pattern = '(?://|\.)((?:videa|videakid)\.hu)/(?:player/?\?v=|videok/)(?:.*-|)([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        html = self.net.http_GET(web_url).content
+        headers = {'User-Agent': common.FF_USER_AGENT}
+        html = self.net.http_GET(web_url, headers=headers).content
 
         sources = helpers.get_dom(html, 'video_sources')
         if sources:
             sources = re.findall('name\s*=\s*[\'|"]([^\'"]+).+?streamable.+?>([^<]+)', sources[0])
-            sources = sorted(sources, key=lambda x: x[0])[::-1]
+            if sources[-1][0].lower() == 'lq': sources = sources[::-1]
             source = helpers.pick_source(sources)
             if source.startswith('//'): source = 'http:' + source
             return source
@@ -43,4 +44,4 @@ class VideaResolver(UrlResolver):
         raise ResolverError('Stream not found')
 
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, 'http://{host}/videaplayer_get_xml.php?v={media_id}')
+        return self._default_get_url(host, media_id, 'http://{host}/videaplayer_get_xml.php?v={media_id}&start=0&referrer=http://{host}')

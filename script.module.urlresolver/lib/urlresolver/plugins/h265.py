@@ -1,7 +1,4 @@
 """
-    OVERALL CREDIT TO:
-        t0mm0, Eldorado, VOINAGE, BSTRDMKR, tknorris, smokdpi, TheHighway
-
     urlresolver XBMC Addon
     Copyright (C) 2011 t0mm0
 
@@ -18,9 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from __generic_resolver__ import GenericResolver
 
-class DatoPornResolver(GenericResolver):
-    name = "datoporn"
-    domains = ['datoporn.com', 'dato.porn']
-    pattern = '(?://|\.)(datoporn\.com|dato\.porn)/(?:embed[/-])?([0-9a-zA-Z]+)'
+class H265Resolver(GenericResolver):
+    name = "h265.se"
+    domains = ["h265.se"]
+    pattern = '(?://|\.)(h265\.se)/(?:embed-)?([0-9A-Za-z]+)'

@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
-import json
+import json, urllib
 from urlresolver import common
 from lib import helpers
 from urlresolver.resolver import UrlResolver, ResolverError
@@ -49,8 +49,10 @@ class OKResolver(UrlResolver):
         return self.qual_map.get(qual.lower(), '000')
 
     def __get_Metadata(self, media_id):
-        url = "http://www.ok.ru/dk?cmd=videoPlayerMetadata&mid=" + media_id
-        html = self.net.http_GET(url, headers=self.header).content
+        url = "http://www.ok.ru/dk"
+        data = {'cmd': 'videoPlayerMetadata', 'mid': media_id}
+        data = urllib.urlencode(data)
+        html = self.net.http_POST(url, data, headers=self.header).content
         json_data = json.loads(html)
 
         if 'error' in json_data:

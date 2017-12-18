@@ -1,7 +1,6 @@
-"""
-Youwatch urlresolver XBMC Addon
-Copyright (C) 2015 tknorris
-Updated by alifrezser (c) 2016
+'''
+vidzi urlresolver plugin
+Copyright (C) 2014 Eldorado
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,43 +14,33 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-"""
-import re
+'''
 from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
+import re
 
-MAX_TRIES = 5
-
-
-class YouWatchResolver(UrlResolver):
-    name = "youwatch"
-    domains = ["youwatch.org", "chouhaa.info"]
-    pattern = '(?://|\.)(youwatch\.org|chouhaa\.info)/(?:embed-)?([A-Za-z0-9]+)'
+class trtResolver(UrlResolver):
+    name = "trt"
+    domains = ["trt.pl"]
+    pattern = '(?://|\.)(trt\.pl)/(?:film)/([0-9a-zA-Z]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT}
-        web_url = self.net.http_HEAD(web_url, headers=headers).get_url()
-        headers['Referer'] = web_url
-
-        tries = 0
-        while tries < MAX_TRIES:
-            html = self.net.http_GET(web_url, headers=headers).content
-            html = html.replace('\n', '')
-            r = re.search('<iframe\s+src\s*=\s*"([^"]+)', html)
-            if r:
-                web_url = r.group(1)
-            else:
-                break
-            tries += 1
+        headers = {'Referer': web_url, 'User-Agent': common.FF_USER_AGENT}
 
         html = self.net.http_GET(web_url, headers=headers).content
-        sources = helpers.scrape_sources(html, result_blacklist=['youwatch.'])
+        pages = re.findall('href="([^"]+)[^>]+class="mainPlayerQualityHref"[^>]+>(.*?)</a>', html)
+        if pages:
+            try: pages.sort(key=lambda x: int(x[1][:-1]), reverse=True)
+            except: pass
+            html = self.net.http_GET('https://www.trt.pl' + pages[0][0], headers=headers).content
+        
+        sources = helpers.scrape_sources(html, scheme='https')
         return helpers.pick_source(sources) + helpers.append_headers(headers)
 
     def get_url(self, host, media_id):
-        return 'http://youwatch.org/embed-%s.html' % media_id
+        return 'https://www.trt.pl/film/%s' % media_id

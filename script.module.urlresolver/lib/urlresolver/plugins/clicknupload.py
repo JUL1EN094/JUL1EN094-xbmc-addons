@@ -15,9 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
-
 import re
-import urllib
 from lib import helpers
 from lib import captcha_lib
 from urlresolver import common
@@ -27,8 +25,8 @@ MAX_TRIES = 3
 
 class ClickNUploadResolver(UrlResolver):
     name = "clicknupload"
-    domains = ['clicknupload.com', 'clicknupload.me', 'clicknupload.link']
-    pattern = '(?://|\.)(clicknupload\.(?:com|me|link))/(?:f/)?([0-9A-Za-z]+)'
+    domains = ['clicknupload.com', 'clicknupload.me', 'clicknupload.link','clicknupload.org']
+    pattern = '(?://|\.)(clicknupload\.(?:com|me|link|org))/(?:f/)?([0-9A-Za-z]+)'
 
     def __init__(self):
         self.net = common.Net()
