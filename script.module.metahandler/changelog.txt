@@ -1,3 +1,7 @@
+[B]Version 2.9.0.002[/B]
+- Fix : Keep '-' in title cleaning function (more results)
+- Add ombdapi ApiKey
+
 [B]Version 2.9.0.001[/B]
 - Fix
 

@@ -44,7 +44,7 @@ class TMDB(object):
             if word.isalnum()==False:
                 w = ""          
                 for i in range(len(word)):
-                    if(word[i].isalnum()):              
+                    if (word[i].isalnum()) or (word[i] in ('-')):              
                         w+=word[i]
                 word = w
             newstring += ' ' + word
@@ -162,7 +162,7 @@ class TMDB(object):
                 url = self.imdb_nameyear_api % (name, year)
             else:
                 url = self.imdb_name_api % name
-
+        url += '&apikey=BanMePls&plot=full'
         try:
             addon.log('Requesting IMDB : %s' % url, 0)
             meta = simplejson.loads(net.http_GET(url).content)
