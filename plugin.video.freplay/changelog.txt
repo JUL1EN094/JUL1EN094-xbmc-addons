@@ -1,3 +1,12 @@
+Version 0.6.16
+  -Added Au Feminin.com
+  -Fixed RTBF
+  -Fixed Canal-U
+  -Fixed INA
+  -Fixed BeCuriousTv
+  -Fixed TF1 (Thanks quatsch)
+  -Fixed M6 (Thanks Electrocut)
+  
 Version 0.6.15
   -Fixed Most Viewed
   -Misc Fixes
